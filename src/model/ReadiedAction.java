@@ -3,11 +3,11 @@ package model;
 public class ReadiedAction {
 	private Ability ability;
 	private Unit source;
-	private Unit[] targets;
+	private ITargetable[] targets;
 	private int startTime;
 	private int endTime;
 	
-	public ReadiedAction(Ability ability, Unit source, Unit[] targets, int startTime) {
+	public ReadiedAction(Ability ability, Unit source, ITargetable[] targets, int startTime) {
 		super();
 		this.ability = ability;
 		this.source = source;
@@ -29,7 +29,7 @@ public class ReadiedAction {
 		return source;
 	}
 
-	public Unit[] getTargets() {
+	public ITargetable[] getTargets() {
 		return targets;
 	}
 	

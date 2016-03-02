@@ -10,10 +10,12 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import view.GameFrame;
 import model.Ability;
+import model.ITargetable;
 import model.ReadiedAction;
+import model.TallObject;
 import model.Unit;
+import view.GameFrame;
 
 public class BattleQueue {
 	private static final Comparator<ReadiedAction> SOONEST_READIED_ACTION = new Comparator<ReadiedAction>(){
@@ -127,11 +129,11 @@ public class BattleQueue {
 		battleDuration = 0;
 	}
 	
-	public static ReadiedAction queueAction(Ability ability, Unit source, Unit target) {
-		return queueAction(ability, source, new Unit[] {target});
+	public static ReadiedAction queueAction(Ability ability, Unit source, ITargetable target) {
+		return queueAction(ability, source, new ITargetable[] {target});
 	}
 	
-	public static ReadiedAction queueAction(Ability ability, Unit source, Unit[] targets) {
+	public static ReadiedAction queueAction(Ability ability, Unit source, ITargetable[] targets) {
 		lastScheduledTimes.put(source, completionTimes.get(source));
 		ReadiedAction action = new ReadiedAction(ability, source, targets, completionTimes.get(source));
 		actionQueue.add(action);
@@ -170,12 +172,21 @@ public class BattleQueue {
 	public static void performNextAction() {
 		ReadiedAction nextAction = actionQueue.poll();
 		battleDuration = nextAction.getStartTime();
-		System.out.println(nextAction.getSource() + "(" + battleDuration + ") uses " + nextAction.getAbility() + " on " + nextAction.getTargetsDescription());
-		nextAction.getSource().animate(nextAction.getAbility().getStance(), ABILITY_DELAY * 9 / 10, true);
-		nextAction.getSource().face(nextAction.getTargets()[0]);
-		for (Unit target : nextAction.getTargets()) {
-			target.damage(nextAction.getAbility().getDamage());
-			delay(target, nextAction.getAbility().getDelayOpponent());
+		Unit source = nextAction.getSource();
+		Ability ability = nextAction.getAbility();
+		ITargetable[] targets = nextAction.getTargets();
+		System.out.println(source + "(" + battleDuration + ") uses " + ability + " on " + nextAction.getTargetsDescription());
+		source.face(targets[0]);
+		source.animate(ability.getStance(), ABILITY_DELAY * 9 / 10, true, ability.getMoveDistance());
+		for (ITargetable target : targets) {
+			if (target instanceof TallObject) {
+				TallObject targetObject = (TallObject) target;
+				targetObject.damage(ability.getDamage());
+				if (targetObject instanceof Unit) {
+					Unit targetUnit = (Unit) targetObject;
+					delay(targetUnit, ability.getDelayOpponent());		
+				}
+			}
 		}
 	}
 	

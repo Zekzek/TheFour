@@ -9,12 +9,14 @@ import view.GraphicsPanel;
 import view.SpriteSheet;
 
 
-public abstract class TallObject {
+public abstract class TallObject implements ITargetable {
 
 	protected String name;
 	protected Position pos = new Position(0, 0, 1, 1);
 	protected int maxHp;
 	protected int hp;
+	protected double drawXOffset = 0.0;
+	protected double drawYOffset = 0.0;
 	
 	public TallObject(String name, int hp) {
 		this.name = name;
@@ -34,6 +36,7 @@ public abstract class TallObject {
 		BufferedImage sprite = getSprite();
 		if (sprite != null) {
 			AffineTransform preImageTransorm = g2.getTransform();
+			g2.translate(drawXOffset * GraphicsPanel.CELL_WIDTH, drawYOffset * GraphicsPanel.TERRAIN_CELL_HEIGHT);
 			// Convert to image space
 			g2.scale(((double)GraphicsPanel.CELL_WIDTH) / SpriteSheet.SPRITE_WIDTH, 
 					((double)GraphicsPanel.TALL_OBJECT_CELL_HEIGHT) / SpriteSheet.SPRITE_HEIGHT);

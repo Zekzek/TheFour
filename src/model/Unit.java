@@ -15,6 +15,7 @@ import javax.swing.SwingConstants;
 import view.GraphicsPanel;
 import view.SpriteSheet;
 import view.SpriteSheet.ANIMATION;
+import view.SpriteSheet.FACING;
 import controller.BattleQueue;
 
 public class Unit extends TallObject {
@@ -107,12 +108,41 @@ public class Unit extends TallObject {
 	}
 
 	public void animate(ANIMATION stance, int duration, boolean returnToDefault) {
+		animate(stance, duration, returnToDefault, 0);
+	}
+	
+	public void animate(ANIMATION stance, int duration, boolean returnToDefault, int moveDistance) {
 		int refreshRate = duration / ANIMATION_LENGTH;
 		Unit unit = this;
+		final int yOffset;
+		final int xOffset;
+		System.out.println(moveDistance);
+		if (moveDistance != 0) {
+			if (facing == FACING.N) {
+				xOffset = 0;
+				yOffset = moveDistance;
+			} else if (facing == FACING.S) {
+				xOffset = 0;
+				yOffset = -moveDistance;
+			} else if (facing == FACING.E) {
+				xOffset = -moveDistance;
+				yOffset = 0;
+			} else {//if (facing == FACING.W) {
+				xOffset = moveDistance;
+				yOffset = 0;
+			}
+			drawXOffset = xOffset;
+			drawYOffset = yOffset;
+			this.setPos(pos.getX() - xOffset, pos.getY() - yOffset);
+		} else {
+			xOffset = yOffset = 0;
+		}
 		Thread animationThread = new Thread() {
 			@Override
 			public void run() {
 				for (int i = 0; i < ANIMATION_LENGTH; i++) {
+					drawXOffset = (ANIMATION_LENGTH - 1.0 - i) * xOffset / ANIMATION_LENGTH;
+					drawYOffset = (ANIMATION_LENGTH - 1.0 - i) * yOffset / ANIMATION_LENGTH;
 					animationSequence = i;
 					if (stance != null) {
 						unit.stance = stance;
@@ -132,9 +162,9 @@ public class Unit extends TallObject {
 		animationThread.start();
 	}
 
-	public void face(Unit unit) {
-		int dx = unit.getPos().getX() - getPos().getX();
-		int dy = unit.getPos().getY() - getPos().getY();
+	public void face(ITargetable target) {
+		int dx = target.getPos().getX() - getPos().getX();
+		int dy = target.getPos().getY() - getPos().getY();
 		int magnitudeX = (dx >= 0) ? dx : -dx;
 		
 		if (dy < 0 && -dy >= magnitudeX) {

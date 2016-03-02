@@ -2,6 +2,8 @@ package controller.plot;
 
 import model.Ability;
 import model.Dialog;
+import model.ITargetable;
+import model.Position;
 import model.Structure;
 import model.Unit;
 import model.Unit.TEAM;
@@ -14,16 +16,35 @@ import controller.BattleQueue;
 
 public class Plot_Tutorial_Arena extends Plot{
 	
-	private Unit announcer;
+	private Unit announcer, defender, berserker;
 		
 	@Override
 	public void start() {
 		GraphicsPanel.moveScreenTo(24, 23);
 		addUnitsToWorld();
+		World.addTallObject(defender, 26, 31);
+		World.addTallObject(berserker, 37, 31);
 		
 		BattleQueue.addCombatants(World.getSortedContentsWithin(GraphicsPanel.getScreenPos(), Unit.class).iterator());
 	    BattleQueue.addRandomCombatDelays();
-		BattleQueue.startPlayingActions();
+		for (int i = 27; i <= 31; i++) {
+			final int x = i;
+		    BattleQueue.queueAction(Ability.MOVE, defender, new ITargetable(){
+				@Override
+				public Position getPos() {
+					return new Position(x, 31, 1, 1);
+				}});
+		}
+		for (int i = 36; i >= 32; i--) {
+			final int x = i;
+		    BattleQueue.queueAction(Ability.MOVE, berserker, new ITargetable(){
+				@Override
+				public Position getPos() {
+					return new Position(x, 31, 1, 1);
+				}});
+		}
+	    
+	    BattleQueue.startPlayingActions();
 	    
 	    GameFrame.updateMenu();
 	}
@@ -58,18 +79,16 @@ public class Plot_Tutorial_Arena extends Plot{
 		Structure tree4 = new Structure("Tree 4", Plot.class.getResource("/resource/img/trees/tree.png"), 200);
 		World.addTallObject(tree4, 36, 35);
 
-		Unit defender = new Unit("Defender", Unit.TEAM.PLAYER, Plot.class.getResource("/resource/img/spriteSheet/defender.png"), 200);
+		defender = new Unit("Defender", Unit.TEAM.PLAYER, Plot.class.getResource("/resource/img/spriteSheet/defender.png"), 200);
 		defender.setStance(SpriteSheet.ANIMATION.WALK);
 		defender.setFacing(SpriteSheet.FACING.E);
 		defender.learnAction(quickAttack);
 		defender.learnAction(shieldBash);
-		World.addTallObject(defender, 31, 31);
-	
-		Unit berserker = new Unit("Berserker", Unit.TEAM.ENEMY1, Plot.class.getResource("/resource/img/spriteSheet/berserker.png"), 220);
+		
+		berserker = new Unit("Berserker", Unit.TEAM.ENEMY1, Plot.class.getResource("/resource/img/spriteSheet/berserker.png"), 220);
 		berserker.setStance(SpriteSheet.ANIMATION.WALK);
 		berserker.setFacing(SpriteSheet.FACING.W);
 		berserker.learnAction(heavyStrike);
-		World.addTallObject(berserker, 32, 31);
 		
 		announcer = new Unit("Announcer", Unit.TEAM.NONCOMBATANT, Plot.class.getResource("/resource/img/spriteSheet/guard.png"), 220);
 		World.addTallObject(announcer, -1, -1);
