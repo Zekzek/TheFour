@@ -1,9 +1,13 @@
 package controller.plot;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+
 import model.Ability;
 import model.Dialog;
-import model.ITargetable;
-import model.Position;
+import model.StatusEffect;
 import model.Structure;
 import model.Unit;
 import model.Unit.TEAM;
@@ -27,35 +31,26 @@ public class Plot_Tutorial_Arena extends Plot{
 		
 		BattleQueue.addCombatants(World.getSortedContentsWithin(GraphicsPanel.getScreenPos(), Unit.class).iterator());
 	    BattleQueue.addRandomCombatDelays();
-		for (int i = 27; i <= 31; i++) {
-			final int x = i;
-		    BattleQueue.queueAction(Ability.MOVE, defender, new ITargetable(){
-				@Override
-				public Position getPos() {
-					return new Position(x, 31, 1, 1);
-				}});
-		}
-		for (int i = 36; i >= 32; i--) {
-			final int x = i;
-		    BattleQueue.queueAction(Ability.MOVE, berserker, new ITargetable(){
-				@Override
-				public Position getPos() {
-					return new Position(x, 31, 1, 1);
-				}});
-		}
-	    
 	    BattleQueue.startPlayingActions();
 	    
 	    GameFrame.updateMenu();
 	}
 	
 	private void addUnitsToWorld() {
-		Ability watch = new Ability("Watch", Ability.OUTCOME.UBIQUITOUS, 5000, 0, "", SpriteSheet.ANIMATION.WALK);
-		Ability quickAttack = new Ability("Quick Attack", Ability.OUTCOME.HARMFUL, 1000, 40, "", SpriteSheet.ANIMATION.MELEE);
-		Ability shieldBash = new Ability("Shield Bash", Ability.OUTCOME.HARMFUL, 1100, 35, 
+		Ability watch = new Ability("Watch", Ability.TARGET_TYPE.UBIQUITOUS, 5000, 0, 16, "", SpriteSheet.ANIMATION.WALK);
+		Ability quickAttack = new Ability("Quick Attack", Ability.TARGET_TYPE.HARMFUL, 1000, 40, 1, "", SpriteSheet.ANIMATION.MELEE);
+		Ability shieldBash = new Ability("Shield Bash", Ability.TARGET_TYPE.HARMFUL, 1100, 35, 1, 
 				"Briefly disorients the target", SpriteSheet.ANIMATION.MELEE);
 		shieldBash.setDelayOpponent(300);
-		Ability heavyStrike = new Ability("Heavy Strike", Ability.OUTCOME.HARMFUL, 2200, 45, "", SpriteSheet.ANIMATION.MELEE);
+		BufferedImage icon = null;
+		try { icon = ImageIO.read(Plot.class.getResource("/resource/img/spriteSheet/snail.png"));
+		} catch (IOException e) { e.printStackTrace(); }
+		StatusEffect slow = new StatusEffect("Slow", icon, 6000);
+		slow.setSpeedModifierAttack(0.7);
+		slow.setSpeedModifierCast(0.7);
+		slow.setSpeedModifierMove(0.5);
+		shieldBash.addStatusEffect(slow);
+		Ability heavyStrike = new Ability("Heavy Strike", Ability.TARGET_TYPE.HARMFUL, 2200, 45, 1, "", SpriteSheet.ANIMATION.MELEE);
 				
 		Unit guard1 = new Unit("Guard 1", Unit.TEAM.NONCOMBATANT, Plot.class.getResource("/resource/img/spriteSheet/guard.png"), 100);
 		guard1.learnAction(watch);

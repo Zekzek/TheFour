@@ -6,29 +6,27 @@ public class Starter {
 	}
 }
 
-//		FEEDBACK
+//		TODO
 //	Labels for ability & target?
 //	Win animation, subset of cast animation
-
-//		NICE TO HAVE, FIRST RELEASE
+//	Movement
+//	Pathing
+//	Ability Categories
 //	Status Effects
-//	More moves?
+//	More abilities
 //	Decorate dialog box
 //	Decorate ability selection
-// Cancel actions when they become unusable (all targets die, etc)
-// climate-type overlay map?
-// expanded world template
-// Keyboard interaction
-// Glowing active player and target selection
-// damage number on screen
-// Movement
-// Triggers on enter a region
-// Shortest path AI
-// structure template
-// Death screen?
-// Win screen?
-// Pathing
-// Elevation map
+//	Cancel actions when they become unusable (all targets die, etc)
+// 	climate-type overlay map?
+// 	expanded world template
+// 	Keyboard interaction
+// 	Glowing active player and target selection
+// 	damage number on screen
+// 	Triggers on enter a region
+// 	structure template
+// 	Death screen?
+// 	Win screen?
+// 	Elevation map
 
 //		LATER
 //	upcoming move display?
@@ -44,3 +42,7 @@ public class Starter {
 // Big plant, little plant, tree, bush, wall, door, fence, chest(open?), spring, 
 // fountain, well, lawn ornament, bucket, bed, bookshelf, chair, fire, stump, 
 // weapon rack, combat dummy, meat, carcass, oven, table, 
+
+//		ATTRIBUTION
+//http://gaurav.munjal.us/Universal-LPC-Spritesheet-Character-Generator/
+//http://www.iconarchive.com/show/ios7-icons-by-icons8/Animals-Snail-icon.html

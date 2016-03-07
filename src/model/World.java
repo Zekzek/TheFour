@@ -70,16 +70,16 @@ public class World {
 	
 	public static ArrayList<Unit> getTargets(Unit source, Ability ability, Position pos) {
 		Unit.TEAM team = source.getTeam();
-		Ability.OUTCOME outcome = ability.getOutcome();
+		Ability.TARGET_TYPE outcome = ability.getOutcome();
 		ArrayList<Unit.TEAM> targetTeams = new ArrayList<Unit.TEAM>();
 		ArrayList<Unit> targets = new ArrayList<Unit>();
 		
-		if (outcome == Ability.OUTCOME.PERSONAL) {
+		if (outcome == Ability.TARGET_TYPE.PERSONAL) {
 			targets.add(source);
 			return targets;
-		} else if (outcome == Ability.OUTCOME.UBIQUITOUS) {
+		} else if (outcome == Ability.TARGET_TYPE.UBIQUITOUS) {
 			return getSortedLivingContentsWithin(pos, Unit.class);
-		} else if (outcome == Ability.OUTCOME.HARMFUL) {
+		} else if (outcome == Ability.TARGET_TYPE.HARMFUL) {
 			if (team == Unit.TEAM.PLAYER || team == Unit.TEAM.ALLY) {
 				targetTeams.add(Unit.TEAM.ENEMY1);
 				targetTeams.add(Unit.TEAM.ENEMY2);
@@ -92,7 +92,7 @@ public class World {
 				targetTeams.add(Unit.TEAM.ALLY);
 				targetTeams.add(Unit.TEAM.ENEMY1);
 			}	
-		} else if (outcome == Ability.OUTCOME.HELPFUL) {
+		} else if (outcome == Ability.TARGET_TYPE.HELPFUL) {
 			if (team == Unit.TEAM.PLAYER || team == Unit.TEAM.ALLY) {
 				targetTeams.add(Unit.TEAM.PLAYER);
 				targetTeams.add(Unit.TEAM.ALLY);

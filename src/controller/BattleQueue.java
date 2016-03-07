@@ -11,10 +11,13 @@ import java.util.Random;
 import java.util.Set;
 
 import model.Ability;
+import model.AppliedStatusEffect;
 import model.ITargetable;
+import model.Position;
 import model.ReadiedAction;
 import model.TallObject;
 import model.Unit;
+import model.World;
 import view.GameFrame;
 
 public class BattleQueue {
@@ -39,6 +42,7 @@ public class BattleQueue {
 					if (!pause && !actionQueue.isEmpty() && actionQueue.peek().getStartTime() <= getMostReadyCombatantReadyness()) {
 						performNextAction();
 						Thread.sleep(ABILITY_DELAY);
+						//TODO: always sleep READ_CHECK_DELAY and set variable for active animation? not pause, would conflict
 					}
 					else {
 						Thread.sleep(READ_CHECK_DELAY);
@@ -170,24 +174,87 @@ public class BattleQueue {
 	}
 	
 	public static void performNextAction() {
-		ReadiedAction nextAction = actionQueue.poll();
+		ReadiedAction nextAction = actionQueue.peek();
 		battleDuration = nextAction.getStartTime();
 		Unit source = nextAction.getSource();
-		Ability ability = nextAction.getAbility();
 		ITargetable[] targets = nextAction.getTargets();
-		System.out.println(source + "(" + battleDuration + ") uses " + ability + " on " + nextAction.getTargetsDescription());
-		source.face(targets[0]);
-		source.animate(ability.getStance(), ABILITY_DELAY * 9 / 10, true, ability.getMoveDistance());
-		for (ITargetable target : targets) {
-			if (target instanceof TallObject) {
-				TallObject targetObject = (TallObject) target;
-				targetObject.damage(ability.getDamage());
-				if (targetObject instanceof Unit) {
-					Unit targetUnit = (Unit) targetObject;
-					delay(targetUnit, ability.getDelayOpponent());		
+		if (targetReachable(nextAction)) {
+			actionQueue.poll(); //remove from the queue
+			Ability ability = nextAction.getAbility();
+			source.tickStatusEffects(ability.getDelay());
+			System.out.println(source + "(" + battleDuration + ") uses " + ability + " on " + nextAction.getTargetsDescription());
+			source.face(targets[0]);
+			source.animate(ability.getStance(), ABILITY_DELAY * 9 / 10, true, ability.getMoveDistance());
+			for (ITargetable target : targets) {
+				if (target instanceof TallObject) {
+					TallObject targetObject = (TallObject) target;
+					targetObject.damage(ability.getDamage());
+					if (targetObject instanceof Unit) {
+						Unit targetUnit = (Unit) targetObject;
+						if (ability.getStatusEffect() != null)
+							targetUnit.addStatusEffect(new AppliedStatusEffect(ability.getStatusEffect()));
+						delay(targetUnit, ability.getDelayOpponent());		
+					}
+				}
+			}			
+		} else {
+			Ability move = Ability.MOVE;
+			source.tickStatusEffects(move.getDelay());
+			Position moveTo = getMoveTowards(source, targets[0]);
+			System.out.println(source + "(" + battleDuration + ") moves to " + moveTo);
+			source.face(moveTo);
+			source.animate(move.getStance(), ABILITY_DELAY * 9 / 10, true, move.getMoveDistance());
+			
+			//delay source appropriately
+			lastScheduledTimes.put(source, lastScheduledTimes.get(source) + move.getDelay());
+			completionTimes.put(source, completionTimes.get(source) + move.getDelay());
+			for (int i = actionQueue.size() - 1; i >= 0; i--) {
+				ReadiedAction action = actionQueue.get(i);
+				if (source.equals(action.getSource())) {
+					action.delay(move.getDelay());
 				}
 			}
+			Collections.sort(actionQueue, SOONEST_READIED_ACTION);
 		}
+	}
+	
+	private static boolean targetReachable(ReadiedAction action) {
+		Position sourcePos = action.getSource().getPos();
+		Position targetPos = action.getTargets()[0].getPos();
+		int range = action.getAbility().getRange();
+		return sourcePos.getDistanceTo(targetPos) <= range;
+	}
+	
+	private static Position getMoveTowards(Unit source, ITargetable target) {
+		//TODO: perform actual pathing, return first step
+		Position sourcePos = source.getPos();
+		Position targetPos = target.getPos();
+		// Look for a beneficial horizontal move
+		if (sourcePos.getX() < targetPos.getX()) {
+			Position firstStep = new Position(sourcePos.getX() + 1, sourcePos.getY());
+			if (World.getTallObject(firstStep) == null) {
+				return firstStep;
+			}
+		} else if (sourcePos.getX() > targetPos.getX()) {
+			Position firstStep = new Position(sourcePos.getX() - 1, sourcePos.getY());
+			if (World.getTallObject(firstStep) == null) {
+				return firstStep;
+			}
+		}
+		// Look for a beneficial vertical move
+		if (sourcePos.getY() < targetPos.getY()) {
+			Position firstStep = new Position(sourcePos.getX(), sourcePos.getY() + 1);
+			if (World.getTallObject(firstStep) == null) {
+				return firstStep;
+			}
+		} else if (sourcePos.getY() > targetPos.getY()) {
+			Position firstStep = new Position(sourcePos.getX(), sourcePos.getY() - 1);
+			if (World.getTallObject(firstStep) == null) {
+				return firstStep;
+			}
+		}
+		// Just stay still
+		return sourcePos;
 	}
 	
 	private static void delay(Unit unit, int delay) {

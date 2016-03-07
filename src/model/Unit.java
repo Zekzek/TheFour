@@ -2,6 +2,8 @@ package model;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.util.HashSet;
@@ -25,6 +27,7 @@ public class Unit extends TallObject {
 	
 	private TEAM team;
 	private SpriteSheet sheet;
+	//TODO: only contain the image
 	private JLabel nameLabel;
 	
 	private SpriteSheet.FACING facing = SpriteSheet.FACING.S;
@@ -33,6 +36,7 @@ public class Unit extends TallObject {
 	private int animationSequence = 0;
 	
 	private Set<Ability> learnedActions = new HashSet<Ability>();
+	private Set<AppliedStatusEffect> statusEffects = new HashSet<AppliedStatusEffect>();
 	
 	public Unit(String name, TEAM team, URL sheetPath, int hp) {
 		super(name, hp);
@@ -72,6 +76,20 @@ public class Unit extends TallObject {
 			BattleQueue.removeCombatant(this);
 			stance = SpriteSheet.ANIMATION.DEATH;
 			this.animate(stance, 1000, false);
+		}
+	}
+	
+	public void addStatusEffect(AppliedStatusEffect effect) {
+		statusEffects.add(effect);
+	}
+	
+	public void tickStatusEffects(int time) {
+		for (Iterator<AppliedStatusEffect> iterator = statusEffects.iterator(); iterator.hasNext();) {
+		    AppliedStatusEffect statusEffect = iterator.next();
+		    statusEffect.tick(time);
+		    if (statusEffect.isOver()) {
+		        iterator.remove();
+		    }
 		}
 	}
 	
@@ -116,7 +134,6 @@ public class Unit extends TallObject {
 		Unit unit = this;
 		final int yOffset;
 		final int xOffset;
-		System.out.println(moveDistance);
 		if (moveDistance != 0) {
 			if (facing == FACING.N) {
 				xOffset = 0;
@@ -163,8 +180,12 @@ public class Unit extends TallObject {
 	}
 
 	public void face(ITargetable target) {
-		int dx = target.getPos().getX() - getPos().getX();
-		int dy = target.getPos().getY() - getPos().getY();
+		face(target.getPos());
+	}
+	
+	public void face(Position target) {
+		int dx = target.getX() - getPos().getX();
+		int dy = target.getY() - getPos().getY();
 		int magnitudeX = (dx >= 0) ? dx : -dx;
 		
 		if (dy < 0 && -dy >= magnitudeX) {
@@ -179,5 +200,23 @@ public class Unit extends TallObject {
 		else if (dx < 0) {
 			facing = SpriteSheet.FACING.W;
 		}
+	}
+	
+	@Override
+	public void paint(Graphics2D g2) {
+		super.paint(g2);
+		AffineTransform savedTransorm = g2.getTransform();
+		Position screenPos = GraphicsPanel.getScreenPos();
+		// Convert to pixel space, accounting for units being tall objects
+		g2.translate(GraphicsPanel.CELL_WIDTH * (pos.getX()-screenPos.getX()), 
+				GraphicsPanel.TERRAIN_CELL_HEIGHT * 
+				((pos.getY()-screenPos.getY()) - GraphicsPanel.TALL_OBJECT_CELL_HEIGHT_MULTIPLIER + 1));
+		g2.translate(drawXOffset * GraphicsPanel.CELL_WIDTH, drawYOffset * GraphicsPanel.TERRAIN_CELL_HEIGHT);
+
+		for (Iterator<AppliedStatusEffect> iterator = statusEffects.iterator(); iterator.hasNext();) {
+		    BufferedImage icon = iterator.next().getStatusEffect().getIcon();
+		    g2.drawImage(icon, 0, GraphicsPanel.TALL_OBJECT_CELL_HEIGHT * 3/4, null);
+		}		
+		g2.setTransform(savedTransorm);
 	}
 }

@@ -6,6 +6,10 @@ public class Position {
 	private int width = 1;
 	private int height = 1;
 	
+	public Position(int x, int y) {
+		this(x, y, 1, 1);
+	}
+	
 	public Position(int x, int y, int width, int height) {
 		super();
 		this.x = x;
@@ -19,6 +23,16 @@ public class Position {
 				y + height > otherPosition.y &&
 				x < otherPosition.x + otherPosition.width &&
 				y < otherPosition.y + otherPosition.height;
+	}
+	
+	public int getDistanceTo(Position otherPosition) {
+		int dx = x - otherPosition.getX();
+		int dy = y - otherPosition.getY();
+		
+		if (dx < 0) dx = -dx;
+		if (dy < 0) dy = -dy;
+		
+		return dx + dy;
 	}
 	
 	@Override

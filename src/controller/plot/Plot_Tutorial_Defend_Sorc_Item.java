@@ -94,11 +94,11 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 		GraphicsPanel.moveScreenTo(43, 18);
 		World.moveObject(defender, 51, 31);
 		bandit1.setFacing(FACING.E);
-		World.addTallObject(bandit1, 50, 31);
+		World.addTallObject(bandit1, 43, 31);
 		bandit2.setFacing(FACING.S);
-		World.addTallObject(bandit2, 51, 30);
+		World.addTallObject(bandit2, 51, 20);
 		bandit3.setFacing(FACING.W);
-		World.addTallObject(bandit3, 52, 31);
+		World.addTallObject(bandit3, 59, 31);
 		World.addTallObject(trees[8], 48, 29);
 		World.addTallObject(trees[9], 53, 23);	
 	}
@@ -128,9 +128,9 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 	
 	private void addGuardsJoinFight() {
 		guard1.setFacing(FACING.S);
-		World.addTallObject(guard1, 50, 30);
+		World.addTallObject(guard1, 43, 30);
 		guard2.setFacing(FACING.S);
-		World.addTallObject(guard2, 52, 30);
+		World.addTallObject(guard2, 59, 30);
 	}
 	
 	private void startGuardsJoinFight() {
@@ -197,10 +197,10 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 	}
 	
 	private void createUnits() {
-		Ability weakAttack = new Ability("Weak Attack", Ability.OUTCOME.HARMFUL, 1000, 11, "", SpriteSheet.ANIMATION.MELEE);
-		Ability quickAttack = new Ability("Quick Attack", Ability.OUTCOME.HARMFUL, 1000, 40, "", SpriteSheet.ANIMATION.MELEE);
-		Ability guardAttack = new Ability("Guard Attack", Ability.OUTCOME.HARMFUL, 1000, 20, "", SpriteSheet.ANIMATION.MELEE);
-		Ability shieldBash = new Ability("Shield Bash", Ability.OUTCOME.HARMFUL, 1100, 35, 
+		Ability weakAttack = new Ability("Weak Attack", Ability.TARGET_TYPE.HARMFUL, 1000, 11, 1, "", SpriteSheet.ANIMATION.MELEE);
+		Ability quickAttack = new Ability("Quick Attack", Ability.TARGET_TYPE.HARMFUL, 1000, 40, 1, "", SpriteSheet.ANIMATION.MELEE);
+		Ability guardAttack = new Ability("Guard Attack", Ability.TARGET_TYPE.HARMFUL, 1000, 20, 1, "", SpriteSheet.ANIMATION.MELEE);
+		Ability shieldBash = new Ability("Shield Bash", Ability.TARGET_TYPE.HARMFUL, 1100, 35, 1, 
 				"Briefly disorients the target", SpriteSheet.ANIMATION.MELEE);
 		shieldBash.setDelayOpponent(300);
 		

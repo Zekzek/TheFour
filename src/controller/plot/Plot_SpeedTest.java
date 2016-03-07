@@ -26,7 +26,7 @@ public class Plot_SpeedTest extends Plot{
 	}
 	
 	private void addUnitsToWorld() {
-		Ability watch = new Ability("Watch", Ability.OUTCOME.UBIQUITOUS, 5000, 0, "", SpriteSheet.ANIMATION.WALK);
+		Ability watch = new Ability("Watch", Ability.TARGET_TYPE.UBIQUITOUS, 5000, 0, 16, "", SpriteSheet.ANIMATION.WALK);
 		Position searchScreen = new Position(490, 490, 16, 16);
 		
 		Long startTime = System.currentTimeMillis();
