@@ -1,6 +1,5 @@
 package controller.plot;
 
-import model.Ability;
 import model.Dialog;
 import model.Structure;
 import model.Unit;
@@ -9,7 +8,6 @@ import model.World;
 import view.DialogPanel;
 import view.GameFrame;
 import view.GraphicsPanel;
-import view.SpriteSheet;
 import view.SpriteSheet.FACING;
 import controller.BattleQueue;
 
@@ -197,30 +195,13 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 	}
 	
 	private void createUnits() {
-		Ability weakAttack = new Ability("Weak Attack", Ability.TARGET_TYPE.HARMFUL, 1000, 11, 1, "", SpriteSheet.ANIMATION.MELEE);
-		Ability quickAttack = new Ability("Quick Attack", Ability.TARGET_TYPE.HARMFUL, 1000, 40, 1, "", SpriteSheet.ANIMATION.MELEE);
-		Ability guardAttack = new Ability("Guard Attack", Ability.TARGET_TYPE.HARMFUL, 1000, 20, 1, "", SpriteSheet.ANIMATION.MELEE);
-		Ability shieldBash = new Ability("Shield Bash", Ability.TARGET_TYPE.HARMFUL, 1100, 35, 1, 
-				"Briefly disorients the target", SpriteSheet.ANIMATION.MELEE);
-		shieldBash.setDelayOpponent(300);
-		
-		defender = new Unit("Defender", Unit.TEAM.PLAYER, Plot.class.getResource("/resource/img/spriteSheet/defender.png"), 200);
-		defender.learnAction(quickAttack);
-		defender.learnAction(shieldBash);
-		
-		sorceress = new Unit("Sorceress", Unit.TEAM.NONCOMBATANT, Plot.class.getResource("/resource/img/spriteSheet/sorceress.png"), 160);
-		
-		guard1 = new Unit("Guard 1", Unit.TEAM.ALLY, Plot.class.getResource("/resource/img/spriteSheet/guard.png"), 100);
-		guard1.learnAction(guardAttack);
-		guard2 = new Unit("Guard 2", Unit.TEAM.ALLY, Plot.class.getResource("/resource/img/spriteSheet/guard.png"), 100);
-		guard2.learnAction(guardAttack);
-		
-		bandit1 = new Unit("Bandit 1", Unit.TEAM.ENEMY1, Plot.class.getResource("/resource/img/spriteSheet/banditFemale.png"), 100);
-		bandit1.learnAction(weakAttack);
-		bandit2 = new Unit("Bandit 2", Unit.TEAM.ENEMY1, Plot.class.getResource("/resource/img/spriteSheet/banditMale.png"), 100);
-		bandit2.learnAction(weakAttack);
-		bandit3 = new Unit("Bandit 3", Unit.TEAM.ENEMY1, Plot.class.getResource("/resource/img/spriteSheet/banditFemale.png"), 100);
-		bandit3.learnAction(weakAttack);
+		defender = Unit.get("Defender", TEAM.PLAYER);
+		sorceress = Unit.get("Sorceress", TEAM.ALLY);
+		guard1 = Unit.get("Guard", TEAM.ALLY);
+		guard2 = Unit.get("Guard", TEAM.ALLY);
+		bandit1 = Unit.get("Female Bandit", TEAM.ENEMY1);
+		bandit2 = Unit.get("Male Bandit", TEAM.ENEMY1);
+		bandit3 = Unit.get("Female Bandit", TEAM.ENEMY1);
 		
 		for (int i = 0; i < trees.length; i+=3) {
 			trees[i] = new Structure("Tree", Plot.class.getResource("/resource/img/trees/tree13.png"), 200);

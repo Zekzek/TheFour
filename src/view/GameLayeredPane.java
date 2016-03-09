@@ -21,9 +21,9 @@ public class GameLayeredPane extends JLayeredPane {
             	if (c instanceof GraphicsPanel) {
             		c.setBounds(0, 0, w, h);
             	} else if (c instanceof AbilityPanel) {
-            		c.setBounds(w/3, h*7/8, w/3, h/8);
+            		c.setBounds(w/3, h*5/6, w/3, h/6);
             	} else if (c instanceof MenuPanel) {
-            		c.setBounds(0, h*5/6, w/3, h/6);
+            		c.setBounds(0, h*4/5, w/3, h/5);
             	} else if (c instanceof DialogPanel) {
             		c.setBounds(w/4, h/20, w/2, h/3);
             	} else if (c instanceof TitleScreenPanel) {

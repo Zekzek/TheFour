@@ -15,6 +15,7 @@ import model.AppliedStatusEffect;
 import model.ITargetable;
 import model.Position;
 import model.ReadiedAction;
+import model.StatusEffect;
 import model.TallObject;
 import model.Unit;
 import model.World;
@@ -28,8 +29,7 @@ public class BattleQueue {
 		}
 	};
 	private static final Random RAND = new Random();
-	private static final int ABILITY_DELAY = 1000;
-	private static final int READ_CHECK_DELAY = 100;
+	private static final int PERFORM_ACTION_CHECK_DELAY = 100;
 	
 	private static final LinkedList<ReadiedAction> actionQueue = new LinkedList<ReadiedAction>();
 	private static final Map<Unit,Integer> lastScheduledTimes = new HashMap<Unit, Integer>();
@@ -39,14 +39,11 @@ public class BattleQueue {
 		public void run() {
 			while(true) {
 				try {
-					if (!pause && !actionQueue.isEmpty() && actionQueue.peek().getStartTime() <= getMostReadyCombatantReadyness()) {
+					if (!pause && !performingAction && !actionQueue.isEmpty() &&
+							actionQueue.peek().getStartTime() <= getMostReadyCombatantReadyness()) {
 						performNextAction();
-						Thread.sleep(ABILITY_DELAY);
-						//TODO: always sleep READ_CHECK_DELAY and set variable for active animation? not pause, would conflict
 					}
-					else {
-						Thread.sleep(READ_CHECK_DELAY);
-					}
+					Thread.sleep(PERFORM_ACTION_CHECK_DELAY);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -55,6 +52,7 @@ public class BattleQueue {
 	};
 	private static int battleDuration = 0;
 	private static boolean pause = true;
+	private static boolean performingAction = false;
 	
 	private static Set<BattleListenerInterface> battleListeners = new HashSet<BattleListenerInterface>();
 	private static Set<Unit.TEAM> activeTeams = new HashSet<Unit.TEAM>();
@@ -174,44 +172,79 @@ public class BattleQueue {
 	}
 	
 	public static void performNextAction() {
+		performingAction = true;
 		ReadiedAction nextAction = actionQueue.peek();
 		battleDuration = nextAction.getStartTime();
 		Unit source = nextAction.getSource();
 		ITargetable[] targets = nextAction.getTargets();
+		Ability ability;
+		int additionalDelay = 0;
 		if (targetReachable(nextAction)) {
 			actionQueue.poll(); //remove from the queue
-			Ability ability = nextAction.getAbility();
-			source.tickStatusEffects(ability.getDelay());
+			ability = nextAction.getAbility();
+			delayUnit(source, (int) ((source.getSpeedModifierAttack() - 1) * ability.getDelay()));
 			System.out.println(source + "(" + battleDuration + ") uses " + ability + " on " + nextAction.getTargetsDescription());
 			source.face(targets[0]);
-			source.animate(ability.getStance(), ABILITY_DELAY * 9 / 10, true, ability.getMoveDistance());
 			for (ITargetable target : targets) {
 				if (target instanceof TallObject) {
 					TallObject targetObject = (TallObject) target;
 					targetObject.damage(ability.getDamage());
-					if (targetObject instanceof Unit) {
+					if (targetObject.isAlive() && targetObject instanceof Unit) {
 						Unit targetUnit = (Unit) targetObject;
-						if (ability.getStatusEffect() != null)
-							targetUnit.addStatusEffect(new AppliedStatusEffect(ability.getStatusEffect()));
+						Iterator<StatusEffect> statusEffects = ability.getStatusEffectIterator();
+						while (statusEffects.hasNext()) {
+							targetUnit.addStatusEffect(new AppliedStatusEffect(statusEffects.next()));
+						}
 						delay(targetUnit, ability.getDelayOpponent());		
 					}
 				}
 			}			
 		} else {
-			Ability move = Ability.MOVE;
-			source.tickStatusEffects(move.getDelay());
+			ability = Ability.get("Move");
 			Position moveTo = getMoveTowards(source, targets[0]);
 			System.out.println(source + "(" + battleDuration + ") moves to " + moveTo);
 			source.face(moveTo);
-			source.animate(move.getStance(), ABILITY_DELAY * 9 / 10, true, move.getMoveDistance());
-			
+			delayUnit(source, ability.getDelay());
+		}
+		if (additionalDelay != 0) {
 			//delay source appropriately
-			lastScheduledTimes.put(source, lastScheduledTimes.get(source) + move.getDelay());
-			completionTimes.put(source, completionTimes.get(source) + move.getDelay());
+			lastScheduledTimes.put(source, lastScheduledTimes.get(source) + additionalDelay);
+			completionTimes.put(source, completionTimes.get(source) + additionalDelay);
 			for (int i = actionQueue.size() - 1; i >= 0; i--) {
 				ReadiedAction action = actionQueue.get(i);
 				if (source.equals(action.getSource())) {
-					action.delay(move.getDelay());
+					//TODO: verify this works for negatives (haste)
+					action.delay(additionalDelay);
+				}
+			}
+			Collections.sort(actionQueue, SOONEST_READIED_ACTION);
+		}
+		
+		source.tickStatusEffects(ability.getDelay());
+		source.animate(ability.getStance(), ability.getDelay() * 9 / 10, true, ability.getMoveDistance());
+		Thread donePerforming = new Thread() {
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(ability.getDelay());
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				performingAction = false;
+			}
+		};
+		donePerforming.start();
+	}
+	
+	private static void delayUnit(Unit unit, int delay) {
+		if (delay != 0) {
+			lastScheduledTimes.put(unit, lastScheduledTimes.get(unit) + delay);
+			completionTimes.put(unit, completionTimes.get(unit) + delay);
+			for (int i = actionQueue.size() - 1; i >= 0; i--) {
+				ReadiedAction action = actionQueue.get(i);
+				if (unit.equals(action.getSource())) {
+					//TODO: verify this works for negatives (haste)
+					action.delay(delay);
 				}
 			}
 			Collections.sort(actionQueue, SOONEST_READIED_ACTION);

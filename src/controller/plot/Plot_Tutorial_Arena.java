@@ -1,13 +1,6 @@
 package controller.plot;
 
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-
-import javax.imageio.ImageIO;
-
-import model.Ability;
 import model.Dialog;
-import model.StatusEffect;
 import model.Structure;
 import model.Unit;
 import model.Unit.TEAM;
@@ -37,33 +30,10 @@ public class Plot_Tutorial_Arena extends Plot{
 	}
 	
 	private void addUnitsToWorld() {
-		Ability watch = new Ability("Watch", Ability.TARGET_TYPE.UBIQUITOUS, 5000, 0, 16, "", SpriteSheet.ANIMATION.WALK);
-		Ability quickAttack = new Ability("Quick Attack", Ability.TARGET_TYPE.HARMFUL, 1000, 40, 1, "", SpriteSheet.ANIMATION.MELEE);
-		Ability shieldBash = new Ability("Shield Bash", Ability.TARGET_TYPE.HARMFUL, 1100, 35, 1, 
-				"Briefly disorients the target", SpriteSheet.ANIMATION.MELEE);
-		shieldBash.setDelayOpponent(300);
-		BufferedImage icon = null;
-		try { icon = ImageIO.read(Plot.class.getResource("/resource/img/spriteSheet/snail.png"));
-		} catch (IOException e) { e.printStackTrace(); }
-		StatusEffect slow = new StatusEffect("Slow", icon, 6000);
-		slow.setSpeedModifierAttack(0.7);
-		slow.setSpeedModifierCast(0.7);
-		slow.setSpeedModifierMove(0.5);
-		shieldBash.addStatusEffect(slow);
-		Ability heavyStrike = new Ability("Heavy Strike", Ability.TARGET_TYPE.HARMFUL, 2200, 45, 1, "", SpriteSheet.ANIMATION.MELEE);
-				
-		Unit guard1 = new Unit("Guard 1", Unit.TEAM.NONCOMBATANT, Plot.class.getResource("/resource/img/spriteSheet/guard.png"), 100);
-		guard1.learnAction(watch);
-		World.addTallObject(guard1, 28, 28);
-		Unit guard2 = new Unit("Guard 2", Unit.TEAM.NONCOMBATANT, Plot.class.getResource("/resource/img/spriteSheet/guard.png"), 100);
-		guard2.learnAction(watch);
-		World.addTallObject(guard2, 36, 28);
-		Unit guard3 = new Unit("Guard 3", Unit.TEAM.NONCOMBATANT, Plot.class.getResource("/resource/img/spriteSheet/guard.png"), 100);
-		guard3.learnAction(watch);
-		World.addTallObject(guard3, 28, 36);
-		Unit guard4 = new Unit("Guard 4", Unit.TEAM.NONCOMBATANT, Plot.class.getResource("/resource/img/spriteSheet/guard.png"), 100);
-		guard4.learnAction(watch);
-		World.addTallObject(guard4, 36, 36);
+		World.addTallObject(Unit.get("Guard", TEAM.NONCOMBATANT), 28, 28);
+		World.addTallObject(Unit.get("Guard", TEAM.NONCOMBATANT), 36, 28);
+		World.addTallObject(Unit.get("Guard", TEAM.NONCOMBATANT), 28, 36);
+		World.addTallObject(Unit.get("Guard", TEAM.NONCOMBATANT), 36, 36);
 		
 		Structure tree1 = new Structure("Tree 1", Plot.class.getResource("/resource/img/trees/tree.png"), 200);
 		World.addTallObject(tree1, 28, 27);
@@ -74,18 +44,13 @@ public class Plot_Tutorial_Arena extends Plot{
 		Structure tree4 = new Structure("Tree 4", Plot.class.getResource("/resource/img/trees/tree.png"), 200);
 		World.addTallObject(tree4, 36, 35);
 
-		defender = new Unit("Defender", Unit.TEAM.PLAYER, Plot.class.getResource("/resource/img/spriteSheet/defender.png"), 200);
-		defender.setStance(SpriteSheet.ANIMATION.WALK);
-		defender.setFacing(SpriteSheet.FACING.E);
-		defender.learnAction(quickAttack);
-		defender.learnAction(shieldBash);
+		defender = Unit.get("Defender", TEAM.PLAYER);
+		defender.setFacing(SpriteSheet.FACING.S);
 		
-		berserker = new Unit("Berserker", Unit.TEAM.ENEMY1, Plot.class.getResource("/resource/img/spriteSheet/berserker.png"), 220);
-		berserker.setStance(SpriteSheet.ANIMATION.WALK);
-		berserker.setFacing(SpriteSheet.FACING.W);
-		berserker.learnAction(heavyStrike);
+		berserker = Unit.get("Berserker", TEAM.ENEMY1);
+		berserker.setFacing(SpriteSheet.FACING.S);
 		
-		announcer = new Unit("Announcer", Unit.TEAM.NONCOMBATANT, Plot.class.getResource("/resource/img/spriteSheet/guard.png"), 220);
+		announcer = Unit.get("Announcer", TEAM.NONCOMBATANT);
 		World.addTallObject(announcer, -1, -1);
 		
 		Dialog[] announcerIntro = new Dialog[] {

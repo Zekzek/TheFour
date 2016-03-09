@@ -45,4 +45,4 @@ public class Starter {
 
 //		ATTRIBUTION
 //http://gaurav.munjal.us/Universal-LPC-Spritesheet-Character-Generator/
-//http://www.iconarchive.com/show/ios7-icons-by-icons8/Animals-Snail-icon.html
+//https://icons8.com

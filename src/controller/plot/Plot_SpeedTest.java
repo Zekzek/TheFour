@@ -2,16 +2,15 @@ package controller.plot;
 
 import java.util.ArrayList;
 
-import model.Ability;
 import model.Dialog;
 import model.Position;
 import model.Structure;
 import model.TallObject;
 import model.Unit;
+import model.Unit.TEAM;
 import model.World;
 import view.DialogPanel;
 import view.GraphicsPanel;
-import view.SpriteSheet;
 import controller.BattleQueue;
 
 public class Plot_SpeedTest extends Plot{
@@ -26,13 +25,11 @@ public class Plot_SpeedTest extends Plot{
 	}
 	
 	private void addUnitsToWorld() {
-		Ability watch = new Ability("Watch", Ability.TARGET_TYPE.UBIQUITOUS, 5000, 0, 16, "", SpriteSheet.ANIMATION.WALK);
 		Position searchScreen = new Position(490, 490, 16, 16);
 		
 		Long startTime = System.currentTimeMillis();
 		for (int i = 0; i < 500; i++) {
-			Unit guard = new Unit("Guard 1", Unit.TEAM.ENEMY1, Plot.class.getResource("/resource/img/spriteSheet/guard.png"), 100);
-			guard.learnAction(watch);
+			Unit guard = Unit.get("Guard", TEAM.NONCOMBATANT);
 			World.addTallObject(guard, i, i);
 		}
 		for (int i = 0; i < 500; i++) {
@@ -51,7 +48,7 @@ public class Plot_SpeedTest extends Plot{
 		String displayObjectTest = "Searched for a screen of objects 10,000 times in " + (endTime - startTime) 
 				+ "ms (found " + objects.size() + ")";
 		
-		Unit announcer = new Unit("Tester", Unit.TEAM.NONCOMBATANT, Plot.class.getResource("/resource/img/spriteSheet/guard.png"), 1);
+		Unit announcer = Unit.get("Announcer", TEAM.NONCOMBATANT);
 		World.addTallObject(announcer, -1, -1);
 	
 		Dialog[] report = new Dialog[] {
