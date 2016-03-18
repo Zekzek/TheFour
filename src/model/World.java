@@ -1,7 +1,10 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class World {
@@ -119,5 +122,26 @@ public class World {
 
 	public static TallObject getTallObject(GridPosition pos) {
 		return contents.get(pos);
+	}
+
+	public static Collection<GridPosition> getOpenNeighbors(GridPosition pos) {
+		Set<GridPosition> openNeighbors = new HashSet<GridPosition>();
+		GridPosition above = new GridPosition(pos.getX(), pos.getY() - 1);
+		GridPosition below = new GridPosition(pos.getX(), pos.getY() + 1);
+		GridPosition left = new GridPosition(pos.getX() - 1, pos.getY());
+		GridPosition right = new GridPosition(pos.getX() + 1, pos.getY());
+		if (getTallObject(above) == null) {
+			openNeighbors.add(above);
+		}
+		if (getTallObject(below) == null) {
+			openNeighbors.add(below);
+		}
+		if (getTallObject(left) == null) {
+			openNeighbors.add(left);
+		}
+		if (getTallObject(right) == null) {
+			openNeighbors.add(right);
+		}
+		return openNeighbors;
 	}
 }

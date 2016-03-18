@@ -10,7 +10,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -23,7 +22,7 @@ import controller.BattleQueue;
 public class MenuPanel extends JPanel {
 	private static final long serialVersionUID = -5640915321281094627L;
 	
-	private JLabel nameLabel;
+	private final JLabel nameLabel = new JLabel();
 	private JList<Ability> abilityList;
 	private JList<Unit> targetList;
 	
@@ -32,10 +31,6 @@ public class MenuPanel extends JPanel {
 	
 	public MenuPanel(AbilityPanel abilityPanel) {
 		this.setLayout(new BorderLayout());
-		nameLabel = new JLabel("", SwingConstants.CENTER);
-		nameLabel.setOpaque(true);
-		nameLabel.setBackground(Color.BLACK);
-		nameLabel.setForeground(Color.WHITE);
 		add(nameLabel, BorderLayout.NORTH);
 	
 		abilityList = makeMenuList();

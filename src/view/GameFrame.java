@@ -63,6 +63,10 @@ public class GameFrame extends JFrame {
 		me.menuPanel.repaint();
 	}
 	
+	public static boolean isMenuVisible() {
+		return me.menuPanel.isVisible();
+	}
+	
 	public static void updateDialog() {
 		me.dialogPanel.revalidate();
 		me.dialogPanel.repaint();
@@ -70,10 +74,12 @@ public class GameFrame extends JFrame {
 	
 	public static void disableMenu() {
 		me.menuPanel.setEnabled(false);
+		me.menuPanel.setVisible(false);
 	}
 	
 	public static void enableMenu() {
 		me.menuPanel.setEnabled(true);
+		me.menuPanel.setVisible(true);
 	}
 	
 	public static void returnToTitleScreen() {

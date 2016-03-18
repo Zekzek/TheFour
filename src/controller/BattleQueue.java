@@ -10,6 +10,8 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import model.Ability;
 import model.GridPosition;
@@ -30,6 +32,12 @@ public class BattleQueue {
 			return action1.getStartTime() - action2.getStartTime();
 		}
 	};
+	private static final Comparator<PathingGridPosition> LOWEST_COST = new Comparator<PathingGridPosition>(){
+		@Override
+		public int compare(PathingGridPosition pos1, PathingGridPosition pos2) {
+			return pos1.getCost() - pos2.getCost();
+		}
+	};
 	private static final Random RAND = new Random();
 	private static final int PERFORM_ACTION_CHECK_DELAY = 100;
 	
@@ -41,6 +49,11 @@ public class BattleQueue {
 		public void run() {
 			while(true) {
 				try {
+					//TODO: when AI using quick actions, AI doesn't trigger (even though its most ready), kicks in after player selects an action 
+					System.out.println("PlayNextAction  pause:" + pause + " performingAction:" + performingAction 
+							+ " pending actions:" + actionQueue.size() + " next action at:" 
+							+ (actionQueue.peek()==null?"NONE":actionQueue.peek().getStartTime()) 
+							+ " most ready combatant:" + getMostReadyCombatant() + ":" + getMostReadyCombatantReadyness());
 					if (!pause && !performingAction && !actionQueue.isEmpty()
 							&& actionQueue.peek().getStartTime() <= getMostReadyCombatantReadyness()) {
 						performNextAction();
@@ -52,6 +65,7 @@ public class BattleQueue {
 			}
 		}
 	};
+	private static BattleQueue me;
 	private static int battleDuration = 0;
 	private static boolean pause = true;
 	private static boolean performingAction = false;
@@ -187,13 +201,18 @@ public class BattleQueue {
 		Unit mostReadyUnit = null;
 		int unitBusyness = Integer.MAX_VALUE;
 		Iterator<Unit> combatants = completionTimes.keySet().iterator();
+		System.out.println("    GET MOST READY COMBATANT");
 		while (combatants.hasNext()) {
 			Unit combatant = combatants.next();
 			if (completionTimes.get(combatant) < unitBusyness) {
 				mostReadyUnit = combatant;
 				unitBusyness = completionTimes.get(combatant);
 			}
+			System.out.println(combatant + " - last scheduled:" + lastScheduledTimes.get(combatant) 
+					+ " completion:" + completionTimes.get(combatant));
 		}
+		System.out.println(mostReadyUnit + " is most ready"); 
+				
 		return mostReadyUnit;
 	}
 	
@@ -223,7 +242,7 @@ public class BattleQueue {
 			return;
 		} else if (!targetReachable(nextAction)) {
 			ability = Ability.get(Ability.ID.MOVE);
-			GridPosition moveTo = getMoveTowards(source, target);
+			GridPosition moveTo = getPathToUseAction(nextAction).getFirstMove();
 			BattleQueue.insertFirstAction(ability, source, new GroundTarget(moveTo));
 			performNextAction();
 			return;
@@ -309,42 +328,77 @@ public class BattleQueue {
 	}
 	
 	private static boolean targetReachable(ReadiedAction action) {
-		GridPosition sourcePos = action.getSource().getPos();
+		return targetReachable(action, action.getSource().getPos());
+	}
+	
+	private static boolean targetReachable(ReadiedAction action, GridPosition sourcePos) {
 		GridPosition targetPos = action.getTarget().getPos();
 		int range = action.getAbility().getRange();
 		return sourcePos.getDistanceTo(targetPos) <= range;
 	}
 	
-	private static GridPosition getMoveTowards(Unit source, ITargetable target) {
-		//TODO: perform actual pathing, return first step
-		GridPosition sourcePos = source.getPos();
-		GridPosition targetPos = target.getPos();
-		// Look for a beneficial horizontal move
-		if (sourcePos.getX() < targetPos.getX()) {
-			GridPosition firstStep = new GridPosition(sourcePos.getX() + 1, sourcePos.getY());
-			if (World.getTallObject(firstStep) == null) {
-				return firstStep;
+	/**
+	 * Powered by Uniform Cost Search
+	 * 
+	 * @param source
+	 * @param target
+	 * @return
+	 */
+
+	private static PathingGridPosition getPathToUseAction(ReadiedAction action) {
+		if (me == null) {
+			me = new BattleQueue();
+		}
+		Unit source = action.getSource();
+		ITargetable target = action.getTarget();
+		
+//		procedure UniformCostSearch(Graph, start, goal)
+//		node <- start
+//		cost <- 0
+		PathingGridPosition node = me.new PathingGridPosition(source.getPos(), null);
+//		frontier <- priority queue containing node only
+		LinkedList<PathingGridPosition> frontier = new LinkedList<PathingGridPosition>();
+		frontier.add(node);
+//		explored <- empty set
+		LinkedList<PathingGridPosition> explored = new LinkedList<PathingGridPosition>();
+		
+//		do
+		while(true) {
+//		    if frontier is empty
+			if (frontier.isEmpty()) {
+//		      	return failure
+				return null;
 			}
-		} else if (sourcePos.getX() > targetPos.getX()) {
-			GridPosition firstStep = new GridPosition(sourcePos.getX() - 1, sourcePos.getY());
-			if (World.getTallObject(firstStep) == null) {
-				return firstStep;
+//		    node <- frontier.pop()
+			Collections.sort(frontier, LOWEST_COST);
+			node = frontier.poll();
+			System.out.println("Checking " + node);
+//		    if node is goal
+			if (targetReachable(action, node)) {
+//		      	return solution
+				return node;
+			}
+//		    explored.add(node)
+			explored.add(node);
+//		    for each of node's neighbors n
+			for(GridPosition n : World.getOpenNeighbors(node)) {
+				PathingGridPosition neighbor = me.new PathingGridPosition(n, node);
+//		    	if n is not in explored
+				if (!explored.contains(neighbor)) {
+//		        	if n is not in frontier
+					if (!frontier.contains(neighbor)) {
+//		          		frontier.add(n)
+						frontier.add(neighbor);
+					}
+//		        	else if n is in frontier with higher cost
+					else if (frontier.get(frontier.indexOf(neighbor)).getCost() > neighbor.getCost()) {
+//		          		replace existing node with n
+						frontier.remove(neighbor);
+						frontier.add(neighbor);
+					}
+				}
 			}
 		}
-		// Look for a beneficial vertical move
-		if (sourcePos.getY() < targetPos.getY()) {
-			GridPosition firstStep = new GridPosition(sourcePos.getX(), sourcePos.getY() + 1);
-			if (World.getTallObject(firstStep) == null) {
-				return firstStep;
-			}
-		} else if (sourcePos.getY() > targetPos.getY()) {
-			GridPosition firstStep = new GridPosition(sourcePos.getX(), sourcePos.getY() - 1);
-			if (World.getTallObject(firstStep) == null) {
-				return firstStep;
-			}
-		}
-		// Just stay still
-		return sourcePos;
 	}
 	
 	private static void delay(Unit unit, int delay) {
@@ -377,6 +431,39 @@ public class BattleQueue {
 	private static void teamDefeated(Unit.TEAM team) {
 		for (BattleListenerInterface listener : battleListeners) {
 			listener.onTeamDefeated(team);
+		}
+	}
+	
+	private class PathingGridPosition extends GridPosition {
+		private int cost;
+		private PathingGridPosition history;
+		
+		public PathingGridPosition(GridPosition pos, PathingGridPosition history) {
+			super(pos.getX(), pos.getY());
+			this.history = history;
+			if (history == null) {
+				cost = 1;
+			} else {
+				cost = history.cost + 1;
+			}
+		}
+
+		public int getCost() {
+			return cost;
+		}
+		
+		public PathingGridPosition getHistory() {
+			return history;
+		}
+		
+		public GridPosition getFirstMove() {
+			if (history == null) {
+				return null;
+			} else if (history.getFirstMove() == null) {
+				return this;
+			} else {
+				return history.getFirstMove();
+			}
 		}
 	}
 }

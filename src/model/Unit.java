@@ -30,7 +30,6 @@ public class Unit extends TallObject {
 	public static enum TEAM { PLAYER, ALLY, NONCOMBATANT, ENEMY1, ENEMY2 }
 	public static enum ID { DEFENDER, BERSERKER, SORCERESS, ARCHER, GUARD, FEMALE_BANDIT, MALE_BANDIT, ANNOUNCER }
 	private static final int MINI_SIZE = 32;
-	//TODO: remove ANIMATION_LENGTH, use ability delay instead
 	private static final int ANIMATION_LENGTH = 5;
 	private static final Font ABILITY_FONT = new Font("Impact", 1, 24);
     
@@ -101,6 +100,7 @@ public class Unit extends TallObject {
 	
 	public void addStatusEffect(StatusEffect effect) {
 		statusEffects.add(effect);
+		//TODO: don't add duplicate effects
 	}
 	
 	public void tickStatusEffects(int time) {

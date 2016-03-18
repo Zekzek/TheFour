@@ -85,6 +85,7 @@ public class GraphicsPanel extends JPanel{
 			}
 		}
 		
+		//TODO: fix stretched icons and text when drawing units (due to fixed grid height/width?) 
 		// Draw the objects
 		g2.translate(0, -GraphicsPanel.TERRAIN_CELL_HEIGHT / 4);
 		ArrayList<TallObject> contents = World.getSortedContentsWithin(screenPos, TallObject.class);
