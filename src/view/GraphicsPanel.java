@@ -7,7 +7,10 @@ import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
+import java.awt.Shape;
 import java.awt.Transparency;
+import java.awt.font.TextLayout;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
@@ -100,18 +103,24 @@ public class GraphicsPanel extends JPanel{
 	    g2.fillRect(0, 0, screenPos.getWidth() * CELL_WIDTH, 
 	    		screenPos.getHeight() * TERRAIN_CELL_HEIGHT);
 	    if (fadeScreenText != null) {
-	    	g2.setColor(Color.WHITE);
 	    	drawCenteredText(g2, fadeScreenText, screenPos.getWidth() * CELL_WIDTH / 2, 
-		    		screenPos.getHeight() * TERRAIN_CELL_HEIGHT / 2, fadeScreenFont);
+		    		screenPos.getHeight() * TERRAIN_CELL_HEIGHT / 2, fadeScreenFont, Color.WHITE, null);
 	    }
 	}
 	
-	private void drawCenteredText(Graphics g, String text, int x, int y, Font font) {
+	public static void drawCenteredText(Graphics2D g, String text, int x, int y, Font font, Color fontColor, Color outlineColor) {
 	    FontMetrics metrics = g.getFontMetrics(font);
 	    x -= metrics.stringWidth(text) / 2;
 	    y -= metrics.getHeight() / 2;
 	    g.setFont(font);
+	    g.setColor(fontColor);
 	    g.drawString(text, x, y);
+	    if (outlineColor != null) {
+	    	TextLayout textLayout = new TextLayout(text, font, g.getFontRenderContext());
+	    	Shape outline = textLayout.getOutline(AffineTransform.getTranslateInstance(x, y));
+		    g.setColor(outlineColor);
+		    g.draw(outline);
+	    }
 	}
 	
 	public static void changeScene(int fadeOutDuration, String display, int displayDuration, Runnable runnable, 

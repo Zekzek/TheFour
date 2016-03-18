@@ -1,6 +1,7 @@
 package model;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
@@ -29,8 +30,10 @@ public class Unit extends TallObject {
 	public static enum TEAM { PLAYER, ALLY, NONCOMBATANT, ENEMY1, ENEMY2 }
 	public static enum ID { DEFENDER, BERSERKER, SORCERESS, ARCHER, GUARD, FEMALE_BANDIT, MALE_BANDIT, ANNOUNCER }
 	private static final int MINI_SIZE = 32;
+	//TODO: remove ANIMATION_LENGTH, use ability delay instead
 	private static final int ANIMATION_LENGTH = 5;
-	
+	private static final Font ABILITY_FONT = new Font("Impact", 1, 24);
+    
 	private SpriteSheet sheet;
 	private ImageIcon icon;
 	private SpriteSheet.ANIMATION defaultStance = SpriteSheet.ANIMATION.WALK;
@@ -40,6 +43,7 @@ public class Unit extends TallObject {
 	private SpriteSheet.ANIMATION stance = SpriteSheet.ANIMATION.WALK;
 	private Set<Ability> learnedActions = new HashSet<Ability>();
 	private Set<StatusEffect> statusEffects = new HashSet<StatusEffect>();
+	private String abilityString;
 	
 	private Unit(String name, int hp, URL sheetPath) {
 		super(name, hp);
@@ -152,12 +156,15 @@ public class Unit extends TallObject {
 		animate(stance, name, duration, returnToDefault, 0);
 	}
 	
+	//TODO: just pass in an ability? (may need duration separately to account or slow/haste)
 	public void animate(ANIMATION stance, String name, int duration, boolean returnToDefault, int moveDistance) {
 		int refreshRate = duration / ANIMATION_LENGTH;
 		Unit unit = this;
+		
 		final int yOffset;
 		final int xOffset;
 		//TODO: draw active ability name to screen (and damage?)
+		abilityString = name;
 		if (moveDistance != 0) {
 			if (facing == FACING.N) {
 				xOffset = 0;
@@ -197,6 +204,7 @@ public class Unit extends TallObject {
 				if (returnToDefault) {
 					animationSequence = 0;
 					unit.stance = defaultStance;
+					abilityString = "";
 				}
 			}
 		};
@@ -222,6 +230,12 @@ public class Unit extends TallObject {
 		    		GraphicsPanel.TALL_OBJECT_CELL_HEIGHT * (3 - (statusEffectCounter / 4))  / 4, null);
 		    statusEffectCounter++;
 		}
+		
+		if (abilityString != null && abilityString.length() > 0) {
+		    GraphicsPanel.drawCenteredText(g2, abilityString, GraphicsPanel.CELL_WIDTH/2, GraphicsPanel.TALL_OBJECT_CELL_HEIGHT/4,
+		    		ABILITY_FONT, Color.BLACK, Color.WHITE);
+		}
+		
 		g2.setTransform(savedTransorm);
 	}
 	
