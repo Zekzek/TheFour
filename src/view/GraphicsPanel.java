@@ -1,6 +1,8 @@
 package view;
 
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -14,7 +16,7 @@ import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
-import model.Position;
+import model.GridRectangle;
 import model.TallObject;
 import model.World;
 import controller.BattleQueue;
@@ -33,6 +35,8 @@ public class GraphicsPanel extends JPanel{
 	public static final Color FAR_COLOR = new Color(0,0,10,110);
 	public static final int REFRESH_RATE = 100;
 	private static Color fade = new Color(0,0,0,0);
+	private static Font fadeScreenFont = new Font ("MV Boli", Font.BOLD , 24);
+	private static String fadeScreenText;
 	
 	private static final Thread repaint = new Thread() {
 		@Override
@@ -49,7 +53,7 @@ public class GraphicsPanel extends JPanel{
 	};
 	
 	private static GraphicsPanel me;
-	private static Position screenPos = new Position(0, 0, 16, 16);
+	private static GridRectangle screenPos = new GridRectangle(0, 0, 16, 16);
 
 	public GraphicsPanel() {
 		me = this;
@@ -95,6 +99,19 @@ public class GraphicsPanel extends JPanel{
 	    g2.setPaint(fade);
 	    g2.fillRect(0, 0, screenPos.getWidth() * CELL_WIDTH, 
 	    		screenPos.getHeight() * TERRAIN_CELL_HEIGHT);
+	    if (fadeScreenText != null) {
+	    	g2.setColor(Color.WHITE);
+	    	drawCenteredText(g2, fadeScreenText, screenPos.getWidth() * CELL_WIDTH / 2, 
+		    		screenPos.getHeight() * TERRAIN_CELL_HEIGHT / 2, fadeScreenFont);
+	    }
+	}
+	
+	private void drawCenteredText(Graphics g, String text, int x, int y, Font font) {
+	    FontMetrics metrics = g.getFontMetrics(font);
+	    x -= metrics.stringWidth(text) / 2;
+	    y -= metrics.getHeight() / 2;
+	    g.setFont(font);
+	    g.drawString(text, x, y);
 	}
 	
 	public static void changeScene(int fadeOutDuration, String display, int displayDuration, Runnable runnable, 
@@ -114,11 +131,10 @@ public class GraphicsPanel extends JPanel{
 						e.printStackTrace();
 					}
 				}
-				fade = new Color(0, 0, 0, 255);
-				
-				//TODO: display 'display'
+				fade = new Color(0, 0, 0, 255);				
 				
 				// load the scene
+				fadeScreenText = display;
 				runnable.run();
 				
 				// wait
@@ -128,9 +144,8 @@ public class GraphicsPanel extends JPanel{
 					e.printStackTrace();
 				}				
 				
-				//TODO: remove 'display'
-				
 				// fade in over 'after' ms
+				fadeScreenText = null;
 				for (int i = fadeInDuration; i > 0; i -= REFRESH_RATE) {
 					fade = new Color(0, 0, 0, 255 * i / fadeInDuration);
 					try {
@@ -175,7 +190,7 @@ public class GraphicsPanel extends JPanel{
 		screenPos.setY(y);
 	}
 	
-	public static Position getScreenPos() {
+	public static GridRectangle getScreenRectangle() {
 		return screenPos;
 	}
 }

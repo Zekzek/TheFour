@@ -3,7 +3,7 @@ package controller;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 
-import model.Position;
+import model.GridRectangle;
 import view.GraphicsPanel;
 import view.SpriteSheet;
 import view.SpriteSheet.CLIMATE;
@@ -26,12 +26,12 @@ public class MapBuilder {
 	
 	private static CLIMATE myClimate = CLIMATE.PLAINS;
 	
-	public static BufferedImage[][] getTiles(Position pos) {
-		BufferedImage[][] tiles = new BufferedImage[pos.getWidth()][pos.getHeight()];
+	public static BufferedImage[][] getTiles(GridRectangle rect) {
+		BufferedImage[][] tiles = new BufferedImage[rect.getWidth()][rect.getHeight()];
 		
-		for (int x = 0; x < pos.getWidth(); x++) {
-			for (int y = 0; y < pos.getWidth(); y++) {
-				int pixelIndex = (pos.getY() + y) * TEMPLATE_WIDTH + pos.getX() + x;
+		for (int x = 0; x < rect.getWidth(); x++) {
+			for (int y = 0; y < rect.getWidth(); y++) {
+				int pixelIndex = (rect.getY() + y) * TEMPLATE_WIDTH + rect.getX() + x;
 				int byteIndex = pixelIndex * BYTES_PER_PIXEL;
 				tiles[x][y] = lookupTerrainCell(
 					TEMPLATE_BYTES[byteIndex+R], 

@@ -1,31 +1,26 @@
 package model;
 
-public class Position {
+public class GridRectangle {
 	private int x = 0;
 	private int y = 0;
 	private int width = 1;
 	private int height = 1;
 	
-	public Position(int x, int y) {
-		this(x, y, 1, 1);
-	}
-	
-	public Position(int x, int y, int width, int height) {
-		super();
+	public GridRectangle(int x, int y, int width, int height) {
 		this.x = x;
 		this.y = y;
 		this.width = width;
 		this.height = height;
 	}
 	
-	public boolean intersects(Position otherPosition) {
+	public boolean intersects(GridRectangle otherPosition) {
 		return x + width > otherPosition.x &&
 				y + height > otherPosition.y &&
 				x < otherPosition.x + otherPosition.width &&
 				y < otherPosition.y + otherPosition.height;
 	}
 	
-	public int getDistanceTo(Position otherPosition) {
+	public int getDistanceTo(GridRectangle otherPosition) {
 		int dx = x - otherPosition.getX();
 		int dy = y - otherPosition.getY();
 		
@@ -54,7 +49,7 @@ public class Position {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Position other = (Position) obj;
+		GridRectangle other = (GridRectangle) obj;
 		if (height != other.height)
 			return false;
 		if (width != other.width)

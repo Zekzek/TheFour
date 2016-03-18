@@ -1,5 +1,6 @@
 package controller;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -11,9 +12,10 @@ import java.util.Random;
 import java.util.Set;
 
 import model.Ability;
-import model.AppliedStatusEffect;
+import model.GridPosition;
+import model.GridRectangle;
+import model.GroundTarget;
 import model.ITargetable;
-import model.Position;
 import model.ReadiedAction;
 import model.StatusEffect;
 import model.TallObject;
@@ -39,8 +41,8 @@ public class BattleQueue {
 		public void run() {
 			while(true) {
 				try {
-					if (!pause && !performingAction && !actionQueue.isEmpty() &&
-							actionQueue.peek().getStartTime() <= getMostReadyCombatantReadyness()) {
+					if (!pause && !performingAction && !actionQueue.isEmpty()
+							&& actionQueue.peek().getStartTime() <= getMostReadyCombatantReadyness()) {
 						performNextAction();
 					}
 					Thread.sleep(PERFORM_ACTION_CHECK_DELAY);
@@ -73,6 +75,10 @@ public class BattleQueue {
 		pause = false;
 	}
 	
+	/**
+	 * Add all combatants in the iterator (Unit.TEAM.NONCOMBATANT are not added. Use BattleQueue.addCombatant directly)
+	 * @param units units to add
+	 */
 	public static void addCombatants(Iterator<Unit> units) {
 		while (units.hasNext()) {
 			Unit unit = units.next();
@@ -88,18 +94,23 @@ public class BattleQueue {
 		activeTeams.add(unit.getTeam());
 	}
 	
-	public static void removeCombatant(Unit unit) {
-		for (int i = actionQueue.size() - 1; i >= 0; i--) {
-			ReadiedAction action = actionQueue.get(i);
-			if (action.getSource() == unit) {
-				actionQueue.remove(action);
-				continue;
+	public static void removeCombatant(Unit unit, Ability.ID exitAbility) {
+		if (lastScheduledTimes.get(unit) == null) {
+			return;
+		}
+		Iterator<ReadiedAction> actions = actionQueue.iterator();
+		while (actions.hasNext()) {
+			if (unit.equals(actions.next().getSource())) {
+				actions.remove();
 			}
-			//TODO if getTargets() includes this unit, react accordingly 
+		}
+		if (exitAbility != null) {
+			insertFirstAction(Ability.get(Ability.ID.DEATH), unit, unit);
 		}
 		lastScheduledTimes.remove(unit);
 		completionTimes.remove(unit);
 		
+		//TODO: wait until after exitAbility completes to call unitDefeated, etc
 		unitDefeated(unit);
 		// Determine if the team was defeated
 		Unit.TEAM team = unit.getTeam();
@@ -131,32 +142,59 @@ public class BattleQueue {
 		battleDuration = 0;
 	}
 	
-	public static ReadiedAction queueAction(Ability ability, Unit source, ITargetable target) {
-		return queueAction(ability, source, new ITargetable[] {target});
+	public static void queueAction(Ability ability, Unit source, ITargetable target) {
+		ReadiedAction action = new ReadiedAction(ability, source, target, completionTimes.get(source));
+		actionQueue.add(action);
+		lastScheduledTimes.put(source, completionTimes.get(source));
+		completionTimes.put(source, action.getStartTime() + ability.getDelay());
+		System.out.println("\t" + source + "(" + lastScheduledTimes.get(source) + ") has prepared " + ability + " for " + action.getTarget());
+		Collections.sort(actionQueue, SOONEST_READIED_ACTION);
 	}
 	
-	public static ReadiedAction queueAction(Ability ability, Unit source, ITargetable[] targets) {
-		lastScheduledTimes.put(source, completionTimes.get(source));
-		ReadiedAction action = new ReadiedAction(ability, source, targets, completionTimes.get(source));
+	public static void insertFirstAction(Ability ability, Unit source, ITargetable target) {
+		BattleQueue.delay(source, ability.getDelay());
+		ReadiedAction action = new ReadiedAction(ability, source, target, battleDuration);
 		actionQueue.add(action);
-		completionTimes.put(source, action.getEndTime());
-		System.out.println("\t" + source + "(" + lastScheduledTimes.get(source) + ") has prepared " + ability + " for " + action.getTargetsDescription());
+		lastScheduledTimes.put(source, lastScheduledTimes.get(source) + ability.getDelay());
+		completionTimes.put(source, completionTimes.get(source) + ability.getDelay());
+		System.out.println("\t" + source + "(" + lastScheduledTimes.get(source) + ") has immediately prepared " + ability + " for " + action.getTarget());
 		Collections.sort(actionQueue, SOONEST_READIED_ACTION);
-		return action;
+	}
+	
+	public static void dequeueAction(ReadiedAction action) {
+		Ability ability = action.getAbility();
+		Unit source = action.getSource();
+		for (int i = actionQueue.size() - 1; i >= 0; i--) {
+			ReadiedAction otherAction = actionQueue.get(i);
+			if (otherAction.equals(action)) {
+				//remove the requested action
+				actionQueue.remove(i);
+				break;
+			} 
+			else if (otherAction.getSource().equals(source)) {
+				//move up all future actions
+				otherAction.delay(-action.getAbility().getDelay());
+			}
+		}
+		lastScheduledTimes.put(source, lastScheduledTimes.get(source) - ability.getDelay());
+		completionTimes.put(source, completionTimes.get(source) - ability.getDelay());
+		
+		System.out.println("\t" + source + "(" + lastScheduledTimes.get(source) + ") has decided not to use " + ability);
+		Collections.sort(actionQueue, SOONEST_READIED_ACTION);
 	}
 
 	public static Unit getMostReadyCombatant() {
-		Unit unit = null;
+		Unit mostReadyUnit = null;
 		int unitBusyness = Integer.MAX_VALUE;
 		Iterator<Unit> combatants = completionTimes.keySet().iterator();
 		while (combatants.hasNext()) {
 			Unit combatant = combatants.next();
 			if (completionTimes.get(combatant) < unitBusyness) {
-				unit = combatant;
+				mostReadyUnit = combatant;
 				unitBusyness = completionTimes.get(combatant);
 			}
 		}
-		return unit;
+		return mostReadyUnit;
 	}
 	
 	private static int getMostReadyCombatantReadyness() {
@@ -176,64 +214,75 @@ public class BattleQueue {
 		ReadiedAction nextAction = actionQueue.peek();
 		battleDuration = nextAction.getStartTime();
 		Unit source = nextAction.getSource();
-		ITargetable[] targets = nextAction.getTargets();
+		ITargetable target = nextAction.getTarget();
 		Ability ability;
-		int additionalDelay = 0;
-		if (targetReachable(nextAction)) {
+		if (!isValidAction(nextAction)) {
+			System.out.println("Warning: " + source + "'s " + nextAction.getAbility() + " is now unusable!");
+			dequeueAction(nextAction);
+			performNextAction();
+			return;
+		} else if (!targetReachable(nextAction)) {
+			ability = Ability.get(Ability.ID.MOVE);
+			GridPosition moveTo = getMoveTowards(source, target);
+			BattleQueue.insertFirstAction(ability, source, new GroundTarget(moveTo));
+			performNextAction();
+			return;
+		} else {
 			actionQueue.poll(); //remove from the queue
 			ability = nextAction.getAbility();
-			delayUnit(source, (int) ((source.getSpeedModifierAttack() - 1) * ability.getDelay()));
-			System.out.println(source + "(" + battleDuration + ") uses " + ability + " on " + nextAction.getTargetsDescription());
-			source.face(targets[0]);
-			for (ITargetable target : targets) {
-				if (target instanceof TallObject) {
-					TallObject targetObject = (TallObject) target;
-					targetObject.damage(ability.getDamage());
-					if (targetObject.isAlive() && targetObject instanceof Unit) {
-						Unit targetUnit = (Unit) targetObject;
-						Iterator<StatusEffect> statusEffects = ability.getStatusEffectIterator();
-						while (statusEffects.hasNext()) {
-							targetUnit.addStatusEffect(new AppliedStatusEffect(statusEffects.next()));
-						}
-						delay(targetUnit, ability.getDelayOpponent());		
+			performAction(source, ability, target);
+			
+			source.tickStatusEffects(ability.getDelay());
+			source.animate(ability.getStance(), ability.getName(), ability.getDelay() * 9 / 10, true, ability.getMoveDistance());
+			Thread donePerforming = new Thread() {
+				@Override
+				public void run() {
+					try {
+						Thread.sleep(ability.getDelay());
+					} catch (InterruptedException e) {
+						e.printStackTrace();
 					}
+					performingAction = false;
 				}
-			}			
+			};
+			donePerforming.start();
+		}
+	}
+	
+	private static void performAction(Unit source, Ability ability, ITargetable target) {
+		System.out.println(source + "(" + battleDuration + ") uses " + ability + " on " + target);
+		delayUnit(source, ability.calcAdditionalDelay(source.getModifier()));
+		source.face(target);
+		//TODO: use calcSuccessChance
+		if (ability.getAreaOfEffectDistance() > 0) {
+			int distance = ability.getAreaOfEffectDistance();
+			GridPosition pos = target.getPos();
+			GridRectangle rect = new GridRectangle(pos.getX() - distance, pos.getY() - distance, 
+					2 * distance + 1, 2 * distance + 1);
+			ArrayList<Unit> targets = World.getSortedContentsWithin(rect, Unit.class);
+			for (Unit unit : targets) {
+				effectTargetWith(source, unit, ability);
+			}
 		} else {
-			ability = Ability.get("Move");
-			Position moveTo = getMoveTowards(source, targets[0]);
-			System.out.println(source + "(" + battleDuration + ") moves to " + moveTo);
-			source.face(moveTo);
-			delayUnit(source, ability.getDelay());
+			effectTargetWith(source, target, ability);
 		}
-		if (additionalDelay != 0) {
-			//delay source appropriately
-			lastScheduledTimes.put(source, lastScheduledTimes.get(source) + additionalDelay);
-			completionTimes.put(source, completionTimes.get(source) + additionalDelay);
-			for (int i = actionQueue.size() - 1; i >= 0; i--) {
-				ReadiedAction action = actionQueue.get(i);
-				if (source.equals(action.getSource())) {
-					//TODO: verify this works for negatives (haste)
-					action.delay(additionalDelay);
+	}
+	
+	private static void effectTargetWith(Unit source, ITargetable target, Ability ability) {
+		if (target instanceof TallObject) {
+			TallObject targetObject = (TallObject) target;
+			if (RAND.nextDouble() <= ability.calcChanceToHit(source.getModifier(), targetObject.getModifier())) {
+				targetObject.damage(ability.calcDamage(source.getModifier(), targetObject.getModifier()));
+				if (targetObject.isAlive() && targetObject instanceof Unit) {
+					Unit targetUnit = (Unit) targetObject;
+					Iterator<StatusEffect> appliedStatusEffects = ability.getStatusEffectIterator();
+					while (appliedStatusEffects.hasNext()) {
+						targetUnit.addStatusEffect(new StatusEffect(appliedStatusEffects.next()));
+					}
+					delay(targetUnit, ability.getDelayOpponent());
 				}
 			}
-			Collections.sort(actionQueue, SOONEST_READIED_ACTION);
 		}
-		
-		source.tickStatusEffects(ability.getDelay());
-		source.animate(ability.getStance(), ability.getDelay() * 9 / 10, true, ability.getMoveDistance());
-		Thread donePerforming = new Thread() {
-			@Override
-			public void run() {
-				try {
-					Thread.sleep(ability.getDelay());
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				performingAction = false;
-			}
-		};
-		donePerforming.start();
 	}
 	
 	private static void delayUnit(Unit unit, int delay) {
@@ -243,7 +292,6 @@ public class BattleQueue {
 			for (int i = actionQueue.size() - 1; i >= 0; i--) {
 				ReadiedAction action = actionQueue.get(i);
 				if (unit.equals(action.getSource())) {
-					//TODO: verify this works for negatives (haste)
 					action.delay(delay);
 				}
 			}
@@ -251,37 +299,46 @@ public class BattleQueue {
 		}
 	}
 	
+	private static boolean isValidAction(ReadiedAction action) {
+		boolean validity = true;
+		ITargetable target = action.getTarget();
+		if (action.getAbility().getTargetType() != Ability.TARGET_TYPE.DEAD && target instanceof TallObject) {
+			validity = ((TallObject)target).isAlive();
+		}
+		return validity;
+	}
+	
 	private static boolean targetReachable(ReadiedAction action) {
-		Position sourcePos = action.getSource().getPos();
-		Position targetPos = action.getTargets()[0].getPos();
+		GridPosition sourcePos = action.getSource().getPos();
+		GridPosition targetPos = action.getTarget().getPos();
 		int range = action.getAbility().getRange();
 		return sourcePos.getDistanceTo(targetPos) <= range;
 	}
 	
-	private static Position getMoveTowards(Unit source, ITargetable target) {
+	private static GridPosition getMoveTowards(Unit source, ITargetable target) {
 		//TODO: perform actual pathing, return first step
-		Position sourcePos = source.getPos();
-		Position targetPos = target.getPos();
+		GridPosition sourcePos = source.getPos();
+		GridPosition targetPos = target.getPos();
 		// Look for a beneficial horizontal move
 		if (sourcePos.getX() < targetPos.getX()) {
-			Position firstStep = new Position(sourcePos.getX() + 1, sourcePos.getY());
+			GridPosition firstStep = new GridPosition(sourcePos.getX() + 1, sourcePos.getY());
 			if (World.getTallObject(firstStep) == null) {
 				return firstStep;
 			}
 		} else if (sourcePos.getX() > targetPos.getX()) {
-			Position firstStep = new Position(sourcePos.getX() - 1, sourcePos.getY());
+			GridPosition firstStep = new GridPosition(sourcePos.getX() - 1, sourcePos.getY());
 			if (World.getTallObject(firstStep) == null) {
 				return firstStep;
 			}
 		}
 		// Look for a beneficial vertical move
 		if (sourcePos.getY() < targetPos.getY()) {
-			Position firstStep = new Position(sourcePos.getX(), sourcePos.getY() + 1);
+			GridPosition firstStep = new GridPosition(sourcePos.getX(), sourcePos.getY() + 1);
 			if (World.getTallObject(firstStep) == null) {
 				return firstStep;
 			}
 		} else if (sourcePos.getY() > targetPos.getY()) {
-			Position firstStep = new Position(sourcePos.getX(), sourcePos.getY() - 1);
+			GridPosition firstStep = new GridPosition(sourcePos.getX(), sourcePos.getY() - 1);
 			if (World.getTallObject(firstStep) == null) {
 				return firstStep;
 			}

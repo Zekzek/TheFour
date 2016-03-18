@@ -1,5 +1,5 @@
 package model;
 
 public interface ITargetable {
-	public Position getPos();
+	public GridPosition getPos();
 }

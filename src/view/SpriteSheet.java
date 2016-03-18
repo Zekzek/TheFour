@@ -8,6 +8,8 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
+import model.StatusEffect;
+
 public class SpriteSheet {
 	
 	public static enum FACING {N, W, S, E}
@@ -17,6 +19,8 @@ public class SpriteSheet {
 	public static final int SPRITE_HEIGHT = 64;
 	public static final int TERRAIN_SPRITE_HEIGHT = 32;
 	public static final int SPRITE_WIDTH = 64;
+	public static final int ICON_HEIGHT = 16;
+	public static final int ICON_WIDTH = 16;
 	public static Map<URL, SpriteSheet> spriteSheets = new HashMap<URL, SpriteSheet>();
 	
 	private BufferedImage sheet;
@@ -43,12 +47,11 @@ public class SpriteSheet {
 	}
 	
 	public BufferedImage getSprite(CLIMATE climate, TERRAIN terrain) {
-		BufferedImage subImage = sheet.getSubimage(
+		return sheet.getSubimage(
 				terrain.ordinal() * SPRITE_WIDTH, 
 				climate.ordinal() * TERRAIN_SPRITE_HEIGHT,
 				SPRITE_WIDTH,
 				TERRAIN_SPRITE_HEIGHT);
-		return subImage;
 	}
 	
 	public BufferedImage getSprite(ANIMATION animation, FACING facing, int index) {
@@ -57,6 +60,14 @@ public class SpriteSheet {
 				getRow(animation, facing) * SPRITE_HEIGHT,
 				SPRITE_WIDTH,
 				SPRITE_HEIGHT);
+	}
+	
+	public BufferedImage getSprite(StatusEffect.ID statusEffect) {
+		return sheet.getSubimage(
+				statusEffect.getIndex() % 4 * ICON_WIDTH,
+				((int)(statusEffect.getIndex() / 4)) * ICON_HEIGHT,
+				ICON_WIDTH,
+				ICON_HEIGHT);
 	}
 	
 	private int getRow(ANIMATION animation, FACING facing) {

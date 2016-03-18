@@ -16,6 +16,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
+import model.Modifier.FLAT_BONUS;
+import model.Modifier.FRACTIONAL_BONUS;
 import view.GraphicsPanel;
 import view.SpriteSheet;
 import view.SpriteSheet.ANIMATION;
@@ -25,24 +27,22 @@ import controller.plot.Plot;
 
 public class Unit extends TallObject {
 	public static enum TEAM { PLAYER, ALLY, NONCOMBATANT, ENEMY1, ENEMY2 }
+	public static enum ID { DEFENDER, BERSERKER, SORCERESS, ARCHER, GUARD, FEMALE_BANDIT, MALE_BANDIT, ANNOUNCER }
 	private static final int MINI_SIZE = 32;
 	private static final int ANIMATION_LENGTH = 5;
 	
-	private URL sheetPath;
 	private SpriteSheet sheet;
 	private ImageIcon icon;
 	private SpriteSheet.ANIMATION defaultStance = SpriteSheet.ANIMATION.WALK;
-	
 	private TEAM team;
 	private SpriteSheet.FACING facing = SpriteSheet.FACING.S;
 	private int animationSequence = 0;
-	private Set<Ability> learnedActions = new HashSet<Ability>();
-	private Set<AppliedStatusEffect> statusEffects = new HashSet<AppliedStatusEffect>();
 	private SpriteSheet.ANIMATION stance = SpriteSheet.ANIMATION.WALK;
+	private Set<Ability> learnedActions = new HashSet<Ability>();
+	private Set<StatusEffect> statusEffects = new HashSet<StatusEffect>();
 	
 	private Unit(String name, int hp, URL sheetPath) {
 		super(name, hp);
-		this.sheetPath = sheetPath;
 		if (sheetPath !=null) {
 			sheet = SpriteSheet.getSpriteSheet(sheetPath);
 			BufferedImage mini = new BufferedImage(SpriteSheet.SPRITE_WIDTH, MINI_SIZE, BufferedImage.TYPE_INT_RGB);
@@ -54,18 +54,21 @@ public class Unit extends TallObject {
 		}
 	}
 	
-	public Unit copy() {
-		Unit unit = new Unit(name, hp, sheetPath);
-		unit.team = team;
-		unit.stance = stance;
-		unit.facing = facing;
-		for (Ability ability : learnedActions) {
-			unit.learnAction(ability);
+	private Unit(Unit otherUnit) {
+		super(otherUnit);
+		this.sheet = otherUnit.sheet;
+		this.icon = otherUnit.icon;
+		this.defaultStance = otherUnit.defaultStance;
+		this.team = otherUnit.team;
+		this.facing = otherUnit.facing;
+		this.animationSequence = otherUnit.animationSequence;
+		this.stance = otherUnit.stance;
+		for (Ability ability : otherUnit.learnedActions) {
+			this.learnedActions.add(ability);
 		}
-		for (AppliedStatusEffect statusEffect : statusEffects) {
-			unit.addStatusEffect(statusEffect);
+		for (StatusEffect statusEffect : otherUnit.statusEffects) {
+			this.statusEffects.add(statusEffect);
 		}
-		return unit;
 	}
 	
 	public BufferedImage getSprite() {
@@ -84,19 +87,21 @@ public class Unit extends TallObject {
 	public void damage(int damage) {
 		super.damage(damage);
 		if (hp <= 0) {
-			BattleQueue.removeCombatant(this);
-			stance = SpriteSheet.ANIMATION.DEATH;
-			this.animate(stance, 1000, false);
+			BattleQueue.removeCombatant(this, Ability.ID.DEATH);
+//			BattleQueue.insertFirstAction(Ability.get(Ability.ID.DEATH), this, this);
+			//TODO: replace death animation with death ability (blocks while animating)
+//			stance = SpriteSheet.ANIMATION.DEATH;
+//			this.animate(stance, "Death", 1000, false);
 		}
 	}
 	
-	public void addStatusEffect(AppliedStatusEffect effect) {
+	public void addStatusEffect(StatusEffect effect) {
 		statusEffects.add(effect);
 	}
 	
 	public void tickStatusEffects(int time) {
-		for (Iterator<AppliedStatusEffect> iterator = statusEffects.iterator(); iterator.hasNext();) {
-		    AppliedStatusEffect statusEffect = iterator.next();
+		for (Iterator<StatusEffect> iterator = statusEffects.iterator(); iterator.hasNext();) {
+		    StatusEffect statusEffect = iterator.next();
 		    statusEffect.tick(time);
 		    if (statusEffect.isOver()) {
 		        iterator.remove();
@@ -116,7 +121,7 @@ public class Unit extends TallObject {
 	public void aiQueueAction() {
 		//TODO: more sophisticated AI with variety (prefer closest, prefer weakest, etc)
 		Ability ability = learnedActions.iterator().next();
-		Unit target = World.getTargets(this, ability, GraphicsPanel.getScreenPos()).get(0);
+		Unit target = World.getTargets(this, ability, GraphicsPanel.getScreenRectangle()).get(0);
 		BattleQueue.queueAction(ability, this, target);
 	}
 	
@@ -124,7 +129,7 @@ public class Unit extends TallObject {
 		face(target.getPos());
 	}
 	
-	public void face(Position target) {
+	public void face(GridPosition target) {
 		int dx = target.getX() - getPos().getX();
 		int dy = target.getY() - getPos().getY();
 		int magnitudeX = (dx >= 0) ? dx : -dx;
@@ -143,15 +148,16 @@ public class Unit extends TallObject {
 		}
 	}
 
-	public void animate(ANIMATION stance, int duration, boolean returnToDefault) {
-		animate(stance, duration, returnToDefault, 0);
+	public void animate(ANIMATION stance, String name, int duration, boolean returnToDefault) {
+		animate(stance, name, duration, returnToDefault, 0);
 	}
 	
-	public void animate(ANIMATION stance, int duration, boolean returnToDefault, int moveDistance) {
+	public void animate(ANIMATION stance, String name, int duration, boolean returnToDefault, int moveDistance) {
 		int refreshRate = duration / ANIMATION_LENGTH;
 		Unit unit = this;
 		final int yOffset;
 		final int xOffset;
+		//TODO: draw active ability name to screen (and damage?)
 		if (moveDistance != 0) {
 			if (facing == FACING.N) {
 				xOffset = 0;
@@ -168,7 +174,7 @@ public class Unit extends TallObject {
 			}
 			drawXOffset = xOffset;
 			drawYOffset = yOffset;
-			this.setPos(pos.getX() - xOffset, pos.getY() - yOffset);
+			this.updateeWorldPos(pos.getX() - xOffset, pos.getY() - yOffset);
 		} else {
 			xOffset = yOffset = 0;
 		}
@@ -201,32 +207,57 @@ public class Unit extends TallObject {
 	public void paint(Graphics2D g2) {
 		super.paint(g2);
 		AffineTransform savedTransorm = g2.getTransform();
-		Position screenPos = GraphicsPanel.getScreenPos();
+		GridRectangle screenRect = GraphicsPanel.getScreenRectangle();
 		// Convert to pixel space, accounting for units being tall objects
-		//TODO: this is duplicated code, combine with TallObject
-		g2.translate(GraphicsPanel.CELL_WIDTH * (pos.getX()-screenPos.getX()), 
+		//TODO: this is duplicated code, combine with TallObject?
+		g2.translate(GraphicsPanel.CELL_WIDTH * (pos.getX()-screenRect.getX()), 
 				GraphicsPanel.TERRAIN_CELL_HEIGHT * 
-				((pos.getY()-screenPos.getY()) - GraphicsPanel.TALL_OBJECT_CELL_HEIGHT_MULTIPLIER + 1));
+				((pos.getY()-screenRect.getY()) - GraphicsPanel.TALL_OBJECT_CELL_HEIGHT_MULTIPLIER + 1));
 		g2.translate(drawXOffset * GraphicsPanel.CELL_WIDTH, drawYOffset * GraphicsPanel.TERRAIN_CELL_HEIGHT);
 
-		for (Iterator<AppliedStatusEffect> iterator = statusEffects.iterator(); iterator.hasNext();) {
-		    BufferedImage icon = iterator.next().getStatusEffect().getIcon();
-		    g2.drawImage(icon, 0, GraphicsPanel.TALL_OBJECT_CELL_HEIGHT * 3/4, null);
-		    //TODO: start a second row for more than 4 status effects?
+		int statusEffectCounter = 0;
+		for (Iterator<StatusEffect> iterator = statusEffects.iterator(); iterator.hasNext();) {
+		    BufferedImage icon = iterator.next().getIcon();
+		    g2.drawImage(icon, GraphicsPanel.CELL_WIDTH * (statusEffectCounter % 4) / 4,
+		    		GraphicsPanel.TALL_OBJECT_CELL_HEIGHT * (3 - (statusEffectCounter / 4))  / 4, null);
+		    statusEffectCounter++;
 		}
 		g2.setTransform(savedTransorm);
 	}
 	
-	public double getSpeedModifierAttack() {
-		double speedMod = 1.0;
-		Iterator<AppliedStatusEffect> iterator = statusEffects.iterator();
-		while(iterator.hasNext()) {
-			speedMod *= iterator.next().getStatusEffect().getSpeedModifierAttack();
+	@Override
+	public Modifier getModifier() {
+		Modifier[] statusModifiers = new Modifier[statusEffects.size()];
+		Iterator<StatusEffect> statusEffectIterator = statusEffects.iterator();
+		int count = 0;
+		while (statusEffectIterator.hasNext()) {
+			statusModifiers[count] = statusEffectIterator.next().getModifier();
+			count++;
 		}
-		return speedMod;
+		Modifier netModifier = new Modifier(statusModifiers);
+		netModifier.addModifier(baseModifier);
+		return netModifier;
 	}
 	
-	public static Unit get(String name, TEAM team) {
+	public double getStatusEffectModifier(FRACTIONAL_BONUS effect, ITargetable target) {
+		double mod = 1.0;
+		Iterator<StatusEffect> iterator = statusEffects.iterator();
+		while(iterator.hasNext()) {
+			mod *= iterator.next().getBonus(effect, target);
+		}
+		return mod;
+	}
+	
+	public int getStatusEffectModifier(FLAT_BONUS effect, ITargetable target) {
+		int mod = 0;
+		Iterator<StatusEffect> iterator = statusEffects.iterator();
+		while(iterator.hasNext()) {
+			mod += iterator.next().getBonus(effect, target);
+		}
+		return mod;
+	}
+	
+	public static Unit get(ID name, TEAM team) {
 		return UnitFactory.getUnit(name, team);
 	}
 	
@@ -251,48 +282,65 @@ public class Unit extends TallObject {
 	}
 	
 	private static class UnitFactory {
-		private static Map<String, Unit> units = new HashMap<String, Unit>();
+		private static Map<ID, Unit> units = new HashMap<ID, Unit>();
 		private static boolean unitsInitialized = false;
 
 		private static void initUnits() {
 			unitsInitialized = true;
-			Unit guard = new Unit("Guard", 100, Plot.class.getResource("/resource/img/spriteSheet/guard.png"));
-			guard.learnAction(Ability.get("Guard Attack"));
-			guard.learnAction(Ability.get("Watch"));
-			units.put("Guard", guard);
-			
-			Unit announcer = new Unit("Announcer", 1,  Plot.class.getResource("/resource/img/spriteSheet/guard.png"));
-			units.put("Announcer", announcer);
 			
 			Unit defender = new Unit("Defender", 200, Plot.class.getResource("/resource/img/spriteSheet/defender.png"));
-			defender.setStance(SpriteSheet.ANIMATION.WALK);
-			defender.learnAction(Ability.get("Quick Attack"));
-			defender.learnAction(Ability.get("Shield Bash"));
-			units.put("Defender", defender);
-			
-			Unit berserker = new Unit("Berserker", 220, Plot.class.getResource("/resource/img/spriteSheet/berserker.png"));
-			berserker.setStance(SpriteSheet.ANIMATION.WALK);
-			berserker.setFacing(SpriteSheet.FACING.W);
-			berserker.learnAction(Ability.get("Heavy Strike"));
-			units.put("Berserker", berserker);
-			
-			Unit femaleBandit = new Unit("Female Bandit", 100, Plot.class.getResource("/resource/img/spriteSheet/banditFemale.png"));
-			femaleBandit.learnAction(Ability.get("Weak Attack"));
-			units.put("Female Bandit", femaleBandit);
-			
-			Unit maleBandit = new Unit("Female Bandit", 100, Plot.class.getResource("/resource/img/spriteSheet/banditFemale.png"));
-			maleBandit.learnAction(Ability.get("Weak Attack"));
-			units.put("Male Bandit", maleBandit);
+			defender.learnAction(Ability.get(Ability.ID.GUARD_ATTACK));
+			defender.learnAction(Ability.get(Ability.ID.SHIELD_BASH));
+			defender.learnAction(Ability.get(Ability.ID.SWEEPING_STRIKE));
+			defender.learnAction(Ability.get(Ability.ID.DELAY));
+			units.put(ID.DEFENDER, defender);
 			
 			Unit sorceress = new Unit("Sorceress", 160, Plot.class.getResource("/resource/img/spriteSheet/sorceress.png"));
-			units.put("Sorceress", sorceress);
+			units.put(ID.SORCERESS, sorceress);
+
+			Unit berserker = new Unit("Berserker", 220, Plot.class.getResource("/resource/img/spriteSheet/berserker.png"));
+			berserker.learnAction(Ability.get(Ability.ID.CHALLENGE));
+			berserker.learnAction(Ability.get(Ability.ID.SWEEPING_STRIKE));
+			berserker.learnAction(Ability.get(Ability.ID.THROW));
+			berserker.learnAction(Ability.get(Ability.ID.QUICK_ATTACK));
+			berserker.learnAction(Ability.get(Ability.ID.HEAVY_ATTACK));
+			berserker.learnAction(Ability.get(Ability.ID.KNOCKDOWN_STRIKE));
+			units.put(ID.BERSERKER, berserker);
+
+			Unit archer = new Unit("Archer", 190, Plot.class.getResource("/resource/img/spriteSheet/archer.png"));
+			archer.learnAction(Ability.get(Ability.ID.SNARE));
+			archer.learnAction(Ability.get(Ability.ID.BARRAGE));
+			archer.learnAction(Ability.get(Ability.ID.BURNING_ATTACK));
+			archer.learnAction(Ability.get(Ability.ID.QUICK_ATTACK));
+			archer.learnAction(Ability.get(Ability.ID.HEAVY_ATTACK));
+			units.put(ID.ARCHER, archer);
+
+			Unit guard = new Unit("Guard", 100, Plot.class.getResource("/resource/img/spriteSheet/guard.png"));
+			guard.learnAction(Ability.get(Ability.ID.GUARD_ATTACK));
+			guard.learnAction(Ability.get(Ability.ID.WATCH));
+			units.put(ID.GUARD, guard);
+			
+			Unit announcer = new Unit("Announcer", 1,  Plot.class.getResource("/resource/img/spriteSheet/guard.png"));
+			units.put(ID.ANNOUNCER, announcer);
+
+			Unit femaleBandit = new Unit("Female Bandit", 100, Plot.class.getResource("/resource/img/spriteSheet/banditFemale.png"));
+			femaleBandit.learnAction(Ability.get(Ability.ID.WEAK_ATTACK));
+			units.put(ID.FEMALE_BANDIT, femaleBandit);
+			
+			Unit maleBandit = new Unit("Female Bandit", 100, Plot.class.getResource("/resource/img/spriteSheet/banditFemale.png"));
+			maleBandit.learnAction(Ability.get(Ability.ID.WEAK_ATTACK));
+			units.put(ID.MALE_BANDIT, maleBandit);
 		}
 
-		public static Unit getUnit(String name, TEAM team) {
+		public static Unit getUnit(ID name, TEAM team) {
 			if (!unitsInitialized) {
 				initUnits();
 			}
-			Unit unit = units.get(name).copy();
+			Unit unit = units.get(name);
+			if (unit == null) {
+				throw new UnsupportedOperationException("Not implemented yet - Unit::" + name.name());
+			}
+			unit = new Unit(units.get(name));
 			unit.setTeam(team);
 			return unit;
 		}

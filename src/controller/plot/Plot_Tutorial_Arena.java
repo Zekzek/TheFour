@@ -4,6 +4,7 @@ import model.Dialog;
 import model.Structure;
 import model.Unit;
 import model.Unit.TEAM;
+import model.Unit.ID;
 import model.World;
 import view.DialogPanel;
 import view.GameFrame;
@@ -22,7 +23,7 @@ public class Plot_Tutorial_Arena extends Plot{
 		World.addTallObject(defender, 26, 31);
 		World.addTallObject(berserker, 37, 31);
 		
-		BattleQueue.addCombatants(World.getSortedContentsWithin(GraphicsPanel.getScreenPos(), Unit.class).iterator());
+		BattleQueue.addCombatants(World.getSortedContentsWithin(GraphicsPanel.getScreenRectangle(), Unit.class).iterator());
 	    BattleQueue.addRandomCombatDelays();
 	    BattleQueue.startPlayingActions();
 	    
@@ -30,10 +31,10 @@ public class Plot_Tutorial_Arena extends Plot{
 	}
 	
 	private void addUnitsToWorld() {
-		World.addTallObject(Unit.get("Guard", TEAM.NONCOMBATANT), 28, 28);
-		World.addTallObject(Unit.get("Guard", TEAM.NONCOMBATANT), 36, 28);
-		World.addTallObject(Unit.get("Guard", TEAM.NONCOMBATANT), 28, 36);
-		World.addTallObject(Unit.get("Guard", TEAM.NONCOMBATANT), 36, 36);
+		World.addTallObject(Unit.get(ID.GUARD, TEAM.NONCOMBATANT), 28, 28);
+		World.addTallObject(Unit.get(ID.GUARD, TEAM.NONCOMBATANT), 36, 28);
+		World.addTallObject(Unit.get(ID.GUARD, TEAM.NONCOMBATANT), 28, 36);
+		World.addTallObject(Unit.get(ID.GUARD, TEAM.NONCOMBATANT), 36, 36);
 		
 		Structure tree1 = new Structure("Tree 1", Plot.class.getResource("/resource/img/trees/tree.png"), 200);
 		World.addTallObject(tree1, 28, 27);
@@ -44,13 +45,13 @@ public class Plot_Tutorial_Arena extends Plot{
 		Structure tree4 = new Structure("Tree 4", Plot.class.getResource("/resource/img/trees/tree.png"), 200);
 		World.addTallObject(tree4, 36, 35);
 
-		defender = Unit.get("Defender", TEAM.PLAYER);
+		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER);
 		defender.setFacing(SpriteSheet.FACING.S);
 		
-		berserker = Unit.get("Berserker", TEAM.ENEMY1);
+		berserker = Unit.get(ID.BERSERKER, TEAM.ENEMY1);
 		berserker.setFacing(SpriteSheet.FACING.S);
 		
-		announcer = Unit.get("Announcer", TEAM.NONCOMBATANT);
+		announcer = Unit.get(ID.ANNOUNCER, TEAM.NONCOMBATANT);
 		World.addTallObject(announcer, -1, -1);
 		
 		Dialog[] announcerIntro = new Dialog[] {

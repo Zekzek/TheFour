@@ -1,9 +1,11 @@
 package controller.plot;
 
+import model.Ability;
 import model.Dialog;
 import model.Structure;
 import model.Unit;
 import model.Unit.TEAM;
+import model.Unit.ID;
 import model.World;
 import view.DialogPanel;
 import view.GameFrame;
@@ -65,7 +67,7 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 		Runnable run = new Runnable(){
 			@Override
 			public void run() {
-				GraphicsPanel.changeScene(1000, "Hours later, finally nearing civilization", 500, new Runnable() {
+				GraphicsPanel.changeScene(1000, "Hours later, finally nearing civilization", 5000, new Runnable() {
 					@Override
 					public void run() {
 						World.remove(sorceress);
@@ -165,9 +167,9 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 	}
 	
 	private void addRetreatBandits() {
-		BattleQueue.removeCombatant(bandit1);
-		BattleQueue.removeCombatant(bandit2);
-		BattleQueue.removeCombatant(bandit3);
+		BattleQueue.removeCombatant(bandit1, Ability.ID.MOVE);
+		BattleQueue.removeCombatant(bandit2, Ability.ID.MOVE);
+		BattleQueue.removeCombatant(bandit3, Ability.ID.MOVE);
 		World.remove(bandit1);
 		World.remove(bandit2);
 		World.remove(bandit3);
@@ -195,13 +197,13 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 	}
 	
 	private void createUnits() {
-		defender = Unit.get("Defender", TEAM.PLAYER);
-		sorceress = Unit.get("Sorceress", TEAM.ALLY);
-		guard1 = Unit.get("Guard", TEAM.ALLY);
-		guard2 = Unit.get("Guard", TEAM.ALLY);
-		bandit1 = Unit.get("Female Bandit", TEAM.ENEMY1);
-		bandit2 = Unit.get("Male Bandit", TEAM.ENEMY1);
-		bandit3 = Unit.get("Female Bandit", TEAM.ENEMY1);
+		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER);
+		sorceress = Unit.get(ID.SORCERESS, TEAM.ALLY);
+		guard1 = Unit.get(ID.GUARD, TEAM.ALLY);
+		guard2 = Unit.get(ID.GUARD, TEAM.ALLY);
+		bandit1 = Unit.get(ID.FEMALE_BANDIT, TEAM.ENEMY1);
+		bandit2 = Unit.get(ID.MALE_BANDIT, TEAM.ENEMY1);
+		bandit3 = Unit.get(ID.FEMALE_BANDIT, TEAM.ENEMY1);
 		
 		for (int i = 0; i < trees.length; i+=3) {
 			trees[i] = new Structure("Tree", Plot.class.getResource("/resource/img/trees/tree13.png"), 200);

@@ -3,11 +3,12 @@ package controller.plot;
 import java.util.ArrayList;
 
 import model.Dialog;
-import model.Position;
+import model.GridRectangle;
 import model.Structure;
 import model.TallObject;
 import model.Unit;
 import model.Unit.TEAM;
+import model.Unit.ID;
 import model.World;
 import view.DialogPanel;
 import view.GraphicsPanel;
@@ -20,16 +21,16 @@ public class Plot_SpeedTest extends Plot{
 		GraphicsPanel.moveScreenTo(24, 23);
 		addUnitsToWorld();
 		
-		BattleQueue.addCombatants(World.getSortedContentsWithin(GraphicsPanel.getScreenPos(), Unit.class).iterator());
+		BattleQueue.addCombatants(World.getSortedContentsWithin(GraphicsPanel.getScreenRectangle(), Unit.class).iterator());
 	    BattleQueue.addRandomCombatDelays();
 	}
 	
 	private void addUnitsToWorld() {
-		Position searchScreen = new Position(490, 490, 16, 16);
+		GridRectangle searchScreen = new GridRectangle(490, 490, 16, 16);
 		
 		Long startTime = System.currentTimeMillis();
 		for (int i = 0; i < 500; i++) {
-			Unit guard = Unit.get("Guard", TEAM.NONCOMBATANT);
+			Unit guard = Unit.get(ID.GUARD, TEAM.NONCOMBATANT);
 			World.addTallObject(guard, i, i);
 		}
 		for (int i = 0; i < 500; i++) {
@@ -48,7 +49,7 @@ public class Plot_SpeedTest extends Plot{
 		String displayObjectTest = "Searched for a screen of objects 10,000 times in " + (endTime - startTime) 
 				+ "ms (found " + objects.size() + ")";
 		
-		Unit announcer = Unit.get("Announcer", TEAM.NONCOMBATANT);
+		Unit announcer = Unit.get(ID.ANNOUNCER, TEAM.NONCOMBATANT);
 		World.addTallObject(announcer, -1, -1);
 	
 		Dialog[] report = new Dialog[] {

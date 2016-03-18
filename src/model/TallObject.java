@@ -11,27 +11,53 @@ import view.SpriteSheet;
 
 public abstract class TallObject implements ITargetable {
 
+	private static int nextId = 0;
+	private final int id;
 	protected String name;
-	protected Position pos = new Position(0, 0, 1, 1);
+	protected GridPosition pos = new GridPosition(0, 0);
 	protected int maxHp;
 	protected int hp;
 	protected double drawXOffset = 0.0;
 	protected double drawYOffset = 0.0;
+	protected Modifier baseModifier;
 	
+	//Original
 	public TallObject(String name, int hp) {
+		this.id = nextId;
+		nextId++;
 		this.name = name;
 		this.maxHp = this.hp = hp;
+		this.baseModifier = new Modifier();
 	}
 	
-	public abstract BufferedImage getSprite();
+	//Clone
+	public TallObject(TallObject otherObject) {
+		this.id = nextId;
+		nextId++;
+		this.name = otherObject.name;
+		this.maxHp = otherObject.maxHp;
+		this.hp = otherObject.hp;
+		this.baseModifier = new Modifier(otherObject.baseModifier);
+		//Since pos should always be unique, don't set it in the copy constructor
+	}
+
+	public abstract BufferedImage getSprite();	
 	
+	public void damage(int damage) {
+		hp -= damage;
+	}
+	
+	public boolean isAlive() {
+		return hp > 0;
+	}
+
 	public void paint(Graphics2D g2) {
 		AffineTransform savedTransorm = g2.getTransform();
-		Position screenPos = GraphicsPanel.getScreenPos();
+		GridRectangle screenRectangle = GraphicsPanel.getScreenRectangle();
 		// Convert to pixel space, accounting for units being tall objects
-		g2.translate(GraphicsPanel.CELL_WIDTH * (pos.getX()-screenPos.getX()), 
+		g2.translate(GraphicsPanel.CELL_WIDTH * (pos.getX()-screenRectangle.getX()), 
 				GraphicsPanel.TERRAIN_CELL_HEIGHT * 
-				((pos.getY()-screenPos.getY()) - GraphicsPanel.TALL_OBJECT_CELL_HEIGHT_MULTIPLIER + 1));
+				((pos.getY()-screenRectangle.getY()) - GraphicsPanel.TALL_OBJECT_CELL_HEIGHT_MULTIPLIER + 1));
 
 		BufferedImage sprite = getSprite();
 		if (sprite != null) {
@@ -55,35 +81,64 @@ public abstract class TallObject implements ITargetable {
 		
 		g2.setTransform(savedTransorm);
 	}
-	
-	public void damage(int damage) {
-		hp -= damage;
-	}
-		
-	public String getName() {
-		return name;
-	}
 
-	public Position getPos() {
-		return pos;
-	}
-	
-	@Override
-	public String toString() {
-		return name;
-	}
-
-	public boolean isAlive() {
-		return hp > 0;
-	}
-
-	public void setPos(int x, int y) {
-		Position updatedPos = new Position(x, y, pos.getWidth(), pos.getHeight());
+	public void updateeWorldPos(int x, int y) {
+		GridPosition updatedPos = new GridPosition(x, y);
 		if (this.equals(World.getTallObject(updatedPos))) {
 			pos.setX(x);
 			pos.setY(y);
 		} else {
 			World.moveObject(this, x, y);
 		}
-	}	
+	}
+	
+	@Override
+	public String toString() {
+		return name + " #" + id;
+	}
+
+	public int getId() {
+		return id;
+	}
+	public String getName() {
+		return name;
+	}
+
+	public GridPosition getPos() {
+		return pos;
+	}
+
+	public int getMaxHp() {
+		return maxHp;
+	}
+
+	public int getHp() {
+		return hp;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + id;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		TallObject other = (TallObject) obj;
+		if (id != other.id)
+			return false;
+		return true;
+	}
+
+	public Modifier getModifier() {
+		return baseModifier;
+	}
 }

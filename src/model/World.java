@@ -6,22 +6,22 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class World {
 	
-	private static Map<Position,TallObject> contents = new ConcurrentHashMap<Position, TallObject>();
+	private static Map<GridPosition,TallObject> contents = new ConcurrentHashMap<GridPosition, TallObject>();
 	
 	private World() {
 	}
 	
 	public static void addTallObject(TallObject tallObject, int x, int y) {
-		Position pos = new Position(x, y, 1, 1);
+		GridPosition pos = new GridPosition(x, y);
 		while (contents.get(pos) != null) {
 			pos.setY(pos.getY() + 1);
 		}
 		contents.put(pos, tallObject);
-		tallObject.setPos(pos.getX(), pos.getY());
+		tallObject.updateeWorldPos(pos.getX(), pos.getY());
 	}
 	
 	public static void remove(int x, int y) {
-		contents.remove(new Position(x, y, 1, 1));
+		contents.remove(new GridPosition(x, y));
 	}
 	
 	public static void remove(TallObject tallObject) {
@@ -29,11 +29,11 @@ public class World {
 	}
 	
 	public static boolean moveObject(TallObject tallObject, int x, int y) {
-		Position pos = new Position(x, y, 1, 1);
+		GridPosition pos = new GridPosition(x, y);
 		if (contents.get(pos) == null) {
 			contents.put(pos, tallObject);
 			contents.remove(tallObject.getPos());
-			tallObject.setPos(x, y);
+			tallObject.updateeWorldPos(x, y);
 			return true;
 		} else {
 			return false;
@@ -41,11 +41,11 @@ public class World {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static <T> ArrayList<T> getSortedContentsWithin(Position pos, Class<T> theClass) {
+	public static <T> ArrayList<T> getSortedContentsWithin(GridRectangle pos, Class<T> theClass) {
 		ArrayList<T> subset = new ArrayList<T>();
 		for (int y = pos.getY(); y < pos.getY() + pos.getHeight(); y++) {
 			for (int x = pos.getX(); x < pos.getX() + pos.getWidth(); x++) {
-				TallObject tallObject = contents.get(new Position(x, y, 1, 1));
+				TallObject tallObject = contents.get(new GridPosition(x, y));
 				if (tallObject != null && theClass.isAssignableFrom(tallObject.getClass())) {
 					subset.add((T)tallObject);
 				}
@@ -55,11 +55,11 @@ public class World {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static <T> ArrayList<T> getSortedLivingContentsWithin(Position pos, Class<T> theClass) {
+	private static <T> ArrayList<T> getSortedLivingContentsWithin(GridRectangle pos, Class<T> theClass) {
 		ArrayList<T> subset = new ArrayList<T>();
 		for (int y = pos.getY(); y < pos.getY() + pos.getHeight(); y++) {
 			for (int x = pos.getX(); x < pos.getX() + pos.getWidth(); x++) {
-				TallObject tallObject = contents.get(new Position(x, y, 1, 1));
+				TallObject tallObject = contents.get(new GridPosition(x, y));
 				if (tallObject != null && tallObject.isAlive() && theClass.isAssignableFrom(tallObject.getClass())) {
 					subset.add((T)tallObject);
 				}
@@ -68,9 +68,9 @@ public class World {
 		return subset;
 	}
 	
-	public static ArrayList<Unit> getTargets(Unit source, Ability ability, Position pos) {
+	public static ArrayList<Unit> getTargets(Unit source, Ability ability, GridRectangle rect) {
 		Unit.TEAM team = source.getTeam();
-		Ability.TARGET_TYPE outcome = ability.getOutcome();
+		Ability.TARGET_TYPE outcome = ability.getTargetType();
 		ArrayList<Unit.TEAM> targetTeams = new ArrayList<Unit.TEAM>();
 		ArrayList<Unit> targets = new ArrayList<Unit>();
 		
@@ -78,7 +78,7 @@ public class World {
 			targets.add(source);
 			return targets;
 		} else if (outcome == Ability.TARGET_TYPE.UBIQUITOUS) {
-			return getSortedLivingContentsWithin(pos, Unit.class);
+			return getSortedLivingContentsWithin(rect, Unit.class);
 		} else if (outcome == Ability.TARGET_TYPE.HARMFUL) {
 			if (team == Unit.TEAM.PLAYER || team == Unit.TEAM.ALLY) {
 				targetTeams.add(Unit.TEAM.ENEMY1);
@@ -103,7 +103,7 @@ public class World {
 			}
 		}
 		
-		ArrayList<Unit> units = getSortedLivingContentsWithin(pos, Unit.class);
+		ArrayList<Unit> units = getSortedLivingContentsWithin(rect, Unit.class);
 		for (Unit unit : units){
 			if (targetTeams.contains(unit.getTeam())) {
 				targets.add(unit);
@@ -117,7 +117,7 @@ public class World {
 		contents.clear();
 	}
 
-	public static TallObject getTallObject(Position pos) {
+	public static TallObject getTallObject(GridPosition pos) {
 		return contents.get(pos);
 	}
 }

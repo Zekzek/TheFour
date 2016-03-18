@@ -1,200 +1,154 @@
 package model;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.imageio.ImageIO;
-
+import model.Modifier.FLAT_BONUS;
+import model.Modifier.FRACTIONAL_BONUS;
+import view.SpriteSheet;
 import controller.plot.Plot;
 
 public class StatusEffect {
-	// TODO: apply status effects too all relevant actions
-	// TODO: use sprite sheet
-	public static enum STATUS_TYPE {
-		BENEFIT, DETRIMENT, NEUTRAL
+	public static enum ID {
+		SLOW(0), BIND(1), HASTE(2), KNOCKDOWN(3), BURNING(4), MURDEROUS_INTENT(5), DAMAGE_DOWN(6);
+		private final int index; //used by spriteSheet to select an icon
+		ID(int index) {
+			this.index = index;
+		}
+		public int getIndex() {
+			return index;
+		}
 	};
 
-	private String name;
-	private BufferedImage icon;
+	private static final SpriteSheet STATUS_EFFECT_SHEET = 
+			SpriteSheet.getSpriteSheet(Plot.class.getResource("/resource/img/spriteSheet/statusEffects.png"));
+	private static final Map<ID, BaseEffect> baseEffects = new HashMap<ID, BaseEffect>();
+	private static boolean baseEffectsInitialized = false;
+	
 	private int duration;
-
-	// regeneration / degeneration
-	private int hpDamagePerSecond = 0;
-	private int hpHealingPerSecond = 0;
-	private int mpDamagePerSecond = 0;
-	private int mpHealingPerSecond = 0;
-
-	// temporary bonus stats
-	private int hpShield = 0;
-	private int mpShield = 0;
-
-	// speed modifiers
-	private double speedModifierAttack = 1.0;
-	private double speedModifierCast = 1.0;
-	private double speedModifierMove = 1.0;
-
-	// outgoing effect modifiers
-	private double outgoingDamageModifierAttack = 1.0;
-	private double outgoingDamageModifierCast = 1.0;
-	private double outgoingAccuracyModifierAttack = 1.0;
-	private double outgoingAccuracyModifierCast = 1.0;
-
-	// incoming effect modifiers
-	private double incomingDamageModifierAttack = 1.0;
-	private double incomingDamageModifierCast = 1.0;
-	private double incomingAccuracyModifierAttack = 1.0;
-	private double incomingAccuracyModifierCast = 1.0;
-
-	// action prevention
-	private double chanceToFailAttack = 0.0;
-	private double chanceToFailCast = 0.0;
-	private double chanceToFailMove = 0.0;
-	private boolean preventAttack = false;
-	private boolean preventCast = false;
-	private boolean preventMove = false;
-
-	private StatusEffect(String name, BufferedImage icon, int duration) {
-		this.name = name;
-		this.icon = icon;
+	private Unit noPenaltyTarget;
+	private BaseEffect baseEffect;
+		
+	public StatusEffect(ID id, int duration) {
+		this.baseEffect = getBaseEffect(id);
 		this.duration = duration;
 	}
-
-	public static StatusEffect get(String name) {
-		return StatusEffectFactory.getStatusEffect(name);
+	
+	public StatusEffect(ID id, int duration, Unit noPenaltyTarget) {
+		this.baseEffect = getBaseEffect(id);
+		this.duration = duration;
+		this.noPenaltyTarget = noPenaltyTarget;
+	}
+		
+	public StatusEffect(StatusEffect statusEffect) {
+		this.baseEffect = statusEffect.baseEffect;
+		this.duration = statusEffect.duration;
+		this.noPenaltyTarget = statusEffect.noPenaltyTarget;
 	}
 
+	public void tick(int time) {
+		duration -= time;
+	}
+	
+	public boolean isOver() {
+		return duration <= 0;
+	}
+
+	public ID getId() {
+		return baseEffect.id;
+	}
+	
 	public String getName() {
-		return name;
+		return baseEffect.name;
 	}
 
 	public BufferedImage getIcon() {
-		return icon;
+		return STATUS_EFFECT_SHEET.getSprite(baseEffect.id);
+	}
+
+	public double getBonus(FRACTIONAL_BONUS bonus, ITargetable target) {
+		Double value = baseEffect.modifier.getBonus(bonus);
+		if ((target != null && target.equals(noPenaltyTarget)) || value == null) {
+			return 1.0;
+		} else {
+			return value.doubleValue();
+		}
+	}
+	
+	public double getBonus(FLAT_BONUS bonus, ITargetable target) {
+		Integer value = baseEffect.modifier.getBonus(bonus);
+		if ((target != null && target.equals(noPenaltyTarget)) || value == null) {
+			return 0;
+		} else {
+			return value.intValue();
+		}
+	}
+	
+	public Modifier getModifier() {
+		return baseEffect.modifier;
 	}
 
 	public int getDuration() {
 		return duration;
 	}
 
-	public int getHpDamagePerSecond() {
-		return hpDamagePerSecond;
+	public Unit getNoPenaltyTarget() {
+		return noPenaltyTarget;
 	}
-
-	public int getHpHealingPerSecond() {
-		return hpHealingPerSecond;
-	}
-
-	public int getMpDamagePerSecond() {
-		return mpDamagePerSecond;
-	}
-
-	public int getMpHealingPerSecond() {
-		return mpHealingPerSecond;
-	}
-
-	public int getHpShield() {
-		return hpShield;
-	}
-
-	public int getMpShield() {
-		return mpShield;
-	}
-
-	public double getSpeedModifierAttack() {
-		return speedModifierAttack;
-	}
-
-	public double getSpeedModifierCast() {
-		return speedModifierCast;
-	}
-
-	public double getSpeedModifierMove() {
-		return speedModifierMove;
-	}
-
-	public double getOutgoingDamageModifierAttack() {
-		return outgoingDamageModifierAttack;
-	}
-
-	public double getOutgoingDamageModifierCast() {
-		return outgoingDamageModifierCast;
-	}
-
-	public double getOutgoingAccuracyModifierAttack() {
-		return outgoingAccuracyModifierAttack;
-	}
-
-	public double getOutgoingAccuracyModifierCast() {
-		return outgoingAccuracyModifierCast;
-	}
-
-	public double getIncomingDamageModifierAttack() {
-		return incomingDamageModifierAttack;
-	}
-
-	public double getIncomingDamageModifierCast() {
-		return incomingDamageModifierCast;
-	}
-
-	public double getIncomingAccuracyModifierAttack() {
-		return incomingAccuracyModifierAttack;
-	}
-
-	public double getIncomingAccuracyModifierCast() {
-		return incomingAccuracyModifierCast;
-	}
-
-	public double getChanceToFailAttack() {
-		return chanceToFailAttack;
-	}
-
-	public double getChanceToFailCast() {
-		return chanceToFailCast;
-	}
-
-	public double getChanceToFailMove() {
-		return chanceToFailMove;
-	}
-
-	public boolean isPreventAttack() {
-		return preventAttack;
-	}
-
-	public boolean isPreventCast() {
-		return preventCast;
-	}
-
-	public boolean isPreventMove() {
-		return preventMove;
-	}
-
-	static class StatusEffectFactory {
-		private static Map<String, StatusEffect> statusEffects = new HashMap<String, StatusEffect>();
-		private static boolean statusEffectsInitialized = false;
-
-		private static void initStatusEffects() {
-			statusEffectsInitialized = true;
-			BufferedImage icon = null;
-			try {
-				icon = ImageIO.read(Plot.class
-						.getResource("/resource/img/spriteSheet/snail.png"));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			StatusEffect slow = new StatusEffect("Slow", icon, 3000);
-			slow.speedModifierAttack = 1.3;
-			slow.speedModifierCast = 1.3;
-			slow.speedModifierMove = 1.5;
-
-			statusEffects.put("Slow", slow);
+		
+	
+	private BaseEffect getBaseEffect(ID id) {
+		if (!baseEffectsInitialized) {
+			initBaseEffects();
 		}
+		BaseEffect baseEffect = baseEffects.get(id);
+		if (baseEffect == null) {
+			throw new UnsupportedOperationException("Not implemented yet - BaseEffect::" + id.name());
+		}
+		return baseEffect;
+	}
+		
+	private void initBaseEffects() {
+		baseEffectsInitialized = true;
+		baseEffects.put(ID.SLOW, new BaseEffect(ID.SLOW, "Slow", new Modifier(
+				FRACTIONAL_BONUS.SPEED_MODIFIER_STRIKE, 1.3,
+				FRACTIONAL_BONUS.SPEED_MODIFIER_SHOT, 1.3,
+				FRACTIONAL_BONUS.SPEED_MODIFIER_SPELL, 1.15,
+				FRACTIONAL_BONUS.SPEED_MODIFIER_MOVE, 1.5)));
 
-		public static StatusEffect getStatusEffect(String name) {
-			if (!statusEffectsInitialized) {
-				initStatusEffects();
-			}
-			return statusEffects.get(name);
+		baseEffects.put(ID.BIND, new BaseEffect(ID.BIND, "Bind", new Modifier(
+				FRACTIONAL_BONUS.SPEED_MODIFIER_MOVE, 3.0,
+				FRACTIONAL_BONUS.CHANCE_TO_SUCCEED_MOVE, 0.3)));
+		
+		baseEffects.put(ID.BURNING, new BaseEffect(ID.BURNING, "Burning", new Modifier(
+				FLAT_BONUS.HP_DAMAGE_PER_SECOND, 3)));
+
+		baseEffects.put(ID.KNOCKDOWN, new BaseEffect(ID.KNOCKDOWN, "Knockdown", new Modifier()));
+
+		baseEffects.put(ID.MURDEROUS_INTENT, new BaseEffect(ID.MURDEROUS_INTENT, "Murderous Intent", new Modifier(
+				FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 0.5,
+				FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 0.5,
+				FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 0.75,
+				FRACTIONAL_BONUS.INCOMING_DAMAGE_MODIFIER_STRIKE, 1.1,
+				FRACTIONAL_BONUS.INCOMING_DAMAGE_MODIFIER_SHOT, 1.1,
+				FRACTIONAL_BONUS.INCOMING_DAMAGE_MODIFIER_SPELL, 1.1)));
+		
+		baseEffects.put(ID.DAMAGE_DOWN, new BaseEffect(ID.DAMAGE_DOWN, "Weaken", new Modifier(
+				FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 0.9,
+				FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 0.9,
+				FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 0.95)));
+	}
+
+	private class BaseEffect {
+		private final ID id;
+		private final String name;
+		private final Modifier modifier;
+		
+		public BaseEffect(ID id, String name, Modifier modifier) {
+			this.id = id;
+			this.name = name;
+			this.modifier = modifier;
 		}
 	}
 }

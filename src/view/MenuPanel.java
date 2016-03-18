@@ -48,7 +48,7 @@ public class MenuPanel extends JPanel {
 						abilityPanel.updateDisplay(activeAbility);
 						abilityPanel.setVisible(true);
 						targetList.setVisible(true);
-						updateMenuList(targetList, World.getTargets(activeUnit, activeAbility, GraphicsPanel.getScreenPos()).iterator());
+						updateMenuList(targetList, World.getTargets(activeUnit, activeAbility, GraphicsPanel.getScreenRectangle()).iterator());
 					}
 				}
 			}
