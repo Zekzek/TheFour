@@ -173,7 +173,7 @@ public class Unit extends TallObject {
 		
 		final int yOffset;
 		final int xOffset;
-		//TODO: draw active ability name to screen (and damage?)
+		//TODO: draw damage to screen?
 		abilityString = name;
 		if (moveDistance != 0) {
 			if (facing == FACING.N) {

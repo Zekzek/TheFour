@@ -223,22 +223,25 @@ public class BattleQueue {
 		battleDuration = nextAction.getStartTime();
 		Unit source = nextAction.getSource();
 		ITargetable target = nextAction.getTarget();
-		Ability ability;
 		if (!isValidAction(nextAction)) {
 			System.out.println("Warning: " + source + "'s " + nextAction.getAbility() + " is now unusable!");
 			dequeueAction(nextAction);
 			performNextAction();
 			return;
 		} else if (!targetReachable(nextAction)) {
-			ability = Ability.get(Ability.ID.MOVE);
-			//TODO: handle null response for getPathToUseAction
-			GridPosition moveTo = getPathToUseAction(nextAction).getFirstMove();
-			BattleQueue.insertFirstAction(ability, source, new GroundTarget(moveTo));
-			performNextAction();
-			return;
+			PathingGridPosition path = getPathToUseAction(nextAction);
+			if (path != null && path.getFirstMove() != null) {
+				GridPosition moveTo = path.getFirstMove();
+				BattleQueue.insertFirstAction(Ability.get(Ability.ID.MOVE), source, new GroundTarget(moveTo));
+				performNextAction();
+			} else {
+				BattleQueue.insertFirstAction(Ability.get(Ability.ID.DELAY), source, source);
+				performNextAction();
+			}
+			
 		} else {
 			actionQueue.poll(); //remove from the queue
-			ability = nextAction.getAbility();
+			Ability ability = nextAction.getAbility();
 			performAction(source, ability, target);
 			
 			source.tickStatusEffects(ability.getDelay());

@@ -6,17 +6,12 @@ public class Starter {
 	}
 }
 
-//		TODO
+//		TODO: Feature improvements
 //	Labels for ability & target?
 //	Win animation, subset of cast animation
-//	Movement
-//	Pathing
 //	Ability Categories
-//	Status Effects
-//	More abilities
 //	Decorate dialog box
 //	Decorate ability selection
-//	Cancel actions when they become unusable (all targets die, etc)
 // 	climate-type overlay map?
 // 	expanded world template
 // 	Keyboard interaction
@@ -29,7 +24,6 @@ public class Starter {
 // 	Elevation map
 
 //		LATER
-//	upcoming move display?
 //	Party dynamics fight
 //	Stat interaction display
 //	Equipment
