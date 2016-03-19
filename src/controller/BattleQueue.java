@@ -10,8 +10,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import model.Ability;
 import model.GridPosition;
@@ -242,6 +240,7 @@ public class BattleQueue {
 			return;
 		} else if (!targetReachable(nextAction)) {
 			ability = Ability.get(Ability.ID.MOVE);
+			//TODO: handle null response for getPathToUseAction
 			GridPosition moveTo = getPathToUseAction(nextAction).getFirstMove();
 			BattleQueue.insertFirstAction(ability, source, new GroundTarget(moveTo));
 			performNextAction();
@@ -337,68 +336,41 @@ public class BattleQueue {
 		return sourcePos.getDistanceTo(targetPos) <= range;
 	}
 	
-	/**
-	 * Powered by Uniform Cost Search
-	 * 
-	 * @param source
-	 * @param target
-	 * @return
-	 */
-
 	private static PathingGridPosition getPathToUseAction(ReadiedAction action) {
 		if (me == null) {
 			me = new BattleQueue();
 		}
 		Unit source = action.getSource();
-		ITargetable target = action.getTarget();
 		
-//		procedure UniformCostSearch(Graph, start, goal)
-//		node <- start
-//		cost <- 0
 		PathingGridPosition node = me.new PathingGridPosition(source.getPos(), null);
-//		frontier <- priority queue containing node only
 		LinkedList<PathingGridPosition> frontier = new LinkedList<PathingGridPosition>();
 		frontier.add(node);
-//		explored <- empty set
 		LinkedList<PathingGridPosition> explored = new LinkedList<PathingGridPosition>();
-		
-//		do
-		while(true) {
-//		    if frontier is empty
+		while(node.getCost() < 100) {
 			if (frontier.isEmpty()) {
-//		      	return failure
 				return null;
 			}
-//		    node <- frontier.pop()
 			Collections.sort(frontier, LOWEST_COST);
 			node = frontier.poll();
 			System.out.println("Checking " + node);
-//		    if node is goal
 			if (targetReachable(action, node)) {
-//		      	return solution
 				return node;
 			}
-//		    explored.add(node)
 			explored.add(node);
-//		    for each of node's neighbors n
 			for(GridPosition n : World.getOpenNeighbors(node)) {
 				PathingGridPosition neighbor = me.new PathingGridPosition(n, node);
-//		    	if n is not in explored
 				if (!explored.contains(neighbor)) {
-//		        	if n is not in frontier
 					if (!frontier.contains(neighbor)) {
-//		          		frontier.add(n)
 						frontier.add(neighbor);
 					}
-//		        	else if n is in frontier with higher cost
 					else if (frontier.get(frontier.indexOf(neighbor)).getCost() > neighbor.getCost()) {
-//		          		replace existing node with n
 						frontier.remove(neighbor);
 						frontier.add(neighbor);
 					}
 				}
 			}
 		}
+		return null;
 	}
 	
 	private static void delay(Unit unit, int delay) {
@@ -452,9 +424,9 @@ public class BattleQueue {
 			return cost;
 		}
 		
-		public PathingGridPosition getHistory() {
-			return history;
-		}
+//		public PathingGridPosition getHistory() {
+//			return history;
+//		}
 		
 		public GridPosition getFirstMove() {
 			if (history == null) {

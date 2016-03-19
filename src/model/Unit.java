@@ -40,6 +40,7 @@ public class Unit extends TallObject {
 	private SpriteSheet.FACING facing = SpriteSheet.FACING.S;
 	private int animationSequence = 0;
 	private SpriteSheet.ANIMATION stance = SpriteSheet.ANIMATION.WALK;
+	private Weapon weapon;
 	private Set<Ability> learnedActions = new HashSet<Ability>();
 	private Set<StatusEffect> statusEffects = new HashSet<StatusEffect>();
 	private String abilityString;
@@ -85,6 +86,10 @@ public class Unit extends TallObject {
 	
 	public void learnAction(Ability action) {
 		learnedActions.add(action);
+	}
+	
+	public void setWeapon(Weapon weapon) {
+		this.weapon = weapon;
 	}
 	
 	public void damage(int damage) {
@@ -250,6 +255,9 @@ public class Unit extends TallObject {
 		}
 		Modifier netModifier = new Modifier(statusModifiers);
 		netModifier.addModifier(baseModifier);
+		if (weapon != null) {
+			netModifier.addModifier(weapon.getModifier());
+		}
 		return netModifier;
 	}
 	
@@ -301,15 +309,20 @@ public class Unit extends TallObject {
 
 		private static void initUnits() {
 			unitsInitialized = true;
-			
 			Unit defender = new Unit("Defender", 200, Plot.class.getResource("/resource/img/spriteSheet/defender.png"));
 			defender.learnAction(Ability.get(Ability.ID.GUARD_ATTACK));
 			defender.learnAction(Ability.get(Ability.ID.SHIELD_BASH));
 			defender.learnAction(Ability.get(Ability.ID.SWEEPING_STRIKE));
 			defender.learnAction(Ability.get(Ability.ID.DELAY));
+			defender.setWeapon(Weapon.getWeapon(Weapon.ID.SPEAR_AND_SHIELD));
+			defender.baseModifier.setBonus(FRACTIONAL_BONUS.INCOMING_DAMAGE_MODIFIER_STRIKE, 0.8);
+			defender.baseModifier.setBonus(FRACTIONAL_BONUS.INCOMING_DAMAGE_MODIFIER_SHOT, 0.8);
+			defender.baseModifier.setBonus(FRACTIONAL_BONUS.INCOMING_DAMAGE_MODIFIER_SPELL, 0.9);
 			units.put(ID.DEFENDER, defender);
 			
 			Unit sorceress = new Unit("Sorceress", 160, Plot.class.getResource("/resource/img/spriteSheet/sorceress.png"));
+			sorceress.setWeapon(Weapon.getWeapon(Weapon.ID.DAGGER));
+			sorceress.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 1.2);
 			units.put(ID.SORCERESS, sorceress);
 
 			Unit berserker = new Unit("Berserker", 220, Plot.class.getResource("/resource/img/spriteSheet/berserker.png"));
@@ -319,6 +332,9 @@ public class Unit extends TallObject {
 			berserker.learnAction(Ability.get(Ability.ID.QUICK_ATTACK));
 			berserker.learnAction(Ability.get(Ability.ID.HEAVY_ATTACK));
 			berserker.learnAction(Ability.get(Ability.ID.KNOCKDOWN_STRIKE));
+			berserker.setWeapon(Weapon.getWeapon(Weapon.ID.MACE));
+			berserker.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 1.2);
+			berserker.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 1.1);
 			units.put(ID.BERSERKER, berserker);
 
 			Unit archer = new Unit("Archer", 190, Plot.class.getResource("/resource/img/spriteSheet/archer.png"));
@@ -327,22 +343,35 @@ public class Unit extends TallObject {
 			archer.learnAction(Ability.get(Ability.ID.BURNING_ATTACK));
 			archer.learnAction(Ability.get(Ability.ID.QUICK_ATTACK));
 			archer.learnAction(Ability.get(Ability.ID.HEAVY_ATTACK));
+			archer.setWeapon(Weapon.getWeapon(Weapon.ID.BOW));
+			archer.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 1.1);
+			archer.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 1.2);
 			units.put(ID.ARCHER, archer);
 
 			Unit guard = new Unit("Guard", 100, Plot.class.getResource("/resource/img/spriteSheet/guard.png"));
 			guard.learnAction(Ability.get(Ability.ID.GUARD_ATTACK));
 			guard.learnAction(Ability.get(Ability.ID.WATCH));
+			guard.setWeapon(Weapon.getWeapon(Weapon.ID.SPEAR));
+			guard.baseModifier.setBonus(FRACTIONAL_BONUS.INCOMING_DAMAGE_MODIFIER_STRIKE, 0.95);
+			guard.baseModifier.setBonus(FRACTIONAL_BONUS.INCOMING_DAMAGE_MODIFIER_SHOT, 0.95);
 			units.put(ID.GUARD, guard);
 			
 			Unit announcer = new Unit("Announcer", 1,  Plot.class.getResource("/resource/img/spriteSheet/guard.png"));
+			announcer.setWeapon(Weapon.getWeapon(Weapon.ID.UNARMED));
 			units.put(ID.ANNOUNCER, announcer);
 
 			Unit femaleBandit = new Unit("Female Bandit", 100, Plot.class.getResource("/resource/img/spriteSheet/banditFemale.png"));
 			femaleBandit.learnAction(Ability.get(Ability.ID.WEAK_ATTACK));
+			femaleBandit.setWeapon(Weapon.getWeapon(Weapon.ID.DAGGER));
+			femaleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 1.05);
+			femaleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 1.05);
 			units.put(ID.FEMALE_BANDIT, femaleBandit);
 			
 			Unit maleBandit = new Unit("Female Bandit", 100, Plot.class.getResource("/resource/img/spriteSheet/banditFemale.png"));
 			maleBandit.learnAction(Ability.get(Ability.ID.WEAK_ATTACK));
+			maleBandit.setWeapon(Weapon.getWeapon(Weapon.ID.DAGGER));
+			maleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 1.05);
+			maleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 1.05);
 			units.put(ID.MALE_BANDIT, maleBandit);
 		}
 
