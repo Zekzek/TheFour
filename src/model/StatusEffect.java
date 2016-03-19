@@ -51,6 +51,12 @@ public class StatusEffect {
 		duration -= time;
 	}
 	
+	public void updateWith(StatusEffect effect) {
+		if (effect.duration > this.duration) {
+			this.duration = effect.duration;
+		}
+	}
+	
 	public boolean isOver() {
 		return duration <= 0;
 	}
@@ -96,17 +102,38 @@ public class StatusEffect {
 	public Unit getNoPenaltyTarget() {
 		return noPenaltyTarget;
 	}
-		
 	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((baseEffect == null) ? 0 : baseEffect.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		StatusEffect other = (StatusEffect) obj;
+		if (baseEffect == null) {
+			if (other.baseEffect != null)
+				return false;
+		} else if (!baseEffect.equals(other.baseEffect))
+			return false;
+		return true;
+	}
+
 	private BaseEffect getBaseEffect(ID id) {
 		if (!baseEffectsInitialized) {
 			initBaseEffects();
 		}
-		BaseEffect baseEffect = baseEffects.get(id);
-		if (baseEffect == null) {
-			throw new UnsupportedOperationException("Not implemented yet - BaseEffect::" + id.name());
-		}
-		return baseEffect;
+		return baseEffects.get(id);
 	}
 		
 	private void initBaseEffects() {
@@ -120,11 +147,18 @@ public class StatusEffect {
 		baseEffects.put(ID.BIND, new BaseEffect(ID.BIND, "Bind", new Modifier(
 				FRACTIONAL_BONUS.SPEED_MODIFIER_MOVE, 3.0,
 				FRACTIONAL_BONUS.CHANCE_TO_SUCCEED_MOVE, 0.3)));
-		
+
+		baseEffects.put(ID.HASTE, new BaseEffect(ID.HASTE, "Haste", new Modifier(
+				FRACTIONAL_BONUS.SPEED_MODIFIER_STRIKE, 0.8,
+				FRACTIONAL_BONUS.SPEED_MODIFIER_SHOT, 0.8,
+				FRACTIONAL_BONUS.SPEED_MODIFIER_SPELL, 0.9,
+				FRACTIONAL_BONUS.SPEED_MODIFIER_MOVE, 0.7)));
+
+		baseEffects.put(ID.KNOCKDOWN, new BaseEffect(ID.KNOCKDOWN, "Knockdown", new Modifier()));
+
 		baseEffects.put(ID.BURNING, new BaseEffect(ID.BURNING, "Burning", new Modifier(
 				FLAT_BONUS.HP_DAMAGE_PER_SECOND, 3)));
 
-		baseEffects.put(ID.KNOCKDOWN, new BaseEffect(ID.KNOCKDOWN, "Knockdown", new Modifier()));
 
 		baseEffects.put(ID.MURDEROUS_INTENT, new BaseEffect(ID.MURDEROUS_INTENT, "Murderous Intent", new Modifier(
 				FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 0.5,
@@ -150,5 +184,35 @@ public class StatusEffect {
 			this.name = name;
 			this.modifier = modifier;
 		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((id == null) ? 0 : id.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			BaseEffect other = (BaseEffect) obj;
+			if (id != other.id)
+				return false;
+			return true;
+		}
+
+		@Override
+		public String toString() {
+			return "BaseEffect [id=" + id + ", name=" + name + ", modifier="
+					+ modifier + "]";
+		}
+		
+		
 	}
 }

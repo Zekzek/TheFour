@@ -48,10 +48,6 @@ public class BattleQueue {
 			while(true) {
 				try {
 					//TODO: when AI using quick actions, AI doesn't trigger (even though its most ready), kicks in after player selects an action 
-					System.out.println("PlayNextAction  pause:" + pause + " performingAction:" + performingAction 
-							+ " pending actions:" + actionQueue.size() + " next action at:" 
-							+ (actionQueue.peek()==null?"NONE":actionQueue.peek().getStartTime()) 
-							+ " most ready combatant:" + getMostReadyCombatant() + ":" + getMostReadyCombatantReadyness());
 					if (!pause && !performingAction && !actionQueue.isEmpty()
 							&& actionQueue.peek().getStartTime() <= getMostReadyCombatantReadyness()) {
 						performNextAction();
@@ -199,18 +195,13 @@ public class BattleQueue {
 		Unit mostReadyUnit = null;
 		int unitBusyness = Integer.MAX_VALUE;
 		Iterator<Unit> combatants = completionTimes.keySet().iterator();
-		System.out.println("    GET MOST READY COMBATANT");
 		while (combatants.hasNext()) {
 			Unit combatant = combatants.next();
 			if (completionTimes.get(combatant) < unitBusyness) {
 				mostReadyUnit = combatant;
 				unitBusyness = completionTimes.get(combatant);
 			}
-			System.out.println(combatant + " - last scheduled:" + lastScheduledTimes.get(combatant) 
-					+ " completion:" + completionTimes.get(combatant));
 		}
-		System.out.println(mostReadyUnit + " is most ready"); 
-				
 		return mostReadyUnit;
 	}
 	
@@ -268,7 +259,7 @@ public class BattleQueue {
 	}
 	
 	private static void performAction(Unit source, Ability ability, ITargetable target) {
-		System.out.println(source + "(" + battleDuration + ") uses " + ability + " on " + target);
+		System.out.println(source + " uses " + ability + " on " + target);
 		delayUnit(source, ability.calcAdditionalDelay(source.getModifier()));
 		source.face(target);
 		//TODO: use calcSuccessChance
@@ -352,7 +343,6 @@ public class BattleQueue {
 			}
 			Collections.sort(frontier, LOWEST_COST);
 			node = frontier.poll();
-			System.out.println("Checking " + node);
 			if (targetReachable(action, node)) {
 				return node;
 			}

@@ -56,14 +56,12 @@ public class StatusEffectTest {
 			assertEquals(statusEffect.getDuration(), statusEffectCopy.getDuration());
 			assertEquals(statusEffect.getNoPenaltyTarget(), statusEffectCopy.getNoPenaltyTarget());
 			assertEquals(statusEffect.getName(), statusEffectCopy.getName());
-			assertEquals(statusEffect.getIcon(), statusEffectCopy.getIcon());
 			statusEffect = new StatusEffect(id, duration, unit);
 			statusEffectCopy = new StatusEffect(statusEffect);
 			assertEquals(statusEffect.getId(), statusEffectCopy.getId());
 			assertEquals(statusEffect.getDuration(), statusEffectCopy.getDuration());
 			assertEquals(statusEffect.getNoPenaltyTarget(), statusEffectCopy.getNoPenaltyTarget());
 			assertEquals(statusEffect.getName(), statusEffectCopy.getName());
-			assertEquals(statusEffect.getIcon(), statusEffectCopy.getIcon());
 			duration += 100;
 		}
 	}

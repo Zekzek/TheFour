@@ -104,8 +104,13 @@ public class Unit extends TallObject {
 	}
 	
 	public void addStatusEffect(StatusEffect effect) {
+		for (StatusEffect currentEffect : statusEffects) {
+			if (currentEffect.equals(effect)) {
+				currentEffect.updateWith(effect);
+				return;
+			}
+		}
 		statusEffects.add(effect);
-		//TODO: don't add duplicate effects
 	}
 	
 	public void tickStatusEffects(int time) {
