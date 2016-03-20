@@ -16,6 +16,7 @@ import model.GridPosition;
 import model.GridRectangle;
 import model.GroundTarget;
 import model.ITargetable;
+import model.Modifier.FLAT_BONUS;
 import model.ReadiedAction;
 import model.StatusEffect;
 import model.TallObject;
@@ -265,6 +266,8 @@ public class BattleQueue {
 		System.out.println(source + " uses " + ability + " on " + target);
 		delayUnit(source, ability.calcAdditionalDelay(source.getModifier()));
 		source.face(target);
+		source.damage(source.getStatusEffectModifier(FLAT_BONUS.HP_DAMAGE_PER_SECOND, target) * ability.getDelay() / 1000);
+		source.heal(source.getStatusEffectModifier(FLAT_BONUS.HP_HEALED_PER_SECOND, target) * ability.getDelay() / 1000);
 		//TODO: use calcSuccessChance
 		if (ability.getAreaOfEffectDistance() > 0) {
 			int distance = ability.getAreaOfEffectDistance();

@@ -24,6 +24,7 @@ public class Ability {
 		ATTACK, WEAK_ATTACK, QUICK_ATTACK, HEAVY_ATTACK, 
 		GUARD_ATTACK, BURNING_ATTACK, PINNING_ATTACK, KNOCKDOWN_STRIKE,
 		SHIELD_BASH, BARRAGE, SWEEPING_STRIKE, THROW,
+		VIGOR,
 		CHALLENGE, SNARE,
 		DELAY, WATCH, MOVE, DEATH     
 	};
@@ -238,6 +239,7 @@ public class Ability {
 			//TODO: Spin animation
 			Ability sweep = new Ability(ID.SWEEPING_STRIKE, "Sweep", CATEGORY.STRIKE, TARGET_TYPE.PERSONAL, 2000, 20, 0,
 					1, "Twirl about, attacking everything nearby", ANIMATION.MELEE, 0);
+			//TODO: don't hit user with sweep
 			abilities.put(ID.SWEEPING_STRIKE, sweep);			
 			Ability throwObject = new Ability(ID.THROW, "Throw", CATEGORY.STRIKE, TARGET_TYPE.HARMFUL, 1400, 20, 6,
 					"Hurl your weapon at a distant target (it comes back, obviously...)", ANIMATION.MELEE);
@@ -249,6 +251,12 @@ public class Ability {
 			knockdown.statusEffects.add(new StatusEffect(StatusEffect.ID.KNOCKDOWN, 800));
 			abilities.put(ID.KNOCKDOWN_STRIKE, knockdown);
 
+			// Spells
+			Ability vigor = new Ability(ID.VIGOR, "Vigor", CATEGORY.SPELL, TARGET_TYPE.PERSONAL, 1000, 0, 0,
+					"Recover some lost health oer time", ANIMATION.CAST);
+			vigor.statusEffects.add(new StatusEffect(StatusEffect.ID.REGEN, 10000));
+			abilities.put(ID.VIGOR, vigor);
+			
 			// Skills
 			//TODO: Snare needs to create a tall object? Need enemies to move into it? Just next to it? hidden?
 			Ability snare = new Ability(ID.SNARE, "Snare", CATEGORY.SKILL, TARGET_TYPE.GROUND, 8000, 25, 1, 

@@ -44,6 +44,7 @@ public class Unit extends TallObject {
 	private Set<Ability> learnedActions = new HashSet<Ability>();
 	private Set<StatusEffect> statusEffects = new HashSet<StatusEffect>();
 	private String abilityString;
+	//TODO: implement MP
 	
 	private Unit(String name, int hp, URL sheetPath) {
 		super(name, hp);
@@ -101,6 +102,10 @@ public class Unit extends TallObject {
 //			stance = SpriteSheet.ANIMATION.DEATH;
 //			this.animate(stance, "Death", 1000, false);
 		}
+	}
+	
+	public void heal(int amount) {
+		super.heal(amount);
 	}
 	
 	public void addStatusEffect(StatusEffect effect) {
@@ -319,6 +324,7 @@ public class Unit extends TallObject {
 			defender.learnAction(Ability.get(Ability.ID.SHIELD_BASH));
 			defender.learnAction(Ability.get(Ability.ID.SWEEPING_STRIKE));
 			defender.learnAction(Ability.get(Ability.ID.DELAY));
+			defender.learnAction(Ability.get(Ability.ID.VIGOR));
 			defender.setWeapon(Weapon.getWeapon(Weapon.ID.SPEAR_AND_SHIELD));
 			defender.baseModifier.setBonus(FRACTIONAL_BONUS.INCOMING_DAMAGE_MODIFIER_STRIKE, 0.8);
 			defender.baseModifier.setBonus(FRACTIONAL_BONUS.INCOMING_DAMAGE_MODIFIER_SHOT, 0.8);

@@ -11,7 +11,8 @@ import controller.plot.Plot;
 
 public class StatusEffect {
 	public static enum ID {
-		SLOW(0), BIND(1), HASTE(2), KNOCKDOWN(3), BURNING(4), MURDEROUS_INTENT(5), DAMAGE_DOWN(6);
+		//TODO: add regen icon to status effect spritesheet
+		SLOW(0), BIND(1), HASTE(2), KNOCKDOWN(3), BURNING(4), MURDEROUS_INTENT(5), DAMAGE_DOWN(6), REGEN(4);
 		private final int index; //used by spriteSheet to select an icon
 		ID(int index) {
 			this.index = index;
@@ -157,8 +158,7 @@ public class StatusEffect {
 		baseEffects.put(ID.KNOCKDOWN, new BaseEffect(ID.KNOCKDOWN, "Knockdown", new Modifier()));
 
 		baseEffects.put(ID.BURNING, new BaseEffect(ID.BURNING, "Burning", new Modifier(
-				FLAT_BONUS.HP_DAMAGE_PER_SECOND, 3)));
-
+				FLAT_BONUS.HP_DAMAGE_PER_SECOND, 6)));
 
 		baseEffects.put(ID.MURDEROUS_INTENT, new BaseEffect(ID.MURDEROUS_INTENT, "Murderous Intent", new Modifier(
 				FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 0.5,
@@ -172,6 +172,9 @@ public class StatusEffect {
 				FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 0.9,
 				FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 0.9,
 				FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 0.95)));
+		
+		baseEffects.put(ID.REGEN, new BaseEffect(ID.REGEN, "Regenerating Health", new Modifier(
+				FLAT_BONUS.HP_HEALED_PER_SECOND, 6)));
 	}
 
 	private class BaseEffect {
