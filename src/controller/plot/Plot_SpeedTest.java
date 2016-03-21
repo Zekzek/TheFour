@@ -12,6 +12,7 @@ import model.Unit.ID;
 import model.World;
 import view.DialogPanel;
 import view.GraphicsPanel;
+import view.SceneTransition;
 import controller.BattleQueue;
 
 public class Plot_SpeedTest extends Plot{
@@ -23,6 +24,22 @@ public class Plot_SpeedTest extends Plot{
 		
 		BattleQueue.addCombatants(World.getSortedContentsWithin(GraphicsPanel.getScreenRectangle(), Unit.class).iterator());
 	    BattleQueue.addRandomCombatDelays();
+	}
+	
+	@Override
+	public void initSceneTransitions() {
+		
+		SceneTransition sorcRequest = new SceneTransition("Speed Test");
+		sorcRequest.setFadeInDuration(0);
+		sorcRequest.setFadedText("Ensure common operations can be done in a timely manner");
+		sorcRequest.setFadedDuration(5000);
+		sorcRequest.setStartRunnable(new Runnable() {
+			@Override
+			public void run() {
+				addUnitsToWorld();
+			}
+		});
+		addSceneTransition(sorcRequest);
 	}
 	
 	private void addUnitsToWorld() {

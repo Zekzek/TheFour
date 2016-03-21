@@ -4,12 +4,13 @@ import model.Ability;
 import model.Dialog;
 import model.Structure;
 import model.Unit;
-import model.Unit.TEAM;
 import model.Unit.ID;
+import model.Unit.TEAM;
 import model.World;
 import view.DialogPanel;
 import view.GameFrame;
 import view.GraphicsPanel;
+import view.SceneTransition;
 import view.SpriteSheet.FACING;
 import controller.BattleQueue;
 
@@ -20,22 +21,80 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 	private Unit guard1, guard2;
 	private Unit bandit1, bandit2, bandit3;
 	private Structure trees[] = new Structure[18];
-	private int banditDeaths = 0;
 	
 	@Override
 	public void start() {
-		GraphicsPanel.changeScene(0, "", 0, new Runnable() {
+		initSceneTransitions();
+		createUnits();
+		changeScene("Sorc Request");
+	}
+
+	@Override
+	public void initSceneTransitions() {
+		SceneTransition sorcRequest = new SceneTransition("Sorc Request");
+		sorcRequest.setFadeInDuration(0);
+		sorcRequest.setFadedText("Deep in the forests of Seargith,\n near the site of the newly unearthed relics");
+		sorcRequest.setFadedDuration(5000);
+		sorcRequest.setSetupRunnable(new Runnable() {
 			@Override
 			public void run() {
-				createUnits();
 				addSorcMeeting();
 			}
-		},  1000, new Runnable() {
+		});
+		sorcRequest.setStartRunnable(new Runnable() {
 			@Override
 			public void run() {
 				startSorcMeeting();
 			}
 		});
+		addSceneTransition(sorcRequest);
+		
+		SceneTransition banditAttack = new SceneTransition("Bandit Attack");
+		banditAttack.setFadedText("Hours later, finally nearing civilization");
+		banditAttack.setFadedDuration(5000);
+		banditAttack.setSetupRunnable(new Runnable() {
+			@Override
+			public void run() {
+				addBanditMeeting();
+			}
+		});
+		banditAttack.setStartRunnable(new Runnable() {
+			@Override
+			public void run() {
+				startBanditMeeting();
+			}
+		});
+		addSceneTransition(banditAttack);
+		
+		SceneTransition guardsAssist = new SceneTransition("Guards Assist");
+		guardsAssist.setSetupRunnable(new Runnable() {
+			@Override
+			public void run() {
+				addGuardsJoinFight();
+			}
+		});
+		guardsAssist.setStartRunnable(new Runnable() {
+			@Override
+			public void run() {
+				startGuardsJoinFight();
+			}
+		});
+		addSceneTransition(guardsAssist);
+		
+		SceneTransition banditsRun = new SceneTransition("Guards Compromise");
+		banditsRun.setSetupRunnable(new Runnable() {
+			@Override
+			public void run() {
+				addRetreatBandits();
+			}
+		});
+		banditsRun.setStartRunnable(new Runnable() {
+			@Override
+			public void run() {
+				guardsCompromise();
+			}
+		});
+		addSceneTransition(banditsRun);
 	}
 	
 	private void addSorcMeeting() {
@@ -64,21 +123,10 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 	}
 	
 	private void startSorcMeeting() {
-		Runnable run = new Runnable(){
+		Runnable loadBanditAttack = new Runnable(){
 			@Override
 			public void run() {
-				GraphicsPanel.changeScene(1000, "Hours later, finally nearing civilization", 5000, new Runnable() {
-					@Override
-					public void run() {
-						World.remove(sorceress);
-						addBanditMeeting();
-					}
-				},  1000, new Runnable() {
-					@Override
-					public void run() {
-						startBanditMeeting();
-					}
-				});
+				changeScene("Bandit Attack");
 			}};
 
 		Dialog[] sorcRequest = new Dialog[] {
@@ -87,7 +135,7 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 			new Dialog(defender, "Of course, SORC. I've been there for you since we were kids, haven't I? It won't leave my side."),
 			new Dialog(sorceress, "Aw, thanks! I gotta run now, but find me tonight and I'll figure out some way to repay you.")
 		};
-		DialogPanel.showDialog(sorcRequest, run);
+		DialogPanel.showDialog(sorcRequest, loadBanditAttack);
 	}
 	
 	private void addBanditMeeting() {
@@ -143,27 +191,17 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 	}
 	
 	private void banditRetreatSequence() {
-		Runnable retreat = new Runnable() {
+		Runnable guardsCompromise = new Runnable() {
 			@Override
 			public void run() {
-				GraphicsPanel.changeScene(1000, "", 0, new Runnable() {
-					@Override
-					public void run() {
-						addRetreatBandits();
-					}
-				},  1000, new Runnable() {
-					@Override
-					public void run() {
-						guardsCompromise();
-					}
-				});
+				changeScene("Guards Compromise");
 			}
 		};
 		
 		Dialog[] retreatDialog = new Dialog[] {
 			new Dialog(bandit2, "The situation's gotten a bit too hot guys. Let's get out of here!")
 		};
-		DialogPanel.showDialog(retreatDialog, retreat);
+		DialogPanel.showDialog(retreatDialog, guardsCompromise);
 	}
 	
 	private void addRetreatBandits() {
@@ -215,20 +253,9 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 	@Override
 	public void onUnitDefeated(Unit unit) {
 		if (unit.getTeam() == TEAM.ENEMY1) {
-			banditDeaths++;
-			if (banditDeaths == 1) {
-				GraphicsPanel.changeScene(500, "", 0, new Runnable() {
-						@Override
-						public void run() {
-							addGuardsJoinFight();
-						}
-					},  500, new Runnable() {
-						@Override
-						public void run() {
-							startGuardsJoinFight();
-						}
-					});
-			} else if (banditDeaths == 2) {
+			if ("Bandit Attack".equals(getSceneName())) {
+				changeScene("Guards Assist");
+			} else if ("Guards Assist".equals(getSceneName())) {
 				banditRetreatSequence();
 			}
 		} else if (unit.equals(defender)) {

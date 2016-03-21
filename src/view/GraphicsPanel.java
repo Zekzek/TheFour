@@ -124,6 +124,12 @@ public class GraphicsPanel extends JPanel{
 	    }
 	}
 	
+	public static void changeScene(SceneTransition sorcRequest) {
+		changeScene(sorcRequest.getFadeInDuration(), 
+				sorcRequest.getFadedText(), sorcRequest.getFadedDuration(), sorcRequest.getSetupRunnable(), 
+				sorcRequest.getFadeOutDuration(), sorcRequest.getStartRunnable());
+	}
+	
 	public static void changeScene(int fadeOutDuration, String display, int displayDuration, Runnable runnable, 
 			int fadeInDuration, Runnable startScene) {
 		Thread prettyLoadScene = new Thread() {
