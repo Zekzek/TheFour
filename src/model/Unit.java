@@ -97,10 +97,6 @@ public class Unit extends TallObject {
 		super.damage(damage);
 		if (hp <= 0) {
 			BattleQueue.removeCombatant(this, Ability.ID.DEATH);
-//			BattleQueue.insertFirstAction(Ability.get(Ability.ID.DEATH), this, this);
-			//TODO: replace death animation with death ability (blocks while animating)
-//			stance = SpriteSheet.ANIMATION.DEATH;
-//			this.animate(stance, "Death", 1000, false);
 		}
 	}
 	
@@ -139,6 +135,7 @@ public class Unit extends TallObject {
 	
 	public void aiQueueAction() {
 		//TODO: more sophisticated AI with variety (prefer closest, prefer weakest, etc)
+		//TODO: utilize the ability hints (once they're implemented)
 		Ability ability = learnedActions.iterator().next();
 		Unit target = World.getTargets(this, ability, GraphicsPanel.getScreenRectangle()).get(0);
 		BattleQueue.queueAction(ability, this, target);
@@ -181,19 +178,8 @@ public class Unit extends TallObject {
 		//TODO: draw damage to screen?
 		abilityString = name;
 		if (moveDistance != 0) {
-			if (facing == FACING.N) {
-				xOffset = 0;
-				yOffset = moveDistance;
-			} else if (facing == FACING.S) {
-				xOffset = 0;
-				yOffset = -moveDistance;
-			} else if (facing == FACING.E) {
-				xOffset = -moveDistance;
-				yOffset = 0;
-			} else {//if (facing == FACING.W) {
-				xOffset = moveDistance;
-				yOffset = 0;
-			}
+			xOffset = (facing == FACING.W ? moveDistance : facing == FACING.E ? -moveDistance : 0); 
+			yOffset = (facing == FACING.N ? moveDistance : facing == FACING.S ? -moveDistance : 0); 
 			drawXOffset = xOffset;
 			drawYOffset = yOffset;
 			this.updateeWorldPos(pos.getX() - xOffset, pos.getY() - yOffset);
@@ -216,11 +202,11 @@ public class Unit extends TallObject {
 						e.printStackTrace();
 					}
 				}
-				if (returnToDefault) {
-					animationSequence = 0;
-					unit.stance = defaultStance;
-					abilityString = "";
-				}
+				abilityString = "";
+//				if (returnToDefault) {
+//					animationSequence = 0;
+//					unit.stance = defaultStance;
+//				}
 			}
 		};
 		animationThread.start();
@@ -322,8 +308,8 @@ public class Unit extends TallObject {
 			Unit defender = new Unit("Defender", 200, Plot.class.getResource("/resource/img/spriteSheet/defender.png"));
 			defender.learnAction(Ability.get(Ability.ID.GUARD_ATTACK));
 			defender.learnAction(Ability.get(Ability.ID.SHIELD_BASH));
-			defender.learnAction(Ability.get(Ability.ID.SWEEPING_STRIKE));
-			defender.learnAction(Ability.get(Ability.ID.DELAY));
+//			defender.learnAction(Ability.get(Ability.ID.SWEEPING_STRIKE));
+//			defender.learnAction(Ability.get(Ability.ID.DELAY));
 			defender.learnAction(Ability.get(Ability.ID.VIGOR));
 			defender.setWeapon(Weapon.getWeapon(Weapon.ID.SPEAR_AND_SHIELD));
 			defender.baseModifier.setBonus(FRACTIONAL_BONUS.INCOMING_DAMAGE_MODIFIER_STRIKE, 0.8);

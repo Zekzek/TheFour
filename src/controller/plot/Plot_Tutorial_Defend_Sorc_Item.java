@@ -25,7 +25,7 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 	@Override
 	public void start() {
 		initSceneTransitions();
-		createUnits();
+		initUnits();
 		changeScene("Sorc Request");
 	}
 
@@ -34,7 +34,7 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 		SceneTransition sorcRequest = new SceneTransition("Sorc Request");
 		sorcRequest.setFadeInDuration(0);
 		sorcRequest.setFadedText("Deep in the forests of Seargith,\n near the site of the newly unearthed relics");
-		sorcRequest.setFadedDuration(5000);
+		sorcRequest.setFadedDuration(7000);
 		sorcRequest.setSetupRunnable(new Runnable() {
 			@Override
 			public void run() {
@@ -234,7 +234,7 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 		DialogPanel.showDialog(guardsCompromise, null);
 	}
 	
-	private void createUnits() {
+	private void initUnits() {
 		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER);
 		sorceress = Unit.get(ID.SORCERESS, TEAM.ALLY);
 		guard1 = Unit.get(ID.GUARD, TEAM.ALLY);

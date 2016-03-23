@@ -8,6 +8,7 @@ import javax.imageio.ImageIO;
 
 public class Structure extends TallObject{
 
+	//TODO: use spritesheet
 	private BufferedImage sprite;
 	
 	public Structure(String name, URL url, int hp) {

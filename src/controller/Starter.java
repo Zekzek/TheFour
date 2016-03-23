@@ -24,11 +24,19 @@ public class Starter {
 // 	Elevation map
 
 //		LATER
+//	Combos
+//	Momentum
 //	Party dynamics fight
 //	Stat interaction display
 //	Equipment
+//	Basr stats
 //	Learn new abilities
 //	master abilities (through use)
+//	resources (mp, tp)
+//	flanking
+//	stealth
+//	random encounters
+//	music and sounds
 
 //		LANDSCAPE/TERRAIN
 // Plains, Jungle, Tundra, Forest, Desert, Rocky, Volcanic, Castle, Underground

@@ -11,7 +11,7 @@ import javax.imageio.ImageIO;
 import model.StatusEffect;
 
 public class SpriteSheet {
-	
+	//TODO: build constant length animations (currently set to 5) that return to standing in most cases (not death)
 	public static enum FACING {N, W, S, E}
 	public static enum ANIMATION {WALK, CAST, MELEE, RANGE, DEATH}
 	public static enum CLIMATE {PLAINS, JUNGLE, TUNDRA, FOREST, DESERT, ROCKY, VOLCANIC, CASTLE, UNDERGROUND}

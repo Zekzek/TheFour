@@ -1,18 +1,10 @@
 package view;
 
-//TODO: Abilities always have doAtStart, doAtMid, doAtEnd
-//doAtStart kicks off animation
-//doAtMid does actual damage
-//doAtEnd reports action done so next ca act, and calls whatever finalization actions are required(onUnitDeath, etc)
-
-//In each plot, enum to clarify the current sub-scene, something like:
-//public enum PHASE { SORC_REQUEST, BANDIT_ATTACK, GUARD_RESCUE }
-
 public class SceneTransition {
 	private String name;
 	private Runnable setupRunnable;
 	private Runnable startRunnable;
-	private Runnable wrapUpRunnable;
+	private Runnable wrapUpRunnable; //TODO: implement wrapUpRunnable?
 	private int fadeOutDuration;
 	private int fadedDuration;
 	private int fadeInDuration;

@@ -1,6 +1,5 @@
 package controller;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -13,12 +12,9 @@ import java.util.Set;
 
 import model.Ability;
 import model.GridPosition;
-import model.GridRectangle;
 import model.GroundTarget;
 import model.ITargetable;
-import model.Modifier.FLAT_BONUS;
 import model.ReadiedAction;
-import model.StatusEffect;
 import model.TallObject;
 import model.Unit;
 import model.World;
@@ -34,7 +30,7 @@ public class BattleQueue {
 	private static final Comparator<PathingGridPosition> LOWEST_COST = new Comparator<PathingGridPosition>(){
 		@Override
 		public int compare(PathingGridPosition pos1, PathingGridPosition pos2) {
-			return pos1.getCost() - pos2.getCost();
+			return pos1.getCostEstimate() - pos2.getCostEstimate();
 		}
 	};
 	private static final Random RAND = new Random();
@@ -49,9 +45,11 @@ public class BattleQueue {
 			while(true) {
 				try {
 					//TODO: when AI using quick actions, AI doesn't trigger (even though its most ready), kicks in after player selects an action 
-					if (!pause && !performingAction && !actionQueue.isEmpty()
-							&& actionQueue.peek().getStartTime() <= getMostReadyCombatantReadyness()) {
-						performNextAction();
+					synchronized(actionQueue) {
+						if (!pause && !performingAction && !actionQueue.isEmpty()
+								&& actionQueue.peek().getStartTime() <= getMostReadyCombatantReadyness()) {
+							performNextAction();
+						}
 					}
 					Thread.sleep(PERFORM_ACTION_CHECK_DELAY);
 				} catch (InterruptedException e) {
@@ -107,31 +105,36 @@ public class BattleQueue {
 		if (lastScheduledTimes.get(unit) == null) {
 			return;
 		}
-		Iterator<ReadiedAction> actions = actionQueue.iterator();
-		while (actions.hasNext()) {
-			if (unit.equals(actions.next().getSource())) {
-				actions.remove();
+		synchronized(actionQueue) {
+			Iterator<ReadiedAction> actions = actionQueue.iterator();
+			while (actions.hasNext()) {
+				if (unit.equals(actions.next().getSource())) {
+					actions.remove();
+				}
 			}
 		}
 		if (exitAbility != null) {
-			insertFirstAction(Ability.get(Ability.ID.DEATH), unit, unit);
+			Ability death = Ability.get(Ability.ID.DEATH);
+			insertFirstAction(death, unit, unit, null, new Runnable() {
+				@Override
+				public void run() {
+					unitDefeated(unit);
+					// Determine if the team was defeated
+					Unit.TEAM team = unit.getTeam();
+					boolean teamDefeat = true;
+					Iterator<Unit> combatants = lastScheduledTimes.keySet().iterator();
+					while (teamDefeat && combatants.hasNext()) {
+						teamDefeat = !(combatants.next().getTeam() == team);
+					}
+					if (teamDefeat) {
+						activeTeams.remove(team);
+						teamDefeated(team);
+					}
+				}
+			});
 		}
 		lastScheduledTimes.remove(unit);
 		completionTimes.remove(unit);
-		
-		//TODO: wait until after exitAbility completes to call unitDefeated, etc
-		unitDefeated(unit);
-		// Determine if the team was defeated
-		Unit.TEAM team = unit.getTeam();
-		boolean teamDefeat = true;
-		Iterator<Unit> combatants = lastScheduledTimes.keySet().iterator();
-		while (teamDefeat && combatants.hasNext()) {
-			teamDefeat = !(combatants.next().getTeam() == team);
-		}
-		if (teamDefeat) {
-			activeTeams.remove(team);
-			teamDefeated(team);
-		}
 	}
 	
 	public static void addRandomCombatDelays() {
@@ -147,49 +150,62 @@ public class BattleQueue {
 	public static void endCombat() {
 		lastScheduledTimes.clear();
 		completionTimes.clear();
-		actionQueue.clear();
+		synchronized(actionQueue) {	
+			actionQueue.clear();
+		}
 		battleDuration = 0;
 	}
 	
 	public static void queueAction(Ability ability, Unit source, ITargetable target) {
 		ReadiedAction action = new ReadiedAction(ability, source, target, completionTimes.get(source));
-		actionQueue.add(action);
 		lastScheduledTimes.put(source, completionTimes.get(source));
 		completionTimes.put(source, action.getStartTime() + ability.getDelay());
 		System.out.println("\t" + source + "(" + lastScheduledTimes.get(source) + ") has prepared " + ability + " for " + action.getTarget());
-		Collections.sort(actionQueue, SOONEST_READIED_ACTION);
+		synchronized(actionQueue) {
+			actionQueue.add(action);
+			Collections.sort(actionQueue, SOONEST_READIED_ACTION);
+		}
 	}
 	
 	public static void insertFirstAction(Ability ability, Unit source, ITargetable target) {
+		insertFirstAction(ability, source, target, null, null);
+	}
+	
+	public static void insertFirstAction(Ability ability, Unit source, ITargetable target, Runnable doAtMid, Runnable doAtEnd) {
 		BattleQueue.delay(source, ability.getDelay());
 		ReadiedAction action = new ReadiedAction(ability, source, target, battleDuration);
-		actionQueue.add(action);
+		action.setDoAtMid(doAtMid);
+		action.setDoAtEnd(doAtEnd);
 		lastScheduledTimes.put(source, lastScheduledTimes.get(source) + ability.getDelay());
 		completionTimes.put(source, completionTimes.get(source) + ability.getDelay());
 		System.out.println("\t" + source + "(" + lastScheduledTimes.get(source) + ") has immediately prepared " + ability + " for " + action.getTarget());
-		Collections.sort(actionQueue, SOONEST_READIED_ACTION);
+		synchronized(actionQueue) {
+			actionQueue.add(action);
+			Collections.sort(actionQueue, SOONEST_READIED_ACTION);
+		}
 	}
 	
 	public static void dequeueAction(ReadiedAction action) {
 		Ability ability = action.getAbility();
 		Unit source = action.getSource();
-		for (int i = actionQueue.size() - 1; i >= 0; i--) {
-			ReadiedAction otherAction = actionQueue.get(i);
-			if (otherAction.equals(action)) {
-				//remove the requested action
-				actionQueue.remove(i);
-				break;
-			} 
-			else if (otherAction.getSource().equals(source)) {
-				//move up all future actions
-				otherAction.delay(-action.getAbility().getDelay());
-			}
-		}
 		lastScheduledTimes.put(source, lastScheduledTimes.get(source) - ability.getDelay());
 		completionTimes.put(source, completionTimes.get(source) - ability.getDelay());
-		
+		synchronized(actionQueue) {
+			for (int i = actionQueue.size() - 1; i >= 0; i--) {
+				ReadiedAction otherAction = actionQueue.get(i);
+				if (otherAction.equals(action)) {
+					//remove the requested action
+					actionQueue.remove(i);
+					break;
+				} 
+				else if (otherAction.getSource().equals(source)) {
+					//move up all future actions
+					otherAction.delay(-action.getAbility().getDelay());
+				}
+			}
+			Collections.sort(actionQueue, SOONEST_READIED_ACTION);
+		}		
 		System.out.println("\t" + source + "(" + lastScheduledTimes.get(source) + ") has decided not to use " + ability);
-		Collections.sort(actionQueue, SOONEST_READIED_ACTION);
 	}
 
 	public static Unit getMostReadyCombatant() {
@@ -220,97 +236,28 @@ public class BattleQueue {
 	
 	public static void performNextAction() {
 		performingAction = true;
-		ReadiedAction nextAction = actionQueue.peek();
-		battleDuration = nextAction.getStartTime();
-		Unit source = nextAction.getSource();
-		ITargetable target = nextAction.getTarget();
-		if (!isValidAction(nextAction)) {
-			System.out.println("Warning: " + source + "'s " + nextAction.getAbility() + " is now unusable!");
-			dequeueAction(nextAction);
-			performNextAction();
-			return;
-		} else if (!targetReachable(nextAction)) {
-			PathingGridPosition path = getPathToUseAction(nextAction);
-			if (path != null && path.getFirstMove() != null) {
-				GridPosition moveTo = path.getFirstMove();
-				BattleQueue.insertFirstAction(Ability.get(Ability.ID.MOVE), source, new GroundTarget(moveTo));
+		synchronized(actionQueue) {
+			ReadiedAction nextAction = actionQueue.peek();
+			battleDuration = nextAction.getStartTime();
+			Unit source = nextAction.getSource();
+			if (!isValidAction(nextAction)) {
+				System.out.println("Warning: " + source + "'s " + nextAction.getAbility() + " is now unusable!");
+				dequeueAction(nextAction);
 				performNextAction();
+				return;
+			} else if (!targetReachable(nextAction)) {
+				PathingGridPosition path = getPathToUseAction(nextAction);
+				if (path != null && path.getFirstMove() != null) {
+					GridPosition moveTo = path.getFirstMove();
+					BattleQueue.insertFirstAction(Ability.get(Ability.ID.MOVE), source, new GroundTarget(moveTo));
+					performNextAction();
+				} else {
+					BattleQueue.insertFirstAction(Ability.get(Ability.ID.DELAY), source, source);
+					performNextAction();
+				}
 			} else {
-				BattleQueue.insertFirstAction(Ability.get(Ability.ID.DELAY), source, source);
-				performNextAction();
+				actionQueue.poll().activate(); //remove from the queue
 			}
-			
-		} else {
-			actionQueue.poll(); //remove from the queue
-			Ability ability = nextAction.getAbility();
-			performAction(source, ability, target);
-			
-			source.tickStatusEffects(ability.getDelay());
-			source.animate(ability.getStance(), ability.getName(), ability.getDelay() * 9 / 10, true, ability.getMoveDistance());
-			Thread donePerforming = new Thread() {
-				@Override
-				public void run() {
-					try {
-						Thread.sleep(ability.getDelay());
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					performingAction = false;
-				}
-			};
-			donePerforming.start();
-		}
-	}
-	
-	private static void performAction(Unit source, Ability ability, ITargetable target) {
-		System.out.println(source + " uses " + ability + " on " + target);
-		delayUnit(source, ability.calcAdditionalDelay(source.getModifier()));
-		source.face(target);
-		source.damage(source.getStatusEffectModifier(FLAT_BONUS.HP_DAMAGE_PER_SECOND, target) * ability.getDelay() / 1000);
-		source.heal(source.getStatusEffectModifier(FLAT_BONUS.HP_HEALED_PER_SECOND, target) * ability.getDelay() / 1000);
-		//TODO: use calcSuccessChance
-		if (ability.getAreaOfEffectDistance() > 0) {
-			int distance = ability.getAreaOfEffectDistance();
-			GridPosition pos = target.getPos();
-			GridRectangle rect = new GridRectangle(pos.getX() - distance, pos.getY() - distance, 
-					2 * distance + 1, 2 * distance + 1);
-			ArrayList<Unit> targets = World.getSortedContentsWithin(rect, Unit.class);
-			for (Unit unit : targets) {
-				effectTargetWith(source, unit, ability);
-			}
-		} else {
-			effectTargetWith(source, target, ability);
-		}
-	}
-	
-	private static void effectTargetWith(Unit source, ITargetable target, Ability ability) {
-		if (target instanceof TallObject) {
-			TallObject targetObject = (TallObject) target;
-			if (RAND.nextDouble() <= ability.calcChanceToHit(source.getModifier(), targetObject.getModifier())) {
-				targetObject.damage(ability.calcDamage(source.getModifier(), targetObject.getModifier()));
-				if (targetObject.isAlive() && targetObject instanceof Unit) {
-					Unit targetUnit = (Unit) targetObject;
-					Iterator<StatusEffect> appliedStatusEffects = ability.getStatusEffectIterator();
-					while (appliedStatusEffects.hasNext()) {
-						targetUnit.addStatusEffect(new StatusEffect(appliedStatusEffects.next()));
-					}
-					delay(targetUnit, ability.getDelayOpponent());
-				}
-			}
-		}
-	}
-	
-	private static void delayUnit(Unit unit, int delay) {
-		if (delay != 0) {
-			lastScheduledTimes.put(unit, lastScheduledTimes.get(unit) + delay);
-			completionTimes.put(unit, completionTimes.get(unit) + delay);
-			for (int i = actionQueue.size() - 1; i >= 0; i--) {
-				ReadiedAction action = actionQueue.get(i);
-				if (unit.equals(action.getSource())) {
-					action.delay(delay);
-				}
-			}
-			Collections.sort(actionQueue, SOONEST_READIED_ACTION);
 		}
 	}
 	
@@ -338,12 +285,12 @@ public class BattleQueue {
 			me = new BattleQueue();
 		}
 		Unit source = action.getSource();
-		
-		PathingGridPosition node = me.new PathingGridPosition(source.getPos(), null);
+		GridPosition targetPos = action.getTarget().getPos();
+		PathingGridPosition node = me.new PathingGridPosition(source.getPos(), null, targetPos);
 		LinkedList<PathingGridPosition> frontier = new LinkedList<PathingGridPosition>();
 		frontier.add(node);
 		LinkedList<PathingGridPosition> explored = new LinkedList<PathingGridPosition>();
-		while(node.getCost() < 100) {
+		while(node.getCostEstimate() < 100) {
 			if (frontier.isEmpty()) {
 				return null;
 			}
@@ -354,12 +301,12 @@ public class BattleQueue {
 			}
 			explored.add(node);
 			for(GridPosition n : World.getOpenNeighbors(node)) {
-				PathingGridPosition neighbor = me.new PathingGridPosition(n, node);
+				PathingGridPosition neighbor = me.new PathingGridPosition(n, node, targetPos);
 				if (!explored.contains(neighbor)) {
 					if (!frontier.contains(neighbor)) {
 						frontier.add(neighbor);
 					}
-					else if (frontier.get(frontier.indexOf(neighbor)).getCost() > neighbor.getCost()) {
+					else if (frontier.get(frontier.indexOf(neighbor)).getCostEstimate() > neighbor.getCostEstimate()) {
 						frontier.remove(neighbor);
 						frontier.add(neighbor);
 					}
@@ -369,16 +316,18 @@ public class BattleQueue {
 		return null;
 	}
 	
-	private static void delay(Unit unit, int delay) {
+	public static void delay(Unit unit, int delay) {
 		if (delay > 0) {
-			for (ReadiedAction action : actionQueue) {
-				if (action.getSource().equals(unit)) {
-					action.delay(delay);
+			synchronized((actionQueue)) {
+				for (ReadiedAction action : actionQueue) {
+					if (action.getSource().equals(unit)) {
+						action.delay(delay);
+					}
 				}
+				lastScheduledTimes.put(unit, lastScheduledTimes.get(unit) + delay);
+				completionTimes.put(unit, completionTimes.get(unit) + delay);
+				Collections.sort(actionQueue, SOONEST_READIED_ACTION);
 			}
-			lastScheduledTimes.put(unit, lastScheduledTimes.get(unit) + delay);
-			completionTimes.put(unit, completionTimes.get(unit) + delay);
-			Collections.sort(actionQueue, SOONEST_READIED_ACTION);
 		}
 	}
 	
@@ -404,9 +353,10 @@ public class BattleQueue {
 	
 	private class PathingGridPosition extends GridPosition {
 		private int cost;
+		private int expectedCost;
 		private PathingGridPosition history;
 		
-		public PathingGridPosition(GridPosition pos, PathingGridPosition history) {
+		public PathingGridPosition(GridPosition pos, PathingGridPosition history, GridPosition target) {
 			super(pos.getX(), pos.getY());
 			this.history = history;
 			if (history == null) {
@@ -414,15 +364,20 @@ public class BattleQueue {
 			} else {
 				cost = history.cost + 1;
 			}
-		}
-
-		public int getCost() {
-			return cost;
+			calcExpectedCost(target);
 		}
 		
-//		public PathingGridPosition getHistory() {
-//			return history;
-//		}
+		private void calcExpectedCost(GridPosition target) {
+			int dx = getX() - target.getX();
+			if (dx < 0) dx = -dx;
+			int dy = getY() - target.getY();
+			if (dy < 0) dy = -dy;
+			expectedCost = dx + dy;
+		}
+		
+		public int getCostEstimate() {
+			return cost + expectedCost;
+		}
 		
 		public GridPosition getFirstMove() {
 			if (history == null) {
@@ -433,5 +388,9 @@ public class BattleQueue {
 				return history.getFirstMove();
 			}
 		}
+	}
+
+	public static void setActionComplete() {
+		performingAction = false;
 	}
 }

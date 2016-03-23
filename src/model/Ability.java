@@ -13,8 +13,10 @@ import view.SpriteSheet;
 import view.SpriteSheet.ANIMATION;
 
 public class Ability {
+	//TODO: AI hints (buff, debuff, attack, etc)
+	//TODO: display in 'folders'
 
-	public static enum TARGET_TYPE { HELPFUL, HARMFUL, PERSONAL, UBIQUITOUS, GROUND, DEAD };
+	public static enum TARGET_TYPE { PERSONAL, HELPFUL, HARMFUL, UBIQUITOUS, GROUND, DEAD };
 	//SKILLs don't do damage
 	public static enum CATEGORY { SKILL, ITEM, MOVE, ATTACK, 
 		STRIKE, SHIELD,
@@ -32,6 +34,7 @@ public class Ability {
 	private ID id;
 	private String name;
 	private TARGET_TYPE targetType;
+	private TARGET_TYPE affectsTargets;//TODO: implement affectsTargets
 	private CATEGORY category;
 	private int delay;
 	private int damage;
@@ -146,7 +149,7 @@ public class Ability {
 			return successChance;
 		}
 	}
-
+	
 	@Override
 	public String toString() {
 		return name;
@@ -237,6 +240,7 @@ public class Ability {
 					2, "Pepper an area with shots", ANIMATION.RANGE, 0);
 			abilities.put(ID.BARRAGE, barrage);
 			//TODO: Spin animation
+			//TODO: Don't hit self (only hit enemies?)
 			Ability sweep = new Ability(ID.SWEEPING_STRIKE, "Sweep", CATEGORY.STRIKE, TARGET_TYPE.PERSONAL, 2000, 20, 0,
 					1, "Twirl about, attacking everything nearby", ANIMATION.MELEE, 0);
 			//TODO: don't hit user with sweep
@@ -275,7 +279,6 @@ public class Ability {
 					"Wait", SpriteSheet.ANIMATION.WALK));
 			abilities.put(ID.WATCH, new Ability(ID.WATCH, "Watch", CATEGORY.SKILL, TARGET_TYPE.UBIQUITOUS, 5000, 0, 16,
 					"Watch", ANIMATION.WALK));
-			//TODO: stay down
 			abilities.put(ID.DEATH, new Ability(ID.DEATH, "Death", CATEGORY.SKILL, TARGET_TYPE.DEAD, 1000, 0, 0,
 					"Lose the will to fight on", ANIMATION.DEATH));
 		}
