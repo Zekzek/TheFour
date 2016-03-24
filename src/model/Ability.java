@@ -13,10 +13,10 @@ import view.SpriteSheet;
 import view.SpriteSheet.ANIMATION;
 
 public class Ability {
-	//TODO: AI hints (buff, debuff, attack, etc)
 	//TODO: display in 'folders'
 
-	public static enum TARGET_TYPE { PERSONAL, HELPFUL, HARMFUL, UBIQUITOUS, GROUND, DEAD };
+	public static enum TARGET_TYPE { SELF, ALLY, ENEMY, ALL, GROUND, DEAD };
+	public static enum EFFECT {BUFF, DEBUFF, ATTACK, MOVE};
 	//SKILLs don't do damage
 	public static enum CATEGORY { SKILL, ITEM, MOVE, ATTACK, 
 		STRIKE, SHIELD,
@@ -33,9 +33,10 @@ public class Ability {
 	
 	private ID id;
 	private String name;
-	private TARGET_TYPE targetType;
-	private TARGET_TYPE affectsTargets;//TODO: implement affectsTargets
 	private CATEGORY category;
+	private TARGET_TYPE selectionTargetType;
+	private TARGET_TYPE affectsTargetType;
+	private EFFECT effect;
 	private int delay;
 	private int damage;
 	private int range;
@@ -44,34 +45,48 @@ public class Ability {
 	private ANIMATION stance;
 	
 	private int moveDistance;
-	private int delayOpponent = 0;
+	private int delayOpponent;
 	private Set<StatusEffect> statusEffects = new HashSet<StatusEffect>();
 	
 	private JLabel label;
-	
-	private Ability(ID id, String name, CATEGORY category, TARGET_TYPE targetType, int delay, int damage, int range,
-			String special, ANIMATION stance) {
-		this(id, name, category, targetType, delay, damage, range, 0, special, stance, 0);
+		
+	private Ability(ID id, String name, CATEGORY category, TARGET_TYPE targetType, EFFECT effect, int delay, 
+			int damage, String special, ANIMATION stance) {
+		this(id, name, category, targetType, targetType, effect, delay, damage, 1, 0, special, stance, 0, 0);
 	}
 	
-	private Ability(ID id, String name, CATEGORY category, TARGET_TYPE targetType, int delay, int damage, int range, 
-			int radius, String special, ANIMATION stance, int moveDistance) {
+	private Ability(ID id, String name, CATEGORY category, TARGET_TYPE targetType, EFFECT effect, int delay, 
+			int damage, int range, int areaOfEffectDistance, String special, ANIMATION stance) {
+		this(id, name, category, targetType, targetType, effect, delay, damage, range,
+				areaOfEffectDistance, special, stance, 0, 0);
+	}
+	
+	private Ability(ID id, String name, CATEGORY category, TARGET_TYPE selectionTargetType, TARGET_TYPE affectsTargetType,
+			EFFECT effect, int delay, int damage, int range, int areaOfEffectDistance, String special, ANIMATION stance) {
+		this(id, name, category, selectionTargetType, affectsTargetType, effect, delay, damage, range,
+				areaOfEffectDistance, special, stance, 0, 0);
+	}
+	
+	private Ability(ID id, String name, CATEGORY category, TARGET_TYPE selectionTargetType, TARGET_TYPE affectsTargetType,
+			EFFECT effect, int delay, int damage, int range, int areaOfEffectDistance, String special, ANIMATION stance,
+			int moveDistance, int delayOpponent) {
+		super();
 		this.id = id;
 		this.name = name;
 		this.category = category;
-		this.targetType = targetType;
+		this.selectionTargetType = selectionTargetType;
+		this.affectsTargetType = affectsTargetType;
+		this.effect = effect;
 		this.delay = delay;
 		this.damage = damage;
 		this.range = range;
-		this.areaOfEffectDistance = radius;
+		this.areaOfEffectDistance = areaOfEffectDistance;
 		this.special = special;
 		this.stance = stance;
 		this.moveDistance = moveDistance;
-		label = new JLabel(name);
-		label.setSize(100, 50);
-		label.setPreferredSize(new Dimension(100, 50));
+		this.delayOpponent = delayOpponent;
 	}
-	
+
 	public static Ability get(ID name) {
 		return AbilityFactory.getAbility(name);
 	}
@@ -160,11 +175,17 @@ public class Ability {
 	public String getName() {
 		return name;
 	}
-	public TARGET_TYPE getTargetType() {
-		return targetType;
-	}
 	public CATEGORY getCategory() {
 		return category;
+	}
+	public TARGET_TYPE getSelectionTargetType() {
+		return selectionTargetType;
+	}
+	public TARGET_TYPE getAffectsTargetType() {
+		return affectsTargetType;
+	}
+	public EFFECT getEffect() {
+		return effect;
 	}
 	public int getDelay() {
 		return delay;
@@ -181,17 +202,17 @@ public class Ability {
 	public String getSpecial() {
 		return special;
 	}
-	public JLabel getLabel() {
-		return label;
+	public ANIMATION getStance() {
+		return stance;
 	}
 	public int getMoveDistance() {
 		return moveDistance;
 	}
-	public SpriteSheet.ANIMATION getStance() {
-		return stance;
-	}
 	public int getDelayOpponent() {
 		return delayOpponent;
+	}
+	public JLabel getLabel() {
+		return label;
 	}
 	public Iterator<StatusEffect> getStatusEffectIterator() {
 		return statusEffects.iterator();
@@ -204,83 +225,78 @@ public class Ability {
 		private static void initAbilities() {
 			abilitiesInitialized = true;
 			
-			// base 25 damage/second, less with status effects or range, etc
-						
 			// Generic attacks
-			abilities.put(ID.ATTACK, new Ability(ID.ATTACK, "Attack", CATEGORY.ATTACK, Ability.TARGET_TYPE.HARMFUL, 800, 25, 1,
-					"A basic attack, average in every way", SpriteSheet.ANIMATION.MELEE));
-			abilities.put(ID.QUICK_ATTACK, new Ability(ID.QUICK_ATTACK, "Quick Attack", CATEGORY.ATTACK, Ability.TARGET_TYPE.HARMFUL, 800, 25, 1,
-					"A quick jab", SpriteSheet.ANIMATION.MELEE));
-			abilities.put(ID.HEAVY_ATTACK, new Ability(ID.HEAVY_ATTACK, "Heavy Strike", CATEGORY.ATTACK, Ability.TARGET_TYPE.HARMFUL, 2200, 45, 1,
-					"A slow, powerful attack", SpriteSheet.ANIMATION.MELEE));
-			abilities.put(ID.WEAK_ATTACK, new Ability(ID.WEAK_ATTACK, "Weak Attack", CATEGORY.ATTACK, Ability.TARGET_TYPE.HARMFUL, 1000, 11, 1, 
-					"A weak attack", SpriteSheet.ANIMATION.MELEE));
+			abilities.put(ID.ATTACK, new Ability(ID.ATTACK, "Attack", CATEGORY.ATTACK, Ability.TARGET_TYPE.ENEMY, 
+					EFFECT.ATTACK, 800, 25, "A basic attack, average in every way", SpriteSheet.ANIMATION.MELEE));
+			abilities.put(ID.QUICK_ATTACK, new Ability(ID.QUICK_ATTACK, "Quick Attack", CATEGORY.ATTACK, Ability.TARGET_TYPE.ENEMY,
+					EFFECT.ATTACK, 800, 25, "A quick jab", SpriteSheet.ANIMATION.MELEE));
+			abilities.put(ID.HEAVY_ATTACK, new Ability(ID.HEAVY_ATTACK, "Heavy Strike", CATEGORY.ATTACK, Ability.TARGET_TYPE.ENEMY,
+					EFFECT.ATTACK, 2200, 45, "A slow, powerful attack", SpriteSheet.ANIMATION.MELEE));
+			abilities.put(ID.WEAK_ATTACK, new Ability(ID.WEAK_ATTACK, "Weak Attack", CATEGORY.ATTACK, Ability.TARGET_TYPE.ENEMY,
+					EFFECT.ATTACK, 1000, 11, "A weak attack", SpriteSheet.ANIMATION.MELEE));
 			
 			// Generic status effect attacks 
-			Ability guardAttack = new Ability(ID.GUARD_ATTACK, "Guard Attack", CATEGORY.ATTACK, Ability.TARGET_TYPE.HARMFUL, 1000, 20, 1,
-					"The standard guard's strike", SpriteSheet.ANIMATION.MELEE);
+			Ability guardAttack = new Ability(ID.GUARD_ATTACK, "Guard Attack", CATEGORY.ATTACK, Ability.TARGET_TYPE.ENEMY,
+					EFFECT.DEBUFF, 1000, 20, "The standard guard's strike", SpriteSheet.ANIMATION.MELEE);
 			guardAttack.statusEffects.add(new StatusEffect(StatusEffect.ID.DAMAGE_DOWN, 1100));
 			abilities.put(ID.GUARD_ATTACK, guardAttack);
-			Ability ignite = new Ability(ID.BURNING_ATTACK, "Ignite", CATEGORY.ATTACK, TARGET_TYPE.HARMFUL, 1200, 25, 10,
-					"Set the enemy ablaze", ANIMATION.RANGE);
+			Ability ignite = new Ability(ID.BURNING_ATTACK, "Ignite", CATEGORY.ATTACK, TARGET_TYPE.ENEMY, 
+					EFFECT.DEBUFF, 1200, 25, "Set the enemy ablaze", ANIMATION.RANGE);
 			ignite.statusEffects.add(new StatusEffect(StatusEffect.ID.BURNING, 8000));
 			abilities.put(ID.BURNING_ATTACK, ignite);
-			Ability pinningAttack = new Ability(ID.PINNING_ATTACK, "Pinning Shot", CATEGORY.ATTACK, TARGET_TYPE.HARMFUL, 1200, 20, 10,
-					"An attack aimed at the legs. It is designed to prevent movement", ANIMATION.RANGE);
+			Ability pinningAttack = new Ability(ID.PINNING_ATTACK, "Pinning Shot", CATEGORY.ATTACK, TARGET_TYPE.ENEMY,
+					EFFECT.DEBUFF, 1200, 20, "An attack aimed at the legs. It is designed to prevent movement", ANIMATION.RANGE);
 			pinningAttack.statusEffects.add(new StatusEffect(StatusEffect.ID.BIND, 2000));
 			abilities.put(ID.PINNING_ATTACK, pinningAttack);
 			
 			// Weapon-specific attacks
-			Ability shieldBash = new Ability(ID.SHIELD_BASH, "Shield Bash", CATEGORY.SHIELD, Ability.TARGET_TYPE.HARMFUL, 1200, 30, 1, 
-					"Briefly disorients the target", SpriteSheet.ANIMATION.MELEE);
-			shieldBash.delayOpponent = 300;
+			Ability shieldBash = new Ability(ID.SHIELD_BASH, "Shield Bash", CATEGORY.SHIELD, TARGET_TYPE.ENEMY, TARGET_TYPE.ENEMY,
+					EFFECT.DEBUFF, 1200, 30, 1, 0, "Briefly disorients the target", SpriteSheet.ANIMATION.MELEE, 0, 300);
 			shieldBash.statusEffects.add(new StatusEffect(StatusEffect.ID.SLOW, 3000));
 			abilities.put(ID.SHIELD_BASH, shieldBash);
-			Ability barrage = new Ability(ID.BARRAGE, "Barrage", CATEGORY.SHOT, TARGET_TYPE.GROUND, 1500, 20, 8,
-					2, "Pepper an area with shots", ANIMATION.RANGE, 0);
+			Ability barrage = new Ability(ID.BARRAGE, "Barrage", CATEGORY.SHOT, TARGET_TYPE.GROUND, TARGET_TYPE.ENEMY, 
+					EFFECT.ATTACK, 1500, 20, 1, 2, "Pepper an area with shots", ANIMATION.RANGE);
 			abilities.put(ID.BARRAGE, barrage);
 			//TODO: Spin animation
-			//TODO: Don't hit self (only hit enemies?)
-			Ability sweep = new Ability(ID.SWEEPING_STRIKE, "Sweep", CATEGORY.STRIKE, TARGET_TYPE.PERSONAL, 2000, 20, 0,
-					1, "Twirl about, attacking everything nearby", ANIMATION.MELEE, 0);
-			//TODO: don't hit user with sweep
-			abilities.put(ID.SWEEPING_STRIKE, sweep);			
-			Ability throwObject = new Ability(ID.THROW, "Throw", CATEGORY.STRIKE, TARGET_TYPE.HARMFUL, 1400, 20, 6,
-					"Hurl your weapon at a distant target (it comes back, obviously...)", ANIMATION.MELEE);
+			Ability sweep = new Ability(ID.SWEEPING_STRIKE, "Sweep", CATEGORY.STRIKE, TARGET_TYPE.SELF, TARGET_TYPE.ENEMY,
+					EFFECT.ATTACK, 2000, 20, 0, 1, "Twirl about, attacking everything nearby", ANIMATION.MELEE);
+			abilities.put(ID.SWEEPING_STRIKE, sweep);
+			Ability throwObject = new Ability(ID.THROW, "Throw", CATEGORY.STRIKE, TARGET_TYPE.ENEMY, EFFECT.ATTACK, 1400,
+					20, 6, 0, "Hurl your weapon at a distant target (it comes back, obviously...)", ANIMATION.MELEE);
 			abilities.put(ID.THROW, throwObject);
 			//TODO: force fall down ability, followed by get up ability?
-			Ability knockdown = new Ability(ID.KNOCKDOWN_STRIKE, "Knockdown", CATEGORY.STRIKE, TARGET_TYPE.HARMFUL, 2000, 10, 1,
-					"A forceful, ramming attack that will bring your oponent to his knees", ANIMATION.MELEE);
-			knockdown.delayOpponent = 800;
+			Ability knockdown = new Ability(ID.KNOCKDOWN_STRIKE, "Knockdown", CATEGORY.STRIKE, TARGET_TYPE.ENEMY, TARGET_TYPE.ENEMY,
+					EFFECT.DEBUFF, 2000, 10, 1, 0, "A forceful, ramming attack that will bring your oponent to his knees",
+					ANIMATION.MELEE, 0, 800);
 			knockdown.statusEffects.add(new StatusEffect(StatusEffect.ID.KNOCKDOWN, 800));
 			abilities.put(ID.KNOCKDOWN_STRIKE, knockdown);
 
 			// Spells
-			Ability vigor = new Ability(ID.VIGOR, "Vigor", CATEGORY.SPELL, TARGET_TYPE.PERSONAL, 1000, 0, 0,
-					"Recover some lost health oer time", ANIMATION.CAST);
+			Ability vigor = new Ability(ID.VIGOR, "Vigor", CATEGORY.SPELL, TARGET_TYPE.SELF, EFFECT.BUFF, 
+					1000, 0, "Recover some lost health oer time", ANIMATION.CAST);
 			vigor.statusEffects.add(new StatusEffect(StatusEffect.ID.REGEN, 10000));
 			abilities.put(ID.VIGOR, vigor);
 			
 			// Skills
 			//TODO: Snare needs to create a tall object? Need enemies to move into it? Just next to it? hidden?
-			Ability snare = new Ability(ID.SNARE, "Snare", CATEGORY.SKILL, TARGET_TYPE.GROUND, 8000, 25, 1, 
-					"Prepare a trap", SpriteSheet.ANIMATION.DEATH);
+			Ability snare = new Ability(ID.SNARE, "Snare", CATEGORY.SKILL, TARGET_TYPE.GROUND, EFFECT.ATTACK, 
+					8000, 25, "Prepare a trap", SpriteSheet.ANIMATION.DEATH);
 			abilities.put(ID.SNARE, snare);
 			//TODO: point animation?
-			Ability challenge = new Ability(ID.CHALLENGE, "Challenge", CATEGORY.SKILL, TARGET_TYPE.HARMFUL, 500, 1, 10,
-					"'Encourage' your oponent to focus on attacking only you.", ANIMATION.CAST);
+			Ability challenge = new Ability(ID.CHALLENGE, "Challenge", CATEGORY.SKILL, TARGET_TYPE.ENEMY, EFFECT.ATTACK, 
+					500, 1, 10, 0, "'Encourage' your oponent to focus on attacking only you.", ANIMATION.CAST);
 			challenge.statusEffects.add(new StatusEffect(StatusEffect.ID.MURDEROUS_INTENT, 10000));
 			abilities.put(ID.CHALLENGE, challenge);
 			
 			// Movement & Time killers
-			abilities.put(ID.MOVE, new Ability(ID.MOVE, "MOVE", CATEGORY.MOVE, TARGET_TYPE.PERSONAL, 500, 0, 1, 
-					0, "Walk, while keeping your guard up", SpriteSheet.ANIMATION.WALK, 1));
-			abilities.put(ID.DELAY, new Ability(ID.DELAY, "Delay", CATEGORY.SKILL, TARGET_TYPE.PERSONAL, 1000, 0, 0,
-					"Wait", SpriteSheet.ANIMATION.WALK));
-			abilities.put(ID.WATCH, new Ability(ID.WATCH, "Watch", CATEGORY.SKILL, TARGET_TYPE.UBIQUITOUS, 5000, 0, 16,
-					"Watch", ANIMATION.WALK));
-			abilities.put(ID.DEATH, new Ability(ID.DEATH, "Death", CATEGORY.SKILL, TARGET_TYPE.DEAD, 1000, 0, 0,
-					"Lose the will to fight on", ANIMATION.DEATH));
+			abilities.put(ID.MOVE, new Ability(ID.MOVE, "MOVE", CATEGORY.MOVE, TARGET_TYPE.SELF, TARGET_TYPE.SELF, 
+					EFFECT.MOVE, 500, 0, 1, 0, "Walk, while keeping your guard up", SpriteSheet.ANIMATION.WALK, 1, 0));
+			abilities.put(ID.DELAY, new Ability(ID.DELAY, "Delay", CATEGORY.SKILL, TARGET_TYPE.SELF, EFFECT.MOVE, 
+					1000, 0, "Wait", SpriteSheet.ANIMATION.WALK));
+			abilities.put(ID.WATCH, new Ability(ID.WATCH, "Watch", CATEGORY.SKILL, TARGET_TYPE.ALL, EFFECT.MOVE, 
+					5000, 0, 16, 0, "Watch", ANIMATION.WALK));
+			abilities.put(ID.DEATH, new Ability(ID.DEATH, "Death", CATEGORY.SKILL, TARGET_TYPE.DEAD, EFFECT.MOVE, 
+					1000, 0, "Lose the will to fight on", ANIMATION.DEATH));
 		}
 		
 		public static Ability getAbility(ID id) {

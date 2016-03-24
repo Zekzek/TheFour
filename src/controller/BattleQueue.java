@@ -264,7 +264,7 @@ public class BattleQueue {
 	private static boolean isValidAction(ReadiedAction action) {
 		boolean validity = true;
 		ITargetable target = action.getTarget();
-		if (action.getAbility().getTargetType() != Ability.TARGET_TYPE.DEAD && target instanceof TallObject) {
+		if (action.getAbility().getSelectionTargetType() != Ability.TARGET_TYPE.DEAD && target instanceof TallObject) {
 			validity = ((TallObject)target).isAlive();
 		}
 		return validity;

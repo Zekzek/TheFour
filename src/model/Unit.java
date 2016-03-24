@@ -44,7 +44,6 @@ public class Unit extends TallObject {
 	private Set<Ability> learnedActions = new HashSet<Ability>();
 	private Set<StatusEffect> statusEffects = new HashSet<StatusEffect>();
 	private String abilityString;
-	//TODO: implement MP
 	
 	private Unit(String name, int hp, URL sheetPath) {
 		super(name, hp);
@@ -94,12 +93,27 @@ public class Unit extends TallObject {
 	}
 	
 	public void damage(int damage) {
+		int shield = getModifier().getBonus(FLAT_BONUS.HP_SHIELD);
+		if (shield > 0) {
+			damage = damageHpShield(damage);
+		}
 		super.damage(damage);
 		if (hp <= 0) {
 			BattleQueue.removeCombatant(this, Ability.ID.DEATH);
 		}
 	}
 	
+	private int damageHpShield(int damage) {
+		int remainingDamage = damage;
+		Iterator<StatusEffect> statusEffectIterator = statusEffects.iterator();
+		while (statusEffectIterator.hasNext()) {
+			StatusEffect effect = statusEffectIterator.next();
+			remainingDamage = effect.getModifier().damageHpShield(remainingDamage);
+			//TODO: remove status effects that have been used up
+		}
+		return remainingDamage;
+	}
+
 	public void heal(int amount) {
 		super.heal(amount);
 	}
@@ -164,12 +178,12 @@ public class Unit extends TallObject {
 		}
 	}
 
-	public void animate(ANIMATION stance, String name, int duration, boolean returnToDefault) {
-		animate(stance, name, duration, returnToDefault, 0);
+	public void animate(ANIMATION stance, String name, int duration) {
+		animate(stance, name, duration, 0);
 	}
 	
 	//TODO: just pass in an ability? (may need duration separately to account or slow/haste)
-	public void animate(ANIMATION stance, String name, int duration, boolean returnToDefault, int moveDistance) {
+	public void animate(ANIMATION stance, String name, int duration, int moveDistance) {
 		int refreshRate = duration / ANIMATION_LENGTH;
 		Unit unit = this;
 		
@@ -203,10 +217,6 @@ public class Unit extends TallObject {
 					}
 				}
 				abilityString = "";
-//				if (returnToDefault) {
-//					animationSequence = 0;
-//					unit.stance = defaultStance;
-//				}
 			}
 		};
 		animationThread.start();
@@ -275,6 +285,24 @@ public class Unit extends TallObject {
 		return mod;
 	}
 	
+	public boolean isAllyOf(Unit unit) {
+		return (isPlayerTeam() && unit.isPlayerTeam()) ||
+				(isEnemyTeam() && unit.isEnemyTeam());
+	}
+	
+	public boolean isEnemyOf(Unit unit) {
+		return (isPlayerTeam() && unit.isEnemyTeam()) ||
+				(isEnemyTeam() && unit.isPlayerTeam());
+	}
+	
+	public boolean isPlayerTeam() {
+		return team == TEAM.PLAYER || team == TEAM.ALLY;
+	}
+	
+	public boolean isEnemyTeam() {
+		return team == TEAM.ENEMY1 || team == TEAM.ENEMY2;
+	}
+	
 	public static Unit get(ID name, TEAM team) {
 		return UnitFactory.getUnit(name, team);
 	}
@@ -308,7 +336,7 @@ public class Unit extends TallObject {
 			Unit defender = new Unit("Defender", 200, Plot.class.getResource("/resource/img/spriteSheet/defender.png"));
 			defender.learnAction(Ability.get(Ability.ID.GUARD_ATTACK));
 			defender.learnAction(Ability.get(Ability.ID.SHIELD_BASH));
-//			defender.learnAction(Ability.get(Ability.ID.SWEEPING_STRIKE));
+			defender.learnAction(Ability.get(Ability.ID.SWEEPING_STRIKE));
 //			defender.learnAction(Ability.get(Ability.ID.DELAY));
 			defender.learnAction(Ability.get(Ability.ID.VIGOR));
 			defender.setWeapon(Weapon.getWeapon(Weapon.ID.SPEAR_AND_SHIELD));

@@ -11,8 +11,7 @@ import controller.plot.Plot;
 
 public class StatusEffect {
 	public static enum ID {
-		//TODO: add regen icon to status effect spritesheet
-		SLOW(0), BIND(1), HASTE(2), KNOCKDOWN(3), BURNING(4), MURDEROUS_INTENT(5), DAMAGE_DOWN(6), REGEN(4);
+		SLOW(0), BIND(1), HASTE(2), KNOCKDOWN(3), BURNING(4), MURDEROUS_INTENT(5), DAMAGE_DOWN(6), REGEN(7);
 		private final int index; //used by spriteSheet to select an icon
 		ID(int index) {
 			this.index = index;
@@ -129,7 +128,7 @@ public class StatusEffect {
 			return false;
 		return true;
 	}
-
+	
 	private BaseEffect getBaseEffect(ID id) {
 		if (!baseEffectsInitialized) {
 			initBaseEffects();
@@ -215,7 +214,5 @@ public class StatusEffect {
 			return "BaseEffect [id=" + id + ", name=" + name + ", modifier="
 					+ modifier + "]";
 		}
-		
-		
 	}
 }

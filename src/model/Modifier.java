@@ -12,7 +12,6 @@ public class Modifier {
 		EVASION_MODIFIER_STRIKE, EVASION_MODIFIER_SHOT, EVASION_MODIFIER_SPELL,
 		CHANCE_TO_SUCCEED_STRIKE, CHANCE_TO_SUCCEED_SHOT, CHANCE_TO_SUCCEED_SPELL, CHANCE_TO_SUCCEED_MOVE
 	};
-	//TODO: implement HP_SHIELD
 	public static enum FLAT_BONUS {
 		HP_DAMAGE_PER_SECOND, HP_HEALED_PER_SECOND, MP_DAMAGE_PER_SECOND, MP_HEALED_PER_SECOND, HP_SHIELD, MP_SHIELD, RANGE
 	};
@@ -91,6 +90,22 @@ public class Modifier {
 			return 0;
 		} else {
 			return value.intValue();
+		}
+	}
+	
+	public int damageHpShield(int damage) {
+		Integer value = flatBonuses.get(FLAT_BONUS.HP_SHIELD);
+		if (value == null) {
+			return damage;
+		} else {
+			int newValue = value - damage;
+			int remainingDamage = damage - value;
+			if (newValue <= 0) {
+				flatBonuses.remove(FLAT_BONUS.HP_SHIELD);
+			} else {
+				flatBonuses.put(FLAT_BONUS.HP_SHIELD, newValue);
+			}
+			return remainingDamage < 0 ? 0 : remainingDamage;
 		}
 	}
 }

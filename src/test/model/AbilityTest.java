@@ -16,7 +16,7 @@ public class AbilityTest {
 			Ability ability = Ability.get(id);
 			assertEquals(id, ability.getId());
 			assertNotNull(ability.getName());
-			assertNotNull(ability.getTargetType());
+			assertNotNull(ability.getSelectionTargetType());
 			assertNotNull(ability.getCategory());
 			assertNotNull(ability.getDelay());
 			assertNotNull(ability.getDamage());

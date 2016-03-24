@@ -73,16 +73,16 @@ public class World {
 	
 	public static ArrayList<Unit> getTargets(Unit source, Ability ability, GridRectangle rect) {
 		Unit.TEAM team = source.getTeam();
-		Ability.TARGET_TYPE outcome = ability.getTargetType();
+		Ability.TARGET_TYPE outcome = ability.getSelectionTargetType();
 		ArrayList<Unit.TEAM> targetTeams = new ArrayList<Unit.TEAM>();
 		ArrayList<Unit> targets = new ArrayList<Unit>();
 		
-		if (outcome == Ability.TARGET_TYPE.PERSONAL) {
+		if (outcome == Ability.TARGET_TYPE.SELF) {
 			targets.add(source);
 			return targets;
-		} else if (outcome == Ability.TARGET_TYPE.UBIQUITOUS) {
+		} else if (outcome == Ability.TARGET_TYPE.ALL) {
 			return getSortedLivingContentsWithin(rect, Unit.class);
-		} else if (outcome == Ability.TARGET_TYPE.HARMFUL) {
+		} else if (outcome == Ability.TARGET_TYPE.ENEMY) {
 			if (team == Unit.TEAM.PLAYER || team == Unit.TEAM.ALLY) {
 				targetTeams.add(Unit.TEAM.ENEMY1);
 				targetTeams.add(Unit.TEAM.ENEMY2);
@@ -95,7 +95,7 @@ public class World {
 				targetTeams.add(Unit.TEAM.ALLY);
 				targetTeams.add(Unit.TEAM.ENEMY1);
 			}	
-		} else if (outcome == Ability.TARGET_TYPE.HELPFUL) {
+		} else if (outcome == Ability.TARGET_TYPE.ALLY) {
 			if (team == Unit.TEAM.PLAYER || team == Unit.TEAM.ALLY) {
 				targetTeams.add(Unit.TEAM.PLAYER);
 				targetTeams.add(Unit.TEAM.ALLY);

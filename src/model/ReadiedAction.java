@@ -59,7 +59,7 @@ public class ReadiedAction {
 		BattleQueue.delay(source, ability.calcAdditionalDelay(source.getModifier()));
 		source.tickStatusEffects(ability.getDelay());
 		source.face(target);
-		source.animate(ability.getStance(), ability.getName(), ability.getDelay() * 9 / 10, true, ability.getMoveDistance());
+		source.animate(ability.getStance(), ability.getName(), ability.getDelay() * 9 / 10, ability.getMoveDistance());
 		source.damage(source.getStatusEffectModifier(FLAT_BONUS.HP_DAMAGE_PER_SECOND, target) * ability.getDelay() / 1000);
 		source.heal(source.getStatusEffectModifier(FLAT_BONUS.HP_HEALED_PER_SECOND, target) * ability.getDelay() / 1000);
 	}
@@ -73,7 +73,9 @@ public class ReadiedAction {
 					2 * distance + 1, 2 * distance + 1);
 			ArrayList<Unit> targets = World.getSortedContentsWithin(rect, Unit.class);
 			for (Unit unit : targets) {
-				effectTargetWith(source, unit, ability);
+				if (affectsTarget(unit)) {
+					effectTargetWith(source, unit, ability);
+				}
 			}
 		} else {
 			effectTargetWith(source, target, ability);
@@ -84,6 +86,20 @@ public class ReadiedAction {
 	private void activateAtEnd() {
 		if (doAtEnd != null) doAtEnd.run();
 		BattleQueue.setActionComplete();
+	}
+	
+	private boolean affectsTarget(Unit unit) {
+		Ability.TARGET_TYPE affectsType = ability.getAffectsTargetType();
+		if (affectsType == Ability.TARGET_TYPE.ALL) {
+			return true;
+		} else if (affectsType == Ability.TARGET_TYPE.ALLY) {
+			return source.isAllyOf(unit);
+		} else if (affectsType == Ability.TARGET_TYPE.ENEMY) {
+			return source.isEnemyOf(unit);
+		} else {
+			System.err.println("Warning: AoE applied with unexpected affectsTarget type. This may result in unintended functionality");
+			return true;
+		}
 	}
 	
 	private void effectTargetWith(Unit source, ITargetable target, Ability ability) {
