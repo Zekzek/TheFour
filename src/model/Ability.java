@@ -259,7 +259,7 @@ public class Ability {
 			abilities.put(ID.BARRAGE, barrage);
 			//TODO: Spin animation
 			Ability sweep = new Ability(ID.SWEEPING_STRIKE, "Sweep", CATEGORY.STRIKE, TARGET_TYPE.SELF, TARGET_TYPE.ENEMY,
-					EFFECT.ATTACK, 2000, 20, 0, 1, "Twirl about, attacking everything nearby", ANIMATION.MELEE);
+					EFFECT.ATTACK, 2000, 20, 0, 1, "Twirl about, attacking everything nearby", ANIMATION.SPIN);
 			abilities.put(ID.SWEEPING_STRIKE, sweep);
 			Ability throwObject = new Ability(ID.THROW, "Throw", CATEGORY.STRIKE, TARGET_TYPE.ENEMY, EFFECT.ATTACK, 1400,
 					20, 6, 0, "Hurl your weapon at a distant target (it comes back, obviously...)", ANIMATION.MELEE);

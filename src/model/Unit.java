@@ -30,7 +30,7 @@ public class Unit extends TallObject {
 	public static enum TEAM { PLAYER, ALLY, NONCOMBATANT, ENEMY1, ENEMY2 }
 	public static enum ID { DEFENDER, BERSERKER, SORCERESS, ARCHER, GUARD, FEMALE_BANDIT, MALE_BANDIT, ANNOUNCER }
 	private static final int MINI_SIZE = 32;
-	private static final int ANIMATION_LENGTH = 5;
+	private static final int ANIMATION_LENGTH = 6;
 	private static final Font ABILITY_FONT = new Font("Impact", 1, 24);
     
 	private SpriteSheet sheet;
@@ -149,7 +149,7 @@ public class Unit extends TallObject {
 	
 	public void aiQueueAction() {
 		//TODO: more sophisticated AI with variety (prefer closest, prefer weakest, etc)
-		//TODO: utilize the ability hints (once they're implemented)
+		//TODO: utilize the ability hints
 		Ability ability = learnedActions.iterator().next();
 		Unit target = World.getTargets(this, ability, GraphicsPanel.getScreenRectangle()).get(0);
 		BattleQueue.queueAction(ability, this, target);

@@ -11,9 +11,22 @@ import javax.imageio.ImageIO;
 import model.StatusEffect;
 
 public class SpriteSheet {
-	//TODO: build constant length animations (currently set to 5) that return to standing in most cases (not death)
 	public static enum FACING {N, W, S, E}
-	public static enum ANIMATION {WALK, CAST, MELEE, RANGE, DEATH}
+	
+	public static enum ANIMATION {
+		WALK(0,true), CAST(4,true), MELEE(8,true), RANGE(12,true), DEATH(16,false), KNEEL(17,false),
+		SPIN(18,true), POINT(22,true);
+		private final int rowIndex; //used by spriteSheet to select an icon
+		private final boolean directional;
+		
+		ANIMATION(int rowIndex, boolean directional) {
+			this.rowIndex = rowIndex;
+			this.directional = directional;
+		}
+		public int getRow(FACING facing) {
+			return rowIndex + (directional?facing.ordinal():0);
+		}
+	};
 	public static enum CLIMATE {PLAINS, JUNGLE, TUNDRA, FOREST, DESERT, ROCKY, VOLCANIC, CASTLE, UNDERGROUND}
 	public static enum TERRAIN {ROAD, PATH, LIGHT, DENSE, WATER}
 	public static final int SPRITE_HEIGHT = 64;
@@ -57,7 +70,7 @@ public class SpriteSheet {
 	public BufferedImage getSprite(ANIMATION animation, FACING facing, int index) {
 		return sheet.getSubimage(
 				index * SPRITE_WIDTH,
-				getRow(animation, facing) * SPRITE_HEIGHT,
+				animation.getRow(facing) * SPRITE_HEIGHT,
 				SPRITE_WIDTH,
 				SPRITE_HEIGHT);
 	}
@@ -70,11 +83,11 @@ public class SpriteSheet {
 				ICON_HEIGHT);
 	}
 	
-	private int getRow(ANIMATION animation, FACING facing) {
-		int row = 4 * animation.ordinal() + facing.ordinal();
-		if (animation == ANIMATION.DEATH) {
-			row = 4 * animation.ordinal();
-		}
-		return row;
-	}
+//	private int getRow(ANIMATION animation, FACING facing) {
+//		int row = 4 * animation.ordinal() + facing.ordinal();
+//		if (animation == ANIMATION.DEATH) {
+//			row = 4 * animation.ordinal();
+//		}
+//		return row;
+//	}
 }
