@@ -59,7 +59,7 @@ public class ReadiedAction {
 		BattleQueue.delay(source, ability.calcAdditionalDelay(source.getModifier()));
 		source.tickStatusEffects(ability.getDelay());
 		source.face(target);
-		source.animate(ability.getStance(), ability.getName(), ability.getDelay() * 9 / 10, ability.getMoveDistance());
+		source.animate(ability);
 		source.damage(source.getStatusEffectModifier(FLAT_BONUS.HP_DAMAGE_PER_SECOND, target) * ability.getDelay() / 1000);
 		source.heal(source.getStatusEffectModifier(FLAT_BONUS.HP_HEALED_PER_SECOND, target) * ability.getDelay() / 1000);
 	}

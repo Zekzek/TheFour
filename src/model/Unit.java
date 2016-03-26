@@ -149,10 +149,52 @@ public class Unit extends TallObject {
 	
 	public void aiQueueAction() {
 		//TODO: more sophisticated AI with variety (prefer closest, prefer weakest, etc)
-		//TODO: utilize the ability hints
-		Ability ability = learnedActions.iterator().next();
-		Unit target = World.getTargets(this, ability, GraphicsPanel.getScreenRectangle()).get(0);
-		BattleQueue.queueAction(ability, this, target);
+		int bestScore = Integer.MIN_VALUE;
+		Ability bestAbility = null;
+		Unit bestTarget = null;
+		for (Ability ability : learnedActions) {
+			for (Unit target : World.getTargets(this, ability, GraphicsPanel.getScreenRectangle())) {
+				int score = getScore(ability, target);
+				System.out.println("(" + score + ")  " + ability + " -> " + target);
+				if (score > bestScore) {
+					bestScore = score;
+					bestAbility = ability;
+					bestTarget = target;
+				}
+			}
+		}
+		if (bestAbility != null && bestTarget != null) {
+			BattleQueue.queueAction(bestAbility, this, bestTarget);
+		} else {
+			BattleQueue.queueAction(Ability.get(Ability.ID.DELAY), this, this);
+		}
+	}
+	
+	private int getScore(Ability ability, Unit target) {
+		int rangeBonus;
+		if (pos.equals(target.getPos())) {
+			rangeBonus = 0;
+		} else {
+			int range = ability.getRange();
+			int distance = pos.getDistanceTo(target.getPos());
+			if (range >= distance) {
+				rangeBonus = 10;
+			} else {
+				rangeBonus = 10 - distance + range;
+			}
+		}
+		
+		int debuffBonus = 0;
+		Iterator<StatusEffect> effects = ability.getStatusEffectIterator();
+		while (effects.hasNext()) {
+			if (!statusEffects.contains(effects.next())) {
+				debuffBonus += 1;
+			}
+		}
+		
+		int dpsBonus = 1000 * ability.getDamage() / ability.getDelay();
+
+		return rangeBonus * 3 + debuffBonus * 10 + dpsBonus;
 	}
 	
 	public void face(ITargetable target) {
@@ -178,19 +220,18 @@ public class Unit extends TallObject {
 		}
 	}
 
-	public void animate(ANIMATION stance, String name, int duration) {
-		animate(stance, name, duration, 0);
-	}
-	
-	//TODO: just pass in an ability? (may need duration separately to account or slow/haste)
-	public void animate(ANIMATION stance, String name, int duration, int moveDistance) {
+	public void animate(Ability ability) {
+		ANIMATION stance = ability.getStance();//TODO: get stance from weapon and ability, then pick one 
+		int duration = ability.calcDelay(getModifier());
+		int moveDistance = ability.getMoveDistance();
+		
 		int refreshRate = duration / ANIMATION_LENGTH;
 		Unit unit = this;
 		
 		final int yOffset;
 		final int xOffset;
 		//TODO: draw damage to screen?
-		abilityString = name;
+		abilityString = ability.getName();
 		if (moveDistance != 0) {
 			xOffset = (facing == FACING.W ? moveDistance : facing == FACING.E ? -moveDistance : 0); 
 			yOffset = (facing == FACING.N ? moveDistance : facing == FACING.S ? -moveDistance : 0); 

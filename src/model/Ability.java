@@ -1,6 +1,5 @@
 package model;
 
-import java.awt.Dimension;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -224,20 +223,21 @@ public class Ability {
 		
 		private static void initAbilities() {
 			abilitiesInitialized = true;
+			//Should average 25 DPS. Penalty for really fast, ranged, debuff, etc
 			
 			// Generic attacks
 			abilities.put(ID.ATTACK, new Ability(ID.ATTACK, "Attack", CATEGORY.ATTACK, Ability.TARGET_TYPE.ENEMY, 
-					EFFECT.ATTACK, 800, 25, "A basic attack, average in every way", SpriteSheet.ANIMATION.MELEE));
+					EFFECT.ATTACK, 1000, 25, "A basic attack, average in every way", SpriteSheet.ANIMATION.MELEE));
 			abilities.put(ID.QUICK_ATTACK, new Ability(ID.QUICK_ATTACK, "Quick Attack", CATEGORY.ATTACK, Ability.TARGET_TYPE.ENEMY,
-					EFFECT.ATTACK, 800, 25, "A quick jab", SpriteSheet.ANIMATION.MELEE));
+					EFFECT.ATTACK, 800, 19, "A quick jab", SpriteSheet.ANIMATION.MELEE));
 			abilities.put(ID.HEAVY_ATTACK, new Ability(ID.HEAVY_ATTACK, "Heavy Strike", CATEGORY.ATTACK, Ability.TARGET_TYPE.ENEMY,
-					EFFECT.ATTACK, 2200, 45, "A slow, powerful attack", SpriteSheet.ANIMATION.MELEE));
+					EFFECT.ATTACK, 1500, 38, "A slow, powerful attack", SpriteSheet.ANIMATION.MELEE));
 			abilities.put(ID.WEAK_ATTACK, new Ability(ID.WEAK_ATTACK, "Weak Attack", CATEGORY.ATTACK, Ability.TARGET_TYPE.ENEMY,
-					EFFECT.ATTACK, 1000, 11, "A weak attack", SpriteSheet.ANIMATION.MELEE));
+					EFFECT.ATTACK, 1000, 12, "An untrained, weak attack", SpriteSheet.ANIMATION.MELEE));
 			
 			// Generic status effect attacks 
 			Ability guardAttack = new Ability(ID.GUARD_ATTACK, "Guard Attack", CATEGORY.ATTACK, Ability.TARGET_TYPE.ENEMY,
-					EFFECT.DEBUFF, 1000, 20, "The standard guard's strike", SpriteSheet.ANIMATION.MELEE);
+					EFFECT.DEBUFF, 1000, 23, "The standard guard's strike", SpriteSheet.ANIMATION.MELEE);
 			guardAttack.statusEffects.add(new StatusEffect(StatusEffect.ID.DAMAGE_DOWN, 1100));
 			abilities.put(ID.GUARD_ATTACK, guardAttack);
 			Ability ignite = new Ability(ID.BURNING_ATTACK, "Ignite", CATEGORY.ATTACK, TARGET_TYPE.ENEMY, 
@@ -245,24 +245,23 @@ public class Ability {
 			ignite.statusEffects.add(new StatusEffect(StatusEffect.ID.BURNING, 8000));
 			abilities.put(ID.BURNING_ATTACK, ignite);
 			Ability pinningAttack = new Ability(ID.PINNING_ATTACK, "Pinning Shot", CATEGORY.ATTACK, TARGET_TYPE.ENEMY,
-					EFFECT.DEBUFF, 1200, 20, "An attack aimed at the legs. It is designed to prevent movement", ANIMATION.RANGE);
-			pinningAttack.statusEffects.add(new StatusEffect(StatusEffect.ID.BIND, 2000));
+					EFFECT.DEBUFF, 1400, 30, "An attack aimed at the legs. It is designed to prevent movement", ANIMATION.RANGE);
+			pinningAttack.statusEffects.add(new StatusEffect(StatusEffect.ID.BIND, 2500));
 			abilities.put(ID.PINNING_ATTACK, pinningAttack);
 			
 			// Weapon-specific attacks
 			Ability shieldBash = new Ability(ID.SHIELD_BASH, "Shield Bash", CATEGORY.SHIELD, TARGET_TYPE.ENEMY, TARGET_TYPE.ENEMY,
-					EFFECT.DEBUFF, 1200, 30, 1, 0, "Briefly disorients the target", SpriteSheet.ANIMATION.MELEE, 0, 300);
+					EFFECT.DEBUFF, 1200, 25, 1, 0, "Briefly disorients the target", SpriteSheet.ANIMATION.MELEE, 0, 300);
 			shieldBash.statusEffects.add(new StatusEffect(StatusEffect.ID.SLOW, 3000));
 			abilities.put(ID.SHIELD_BASH, shieldBash);
 			Ability barrage = new Ability(ID.BARRAGE, "Barrage", CATEGORY.SHOT, TARGET_TYPE.GROUND, TARGET_TYPE.ENEMY, 
 					EFFECT.ATTACK, 1500, 20, 1, 2, "Pepper an area with shots", ANIMATION.RANGE);
 			abilities.put(ID.BARRAGE, barrage);
-			//TODO: Spin animation
 			Ability sweep = new Ability(ID.SWEEPING_STRIKE, "Sweep", CATEGORY.STRIKE, TARGET_TYPE.SELF, TARGET_TYPE.ENEMY,
-					EFFECT.ATTACK, 2000, 20, 0, 1, "Twirl about, attacking everything nearby", ANIMATION.SPIN);
+					EFFECT.ATTACK, 2000, 28, 0, 1, "Twirl about, attacking everything nearby", ANIMATION.SPIN);
 			abilities.put(ID.SWEEPING_STRIKE, sweep);
-			Ability throwObject = new Ability(ID.THROW, "Throw", CATEGORY.STRIKE, TARGET_TYPE.ENEMY, EFFECT.ATTACK, 1400,
-					20, 6, 0, "Hurl your weapon at a distant target (it comes back, obviously...)", ANIMATION.MELEE);
+			Ability throwObject = new Ability(ID.THROW, "Throw", CATEGORY.STRIKE, TARGET_TYPE.ENEMY, EFFECT.ATTACK, 1200,
+					25, 6, 0, "Hurl your weapon at a distant target (it comes back, obviously...)", ANIMATION.MELEE);
 			abilities.put(ID.THROW, throwObject);
 			//TODO: force fall down ability, followed by get up ability?
 			Ability knockdown = new Ability(ID.KNOCKDOWN_STRIKE, "Knockdown", CATEGORY.STRIKE, TARGET_TYPE.ENEMY, TARGET_TYPE.ENEMY,
@@ -280,11 +279,10 @@ public class Ability {
 			// Skills
 			//TODO: Snare needs to create a tall object? Need enemies to move into it? Just next to it? hidden?
 			Ability snare = new Ability(ID.SNARE, "Snare", CATEGORY.SKILL, TARGET_TYPE.GROUND, EFFECT.ATTACK, 
-					8000, 25, "Prepare a trap", SpriteSheet.ANIMATION.DEATH);
+					8000, 25, "Prepare a trap", SpriteSheet.ANIMATION.KNEEL);
 			abilities.put(ID.SNARE, snare);
-			//TODO: point animation?
 			Ability challenge = new Ability(ID.CHALLENGE, "Challenge", CATEGORY.SKILL, TARGET_TYPE.ENEMY, EFFECT.ATTACK, 
-					500, 1, 10, 0, "'Encourage' your oponent to focus on attacking only you.", ANIMATION.CAST);
+					500, 0, 10, 0, "'Encourage' your oponent to focus on attacking only you.", ANIMATION.POINT);
 			challenge.statusEffects.add(new StatusEffect(StatusEffect.ID.MURDEROUS_INTENT, 10000));
 			abilities.put(ID.CHALLENGE, challenge);
 			

@@ -14,6 +14,7 @@ public class SpriteSheet {
 	public static enum FACING {N, W, S, E}
 	
 	public static enum ANIMATION {
+		//TODO: add default: animation which will use weapon animation or... attack? if none specified
 		WALK(0,true), CAST(4,true), MELEE(8,true), RANGE(12,true), DEATH(16,false), KNEEL(17,false),
 		SPIN(18,true), POINT(22,true);
 		private final int rowIndex; //used by spriteSheet to select an icon
