@@ -20,7 +20,7 @@ public class World {
 			pos.setY(pos.getY() + 1);
 		}
 		contents.put(pos, tallObject);
-		tallObject.updateeWorldPos(pos.getX(), pos.getY());
+		tallObject.updateWorldPos(pos.getX(), pos.getY());
 	}
 	
 	public static void remove(int x, int y) {
@@ -36,7 +36,7 @@ public class World {
 		if (contents.get(pos) == null) {
 			contents.put(pos, tallObject);
 			contents.remove(tallObject.getPos());
-			tallObject.updateeWorldPos(x, y);
+			tallObject.updateWorldPos(x, y);
 			return true;
 		} else {
 			return false;

@@ -146,7 +146,7 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 		bandit2.setFacing(FACING.S);
 		World.addTallObject(bandit2, 51, 20);
 		bandit3.setFacing(FACING.W);
-		World.addTallObject(bandit3, 59, 31);
+		World.addTallObject(bandit3, 58, 32);
 		World.addTallObject(trees[8], 48, 29);
 		World.addTallObject(trees[9], 53, 23);	
 	}
@@ -178,7 +178,7 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 		guard1.setFacing(FACING.S);
 		World.addTallObject(guard1, 43, 30);
 		guard2.setFacing(FACING.S);
-		World.addTallObject(guard2, 59, 30);
+		World.addTallObject(guard2, 58, 30);
 	}
 	
 	private void startGuardsJoinFight() {

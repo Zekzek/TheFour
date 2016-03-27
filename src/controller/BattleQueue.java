@@ -443,4 +443,13 @@ public class BattleQueue {
 		
 		return state;
 	}
+
+	public static boolean isQueued(Unit source, Ability ability, Unit target) {
+		for (ReadiedAction action :actionQueue) {
+			if (action.getSource().equals(source) && action.getAbility().equals(ability) && action.getTarget().equals(target)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

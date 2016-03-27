@@ -53,13 +53,6 @@ public class Plot_Tutorial_Arena extends Plot{
 		World.addTallObject(new Structure("Tree 2", Plot.class.getResource("/resource/img/trees/tree.png"), 200), 36, 27);
 		World.addTallObject(new Structure("Tree 3", Plot.class.getResource("/resource/img/trees/tree.png"), 200), 28, 35);
 		World.addTallObject(new Structure("Tree 4", Plot.class.getResource("/resource/img/trees/tree.png"), 200), 36, 35);
-		
-		World.addTallObject(new Structure("Tree 4", Plot.class.getResource("/resource/img/trees/tree.png"), 200), 30, 34);
-		World.addTallObject(new Structure("Tree 4", Plot.class.getResource("/resource/img/trees/tree.png"), 200), 30, 33);
-		World.addTallObject(new Structure("Tree 4", Plot.class.getResource("/resource/img/trees/tree.png"), 200), 30, 32);
-		World.addTallObject(new Structure("Tree 4", Plot.class.getResource("/resource/img/trees/tree.png"), 200), 30, 31);
-		World.addTallObject(new Structure("Tree 4", Plot.class.getResource("/resource/img/trees/tree.png"), 200), 30, 30);
-		World.addTallObject(new Structure("Tree 4", Plot.class.getResource("/resource/img/trees/tree.png"), 200), 30, 29);
 
 		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER);
 		defender.setFacing(SpriteSheet.FACING.S);

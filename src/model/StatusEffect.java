@@ -58,6 +58,7 @@ public class StatusEffect {
 	}
 	
 	public boolean isOver() {
+		//TODO: return true for status effects that have been used up (ie. HP shield)
 		return duration <= 0;
 	}
 
@@ -173,7 +174,7 @@ public class StatusEffect {
 				FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 0.95)));
 		
 		baseEffects.put(ID.REGEN, new BaseEffect(ID.REGEN, "Regenerating Health", new Modifier(
-				FLAT_BONUS.HP_HEALED_PER_SECOND, 6)));
+				FLAT_BONUS.HP_HEALED_PER_SECOND, 8)));
 	}
 
 	private class BaseEffect {

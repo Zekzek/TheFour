@@ -89,7 +89,7 @@ public abstract class TallObject implements ITargetable {
 		g2.setTransform(savedTransorm);
 	}
 
-	public void updateeWorldPos(int x, int y) {
+	public void updateWorldPos(int x, int y) {
 		GridPosition updatedPos = new GridPosition(x, y);
 		if (this.equals(World.getTallObject(updatedPos))) {
 			pos.setX(x);
@@ -101,7 +101,7 @@ public abstract class TallObject implements ITargetable {
 	
 	@Override
 	public String toString() {
-		return name + " #" + id;
+		return name;
 	}
 
 	public int getId() {

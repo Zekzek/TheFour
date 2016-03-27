@@ -109,7 +109,6 @@ public class Unit extends TallObject {
 		while (statusEffectIterator.hasNext()) {
 			StatusEffect effect = statusEffectIterator.next();
 			remainingDamage = effect.getModifier().damageHpShield(remainingDamage);
-			//TODO: remove status effects that have been used up
 		}
 		return remainingDamage;
 	}
@@ -149,13 +148,13 @@ public class Unit extends TallObject {
 	
 	public void aiQueueAction() {
 		//TODO: more sophisticated AI with variety (prefer closest, prefer weakest, etc)
-		int bestScore = Integer.MIN_VALUE;
+		double bestScore = Double.NEGATIVE_INFINITY;
 		Ability bestAbility = null;
 		Unit bestTarget = null;
 		for (Ability ability : learnedActions) {
 			for (Unit target : World.getTargets(this, ability, GraphicsPanel.getScreenRectangle())) {
-				int score = getScore(ability, target);
-				System.out.println("(" + score + ")  " + ability + " -> " + target);
+				double score = getScore(ability, target);
+//				System.out.println("(" + score + ")  " + ability + " -> " + target);
 				if (score > bestScore) {
 					bestScore = score;
 					bestAbility = ability;
@@ -170,31 +169,33 @@ public class Unit extends TallObject {
 		}
 	}
 	
-	private int getScore(Ability ability, Unit target) {
-		int rangeBonus;
-		if (pos.equals(target.getPos())) {
-			rangeBonus = 0;
-		} else {
-			int range = ability.getRange();
-			int distance = pos.getDistanceTo(target.getPos());
-			if (range >= distance) {
-				rangeBonus = 10;
-			} else {
-				rangeBonus = 10 - distance + range;
-			}
-		}
-		
+	private double getScore(Ability ability, Unit target) {
+		int damageBonus = ability.getDamage();
 		int debuffBonus = 0;
 		Iterator<StatusEffect> effects = ability.getStatusEffectIterator();
 		while (effects.hasNext()) {
-			if (!statusEffects.contains(effects.next())) {
+			if (!target.statusEffects.contains(effects.next())) {
 				debuffBonus += 1;
 			}
 		}
-		
-		int dpsBonus = 1000 * ability.getDamage() / ability.getDelay();
+		int benefit = damageBonus + 10 * debuffBonus;
 
-		return rangeBonus * 3 + debuffBonus * 10 + dpsBonus;
+		double delayBonus = 1000.0 / ability.getDelay();
+		double rangeBonus;
+		if (pos.equals(target.getPos())) {
+			rangeBonus = 1.0;
+		} else {
+			double range = ability.getRange();
+			double distance = pos.getDistanceTo(target.getPos());
+			if (range >= distance) {
+				rangeBonus = 2.0;
+			} else {
+				rangeBonus = 2.0 - ((distance - range) / 7.0);
+			}
+		}
+		double alreadyQueuedPenalty = BattleQueue.isQueued(this, ability, target) ? 0.5 : 1.0;
+		
+		return benefit * delayBonus * rangeBonus * alreadyQueuedPenalty;
 	}
 	
 	public void face(ITargetable target) {
@@ -237,7 +238,7 @@ public class Unit extends TallObject {
 			yOffset = (facing == FACING.N ? moveDistance : facing == FACING.S ? -moveDistance : 0); 
 			drawXOffset = xOffset;
 			drawYOffset = yOffset;
-			this.updateeWorldPos(pos.getX() - xOffset, pos.getY() - yOffset);
+			this.updateWorldPos(pos.getX() - xOffset, pos.getY() - yOffset);
 		} else {
 			xOffset = yOffset = 0;
 		}
@@ -374,11 +375,10 @@ public class Unit extends TallObject {
 
 		private static void initUnits() {
 			unitsInitialized = true;
-			Unit defender = new Unit("Defender", 200, Plot.class.getResource("/resource/img/spriteSheet/defender.png"));
+			Unit defender = new Unit("Defender", 250, Plot.class.getResource("/resource/img/spriteSheet/defender.png"));
 			defender.learnAction(Ability.get(Ability.ID.GUARD_ATTACK));
 			defender.learnAction(Ability.get(Ability.ID.SHIELD_BASH));
 			defender.learnAction(Ability.get(Ability.ID.SWEEPING_STRIKE));
-//			defender.learnAction(Ability.get(Ability.ID.DELAY));
 			defender.learnAction(Ability.get(Ability.ID.VIGOR));
 			defender.setWeapon(Weapon.getWeapon(Weapon.ID.SPEAR_AND_SHIELD));
 			defender.baseModifier.setBonus(FRACTIONAL_BONUS.INCOMING_DAMAGE_MODIFIER_STRIKE, 0.8);
@@ -414,7 +414,7 @@ public class Unit extends TallObject {
 			archer.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 1.2);
 			units.put(ID.ARCHER, archer);
 
-			Unit guard = new Unit("Guard", 100, Plot.class.getResource("/resource/img/spriteSheet/guard.png"));
+			Unit guard = new Unit("Guard", 150, Plot.class.getResource("/resource/img/spriteSheet/guard.png"));
 			guard.learnAction(Ability.get(Ability.ID.GUARD_ATTACK));
 			guard.learnAction(Ability.get(Ability.ID.WATCH));
 			guard.setWeapon(Weapon.getWeapon(Weapon.ID.SPEAR));
@@ -427,17 +427,23 @@ public class Unit extends TallObject {
 			units.put(ID.ANNOUNCER, announcer);
 
 			Unit femaleBandit = new Unit("Female Bandit", 100, Plot.class.getResource("/resource/img/spriteSheet/banditFemale.png"));
-			femaleBandit.learnAction(Ability.get(Ability.ID.WEAK_ATTACK));
+			femaleBandit.learnAction(Ability.get(Ability.ID.QUICK_ATTACK));
+			femaleBandit.learnAction(Ability.get(Ability.ID.ATTACK));
+			femaleBandit.learnAction(Ability.get(Ability.ID.THROW));
 			femaleBandit.setWeapon(Weapon.getWeapon(Weapon.ID.DAGGER));
-			femaleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 1.05);
-			femaleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 1.05);
+			femaleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 0.45);
+			femaleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 0.55);
+			femaleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 0.5);
 			units.put(ID.FEMALE_BANDIT, femaleBandit);
 			
-			Unit maleBandit = new Unit("Female Bandit", 100, Plot.class.getResource("/resource/img/spriteSheet/banditFemale.png"));
-			maleBandit.learnAction(Ability.get(Ability.ID.WEAK_ATTACK));
+			Unit maleBandit = new Unit("Male Bandit", 100, Plot.class.getResource("/resource/img/spriteSheet/banditMale.png"));
+			maleBandit.learnAction(Ability.get(Ability.ID.QUICK_ATTACK));
+			maleBandit.learnAction(Ability.get(Ability.ID.ATTACK));
+			maleBandit.learnAction(Ability.get(Ability.ID.THROW));
 			maleBandit.setWeapon(Weapon.getWeapon(Weapon.ID.DAGGER));
-			maleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 1.05);
-			maleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 1.05);
+			maleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 0.55);
+			maleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 0.45);
+			maleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 0.45);
 			units.put(ID.MALE_BANDIT, maleBandit);
 		}
 

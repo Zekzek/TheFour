@@ -1,9 +1,10 @@
 package view;
 
-import java.awt.FlowLayout;
+import java.awt.BorderLayout;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
 import model.Ability;
@@ -13,22 +14,32 @@ public class AbilityPanel extends JPanel {
 	
 	private JLabel damageLabel;
 	private JLabel delayLabel;
-	private JLabel specialLabel;
+	private JTextArea specialLabel;
 	
 	public AbilityPanel() {
-		this.setLayout(new FlowLayout());
+		this.setLayout(new BorderLayout());
+		JPanel upperPanel = new JPanel(new BorderLayout());
 		damageLabel = new JLabel("Damage: ", SwingConstants.CENTER);
-		add(damageLabel);
-		delayLabel = new JLabel("Duration: ", SwingConstants.CENTER);
-		add(delayLabel);
-		specialLabel = new JLabel("Special: ", SwingConstants.CENTER);
-		add(specialLabel);
+		upperPanel.add(damageLabel, BorderLayout.WEST);
+		delayLabel = new JLabel("Time: ", SwingConstants.CENTER);
+		upperPanel.add(delayLabel, BorderLayout.EAST);
+		add(upperPanel, BorderLayout.NORTH);
+		specialLabel = new JTextArea("Special: ");
+		specialLabel.setWrapStyleWord(true);
+		specialLabel.setLineWrap(true);
+		specialLabel.setEditable(false);
+		specialLabel.setOpaque(false);
+		add(specialLabel, BorderLayout.CENTER);
 		setVisible(false);
 	}
 	
 	public void updateDisplay(Ability ability) {
-		damageLabel.setText("Damage: " + ability.getDamage());
-		delayLabel.setText("Duration: " + ability.getDelay());
+		if (ability.getDamage() > 0) {
+			damageLabel.setText("Damage: " + ability.getDamage());
+		} else {
+			damageLabel.setText("");
+		}
+		delayLabel.setText("Time: " + ability.getDelay());
 		specialLabel.setText("Special: " + ability.getSpecial());
 	}
 }

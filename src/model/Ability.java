@@ -237,7 +237,8 @@ public class Ability {
 			
 			// Generic status effect attacks 
 			Ability guardAttack = new Ability(ID.GUARD_ATTACK, "Guard Attack", CATEGORY.ATTACK, Ability.TARGET_TYPE.ENEMY,
-					EFFECT.DEBUFF, 1000, 23, "The standard guard's strike", SpriteSheet.ANIMATION.MELEE);
+					EFFECT.DEBUFF, 1000, 23, "A disorienting strike makes it more difficult to attack effectively",
+					SpriteSheet.ANIMATION.MELEE);
 			guardAttack.statusEffects.add(new StatusEffect(StatusEffect.ID.DAMAGE_DOWN, 1500));
 			abilities.put(ID.GUARD_ATTACK, guardAttack);
 			Ability ignite = new Ability(ID.BURNING_ATTACK, "Ignite", CATEGORY.ATTACK, TARGET_TYPE.ENEMY, 
@@ -251,8 +252,8 @@ public class Ability {
 			
 			// Weapon-specific attacks
 			Ability shieldBash = new Ability(ID.SHIELD_BASH, "Shield Bash", CATEGORY.SHIELD, TARGET_TYPE.ENEMY, TARGET_TYPE.ENEMY,
-					EFFECT.DEBUFF, 1200, 25, 1, 0, "Briefly disorients the target", SpriteSheet.ANIMATION.MELEE, 0, 300);
-			shieldBash.statusEffects.add(new StatusEffect(StatusEffect.ID.SLOW, 3000));
+					EFFECT.DEBUFF, 1400, 25, 1, 0, "Briefly disorients the target", SpriteSheet.ANIMATION.MELEE, 0, 500);
+			shieldBash.statusEffects.add(new StatusEffect(StatusEffect.ID.SLOW, 10000));
 			abilities.put(ID.SHIELD_BASH, shieldBash);
 			Ability barrage = new Ability(ID.BARRAGE, "Barrage", CATEGORY.SHOT, TARGET_TYPE.GROUND, TARGET_TYPE.ENEMY, 
 					EFFECT.ATTACK, 1500, 20, 1, 2, "Pepper an area with shots", ANIMATION.RANGE);
@@ -272,8 +273,8 @@ public class Ability {
 
 			// Spells
 			Ability vigor = new Ability(ID.VIGOR, "Vigor", CATEGORY.SPELL, TARGET_TYPE.SELF, EFFECT.BUFF, 
-					1000, 0, "Recover some lost health oer time", ANIMATION.CAST);
-			vigor.statusEffects.add(new StatusEffect(StatusEffect.ID.REGEN, 10000));
+					1000, 0, "Recover some lost health over time", ANIMATION.CAST);
+			vigor.statusEffects.add(new StatusEffect(StatusEffect.ID.REGEN, 20000));
 			abilities.put(ID.VIGOR, vigor);
 			
 			// Skills
@@ -282,7 +283,7 @@ public class Ability {
 					8000, 25, "Prepare a trap", SpriteSheet.ANIMATION.KNEEL);
 			abilities.put(ID.SNARE, snare);
 			Ability challenge = new Ability(ID.CHALLENGE, "Challenge", CATEGORY.SKILL, TARGET_TYPE.ENEMY, EFFECT.ATTACK, 
-					500, 0, 10, 0, "'Encourage' your oponent to focus on attacking only you.", ANIMATION.POINT);
+					300, 0, 10, 0, "'Encourage' your oponent to focus on attacking only you.", ANIMATION.POINT);
 			challenge.statusEffects.add(new StatusEffect(StatusEffect.ID.MURDEROUS_INTENT, 10000));
 			abilities.put(ID.CHALLENGE, challenge);
 			

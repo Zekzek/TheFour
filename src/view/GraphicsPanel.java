@@ -34,7 +34,7 @@ public class GraphicsPanel extends JPanel{
 	public static final double TALL_OBJECT_CELL_HEIGHT_MULTIPLIER = 2.0;
 	public static final int TALL_OBJECT_CELL_HEIGHT = (int) (TERRAIN_CELL_HEIGHT * TALL_OBJECT_CELL_HEIGHT_MULTIPLIER);
 	
-	public static final Color CLOSE_COLOR = new Color(255,255,245,50);
+	public static final Color CLOSE_COLOR = new Color(255,255,245,0);
 	public static final Color FAR_COLOR = new Color(0,0,10,110);
 	public static final int REFRESH_RATE = 100;
 	private static Color fade = new Color(0,0,0,0);
