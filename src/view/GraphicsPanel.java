@@ -135,7 +135,7 @@ public class GraphicsPanel extends JPanel{
 		Thread prettyLoadScene = new Thread() {
 			@Override public void run() {
 				// pause
-				BattleQueue.pauseBattle();
+				BattleQueue.setPause(true);
 				GameFrame.disableMenu();
 				
 				// fade to black
@@ -174,7 +174,7 @@ public class GraphicsPanel extends JPanel{
 				
 				// resume
 				GameFrame.enableMenu();
-				BattleQueue.resumeBattle();
+				BattleQueue.setPause(false);
 				
 				startScene.run();
 			}

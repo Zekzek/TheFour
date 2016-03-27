@@ -162,7 +162,7 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 				BattleQueue.addCombatant(bandit3);
 				BattleQueue.addRandomCombatDelays();
 				BattleQueue.startPlayingActions();
-				BattleQueue.resumeBattle();
+				BattleQueue.setPause(false);
 			    GameFrame.updateMenu();
 			}};
 		
@@ -214,7 +214,6 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 	}
 	
 	private void guardsCompromise() {
-		System.out.println("guardsCompromise");
 		Dialog[] guardsCompromise = new Dialog[] {
 			new Dialog(guard1, "Well, they've been getting more brazen.\n\n Thank you for your assistance citizen. Now, let's "
 					+ "have that case, and we'll see it safely to the academy."),

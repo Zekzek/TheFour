@@ -86,7 +86,7 @@ public class DialogPanel extends JPanel{
 	 * display the next entry
 	 */
 	public static void showNextDialog() {
-		BattleQueue.pauseBattle();
+		BattleQueue.setPause(true);
 		me.setVisible(true);
 		
 		Dialog dialog = conversation.remove(0);
@@ -109,7 +109,7 @@ public class DialogPanel extends JPanel{
 			GameFrame.returnToTitleScreen();
 		} else {
 			GameFrame.enableMenu();
-			BattleQueue.resumeBattle();
+			BattleQueue.setPause(false);
 			if (actionOnConclusion != null) {
 				actionOnConclusion.run();
 			}

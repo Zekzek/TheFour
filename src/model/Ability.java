@@ -238,7 +238,7 @@ public class Ability {
 			// Generic status effect attacks 
 			Ability guardAttack = new Ability(ID.GUARD_ATTACK, "Guard Attack", CATEGORY.ATTACK, Ability.TARGET_TYPE.ENEMY,
 					EFFECT.DEBUFF, 1000, 23, "The standard guard's strike", SpriteSheet.ANIMATION.MELEE);
-			guardAttack.statusEffects.add(new StatusEffect(StatusEffect.ID.DAMAGE_DOWN, 1100));
+			guardAttack.statusEffects.add(new StatusEffect(StatusEffect.ID.DAMAGE_DOWN, 1500));
 			abilities.put(ID.GUARD_ATTACK, guardAttack);
 			Ability ignite = new Ability(ID.BURNING_ATTACK, "Ignite", CATEGORY.ATTACK, TARGET_TYPE.ENEMY, 
 					EFFECT.DEBUFF, 1200, 25, "Set the enemy ablaze", ANIMATION.RANGE);
@@ -261,7 +261,7 @@ public class Ability {
 					EFFECT.ATTACK, 2000, 28, 0, 1, "Twirl about, attacking everything nearby", ANIMATION.SPIN);
 			abilities.put(ID.SWEEPING_STRIKE, sweep);
 			Ability throwObject = new Ability(ID.THROW, "Throw", CATEGORY.STRIKE, TARGET_TYPE.ENEMY, EFFECT.ATTACK, 1200,
-					25, 6, 0, "Hurl your weapon at a distant target (it comes back, obviously...)", ANIMATION.MELEE);
+					20, 6, 0, "Hurl your weapon at a distant target (it comes back, obviously...)", ANIMATION.MELEE);
 			abilities.put(ID.THROW, throwObject);
 			//TODO: force fall down ability, followed by get up ability?
 			Ability knockdown = new Ability(ID.KNOCKDOWN_STRIKE, "Knockdown", CATEGORY.STRIKE, TARGET_TYPE.ENEMY, TARGET_TYPE.ENEMY,

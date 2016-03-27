@@ -35,7 +35,6 @@ public class BattleQueue {
 	};
 	private static final Random RAND = new Random();
 	private static final int PERFORM_ACTION_CHECK_DELAY = 100;
-	
 	private static final LinkedList<ReadiedAction> actionQueue = new LinkedList<ReadiedAction>();
 	private static final Map<Unit,Integer> lastScheduledTimes = new HashMap<Unit, Integer>();
 	private static final Map<Unit,Integer> completionTimes = new HashMap<Unit, Integer>();
@@ -44,7 +43,7 @@ public class BattleQueue {
 		public void run() {
 			while(true) {
 				try {
-					//TODO: when AI using quick actions, AI doesn't trigger (even though its most ready), kicks in after player selects an action 
+					handleAiQueueAction();
 					synchronized(actionQueue) {
 						if (!pause && !performingAction && !actionQueue.isEmpty()
 								&& actionQueue.peek().getStartTime() <= getMostReadyCombatantReadyness()) {
@@ -62,7 +61,6 @@ public class BattleQueue {
 	private static int battleDuration = 0;
 	private static boolean pause = true;
 	private static boolean performingAction = false;
-	
 	private static Set<BattleListenerInterface> battleListeners = new HashSet<BattleListenerInterface>();
 	private static Set<Unit.TEAM> activeTeams = new HashSet<Unit.TEAM>();
 	
@@ -74,14 +72,10 @@ public class BattleQueue {
 		GameFrame.updateMenu();
 	}
 	
-	public static void pauseBattle() {
-		pause = true;
+	public static void setPause(boolean pause) {
+		BattleQueue.pause = pause;
 	}
-	
-	public static void resumeBattle() {
-		pause = false;
-	}
-	
+
 	/**
 	 * Add all combatants in the iterator (Unit.TEAM.NONCOMBATANT are not added. Use BattleQueue.addCombatant directly)
 	 * @param units units to add
@@ -140,13 +134,13 @@ public class BattleQueue {
 	public static void addRandomCombatDelays() {
 		Iterator<Unit> combatants = lastScheduledTimes.keySet().iterator();
 		while (combatants.hasNext()) {
-			int delay = RAND.nextInt(1000);
-			Unit combatant = combatants.next();
-			lastScheduledTimes.put(combatant, delay);
-			completionTimes.put(combatant, delay);
+			delay(combatants.next(), RAND.nextInt(1000));
 		}
 	}
 	
+	/**
+	 * Clear the action queue and remove all combatants from combat
+	 */
 	public static void endCombat() {
 		lastScheduledTimes.clear();
 		completionTimes.clear();
@@ -167,17 +161,42 @@ public class BattleQueue {
 		}
 	}
 	
+	private static void handleAiQueueAction() {
+		Unit unit = BattleQueue.getMostReadyCombatant();
+		if (unit == null) {
+			return;
+		} else if (unit.getTeam() != Unit.TEAM.PLAYER) {
+			unit.aiQueueAction();
+			GameFrame.updateMenu();
+		}
+	}
+	
+	/**
+	 * Insert an ability at the front of the queue, delaying other abilities as appropriate.
+	 * 
+	 * @param ability ability to perform
+	 * @param source unit to perform the ability
+	 * @param target target for the ability
+	 */
 	public static void insertFirstAction(Ability ability, Unit source, ITargetable target) {
 		insertFirstAction(ability, source, target, null, null);
 	}
 	
+	/**
+	 * Insert an ability at the front of the queue, delaying other abilities as appropriate. Set the special doAtMid and 
+	 * doAtEnd runnable actions on this new action
+	 * 
+	 * @param ability ability to perform
+	 * @param source unit to perform the ability
+	 * @param target target for the ability
+	 * @param doAtMid action to perform part way through the ability
+	 * @param doAtEnd action to perform after the ability completes
+	 */
 	public static void insertFirstAction(Ability ability, Unit source, ITargetable target, Runnable doAtMid, Runnable doAtEnd) {
-		BattleQueue.delay(source, ability.getDelay());
+		delay(source, ability.getDelay());
 		ReadiedAction action = new ReadiedAction(ability, source, target, battleDuration);
 		action.setDoAtMid(doAtMid);
 		action.setDoAtEnd(doAtEnd);
-		lastScheduledTimes.put(source, lastScheduledTimes.get(source) + ability.getDelay());
-		completionTimes.put(source, completionTimes.get(source) + ability.getDelay());
 		System.out.println("\t" + source + "(" + lastScheduledTimes.get(source) + ") has immediately prepared " + ability + " for " + action.getTarget());
 		synchronized(actionQueue) {
 			actionQueue.add(action);
@@ -317,17 +336,19 @@ public class BattleQueue {
 	}
 	
 	public static void delay(Unit unit, int delay) {
-		if (delay > 0) {
-			synchronized((actionQueue)) {
-				for (ReadiedAction action : actionQueue) {
-					if (action.getSource().equals(unit)) {
-						action.delay(delay);
-					}
+		synchronized((actionQueue)) {
+			for (ReadiedAction action : actionQueue) {
+				if (action.getSource().equals(unit)) {
+					action.delay(delay);
 				}
-				lastScheduledTimes.put(unit, lastScheduledTimes.get(unit) + delay);
-				completionTimes.put(unit, completionTimes.get(unit) + delay);
-				Collections.sort(actionQueue, SOONEST_READIED_ACTION);
 			}
+			Integer lastScheduledTime = lastScheduledTimes.get(unit);
+			if (lastScheduledTime != null)
+				lastScheduledTimes.put(unit, lastScheduledTime + delay);
+			Integer completionTime = completionTimes.get(unit);
+			if (completionTime != null)
+				completionTimes.put(unit, completionTime + delay);
+			Collections.sort(actionQueue, SOONEST_READIED_ACTION);
 		}
 	}
 	
@@ -349,6 +370,10 @@ public class BattleQueue {
 		for (BattleListenerInterface listener : battleListeners) {
 			listener.onTeamDefeated(team);
 		}
+	}
+	
+	public static void setActionComplete() {
+		performingAction = false;
 	}
 	
 	private class PathingGridPosition extends GridPosition {
@@ -389,8 +414,33 @@ public class BattleQueue {
 			}
 		}
 	}
-
-	public static void setActionComplete() {
-		performingAction = false;
+	
+	public static Iterator<ReadiedAction> getActionQueueIterator() {
+		return actionQueue.iterator();
+	}
+	
+	public static int getLastScheduledTime(Unit unit) {
+		Integer time = lastScheduledTimes.get(unit);
+		return time == null ? -1 : time;
+	}
+	
+	public static int getCompletionTime(Unit unit) {
+		Integer time = completionTimes.get(unit);
+		return time == null ? -1 : time;
+	}
+	
+	public static String getState() {
+		String state = "@" + battleDuration;
+		state +="\nLast Scheduled/Completion: ";
+		for(Unit unit : lastScheduledTimes.keySet()) {
+			state += "\t" + unit + ":" + lastScheduledTimes.get(unit) + "/" + completionTimes.get(unit);  
+		}
+		state += "\nReady to schedule: " + getMostReadyCombatant();
+		for (ReadiedAction action :actionQueue) {
+			state += "\n\t(" + action.getStartTime() + ")\t"+ action.getSource() 
+					+ " ---" + action.getAbility() + "--> " + action.getTarget();
+		}
+		
+		return state;
 	}
 }

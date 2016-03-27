@@ -58,7 +58,7 @@ public class MenuPanel extends JPanel {
 					if (targetList.getSelectedValue() != null) {
 						Unit selectedTarget = targetList.getSelectedValue();
 						BattleQueue.queueAction(activeAbility, activeUnit, selectedTarget);
-						BattleQueue.resumeBattle();
+						BattleQueue.setPause(false);
 						targetList.setVisible(false);
 						abilityPanel.setVisible(false);
 						abilityList.clearSelection();
@@ -73,16 +73,12 @@ public class MenuPanel extends JPanel {
 	
 	public void refreshMenu() {
 		activeUnit = BattleQueue.getMostReadyCombatant();
-		if (activeUnit == null) {
+		if (activeUnit == null || activeUnit.getTeam() != Unit.TEAM.PLAYER) {
 			setVisible(false);
-		} else if (activeUnit.getTeam() == Unit.TEAM.PLAYER) {
+		} else {
 			setVisible(true);
 			activeUnit.convertNameLabel(nameLabel);
 			updateMenuList(abilityList, activeUnit.getKnownActions());
-		} else {
-			setVisible(false);
-			activeUnit.aiQueueAction();
-			GameFrame.updateMenu();
 		}
 	}
 	
