@@ -72,13 +72,16 @@ public class MenuPanel extends JPanel {
 	}
 	
 	public void refreshMenu() {
-		activeUnit = BattleQueue.getMostReadyCombatant();
-		if (activeUnit == null || activeUnit.getTeam() != Unit.TEAM.PLAYER) {
-			setVisible(false);
-		} else {
-			setVisible(true);
-			activeUnit.convertNameLabel(nameLabel);
-			updateMenuList(abilityList, activeUnit.getKnownActions());
+		Unit mostReadyCombatant = BattleQueue.getMostReadyCombatant();
+		if (!mostReadyCombatant.equals(activeUnit)) {
+			activeUnit = BattleQueue.getMostReadyCombatant();
+			if (activeUnit == null || activeUnit.getTeam() != Unit.TEAM.PLAYER) {
+				setVisible(false);
+			} else {
+				setVisible(true);
+				activeUnit.convertNameLabel(nameLabel);
+				updateMenuList(abilityList, activeUnit.getKnownActions());
+			}
 		}
 	}
 	

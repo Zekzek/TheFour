@@ -39,7 +39,7 @@ public class AbilityPanel extends JPanel {
 		} else {
 			damageLabel.setText("");
 		}
-		delayLabel.setText("Time: " + ability.getDelay());
+		delayLabel.setText("Time: " + String.format("%.2g%n", ability.getDelay() / 1000.0) + " second");
 		specialLabel.setText("Special: " + ability.getSpecial());
 	}
 }

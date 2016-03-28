@@ -30,7 +30,7 @@ public class StatusEffectTest {
 
 	@Test
 	public void testStatusEffectIDIntUnit() {
-		Unit unit = Unit.get(Unit.ID.ANNOUNCER, TEAM.NONCOMBATANT);
+		Unit unit = Unit.get(Unit.ID.ANNOUNCER, TEAM.NONCOMBATANT, "Announcer");
 		ID[] ids = StatusEffect.ID.values();
 		int duration = 0;
 		for (ID id : ids) {
@@ -46,7 +46,7 @@ public class StatusEffectTest {
 
 	@Test
 	public void testStatusEffectStatusEffect() {
-		Unit unit = Unit.get(Unit.ID.ANNOUNCER, TEAM.NONCOMBATANT);
+		Unit unit = Unit.get(Unit.ID.ANNOUNCER, TEAM.NONCOMBATANT, "Announcer");
 		ID[] ids = StatusEffect.ID.values();
 		int duration = 0;
 		for (ID id : ids) {

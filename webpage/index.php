@@ -66,7 +66,7 @@
 	<div id="header">
 		<h2 style="margin:3px">The Four: Forgotten Age</h2>
 		<img src="sample.png"></img>
-		<h5 style="margin:3px"><a href="./four.jar" download>Download the latest version (0.01)</a></h5>
+		<h5 style="margin:3px"><a href="./four.jar" download>Download the latest version (0.02)</a></h5>
 	</div>
 	</div>
 	<p>
@@ -95,6 +95,7 @@
 		of the game will remain available here:
 		<ul>
 			<li><a href="./four_0_01.jar" download>0.01</a></li>
+			<li><a href="./four_0_02.jar" download>0.02</a></li>
 		</ul>
 	</p>
 	

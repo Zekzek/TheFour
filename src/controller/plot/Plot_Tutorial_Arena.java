@@ -44,23 +44,23 @@ public class Plot_Tutorial_Arena extends Plot{
 	}
 	
 	private void addArena() {
-		World.addTallObject(Unit.get(ID.GUARD, TEAM.NONCOMBATANT), 28, 28);
-		World.addTallObject(Unit.get(ID.GUARD, TEAM.NONCOMBATANT), 36, 28);
-		World.addTallObject(Unit.get(ID.GUARD, TEAM.NONCOMBATANT), 28, 36);
-		World.addTallObject(Unit.get(ID.GUARD, TEAM.NONCOMBATANT), 36, 36);
+		World.addTallObject(Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard #1"), 28, 28);
+		World.addTallObject(Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard #2"), 36, 28);
+		World.addTallObject(Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard #3"), 28, 36);
+		World.addTallObject(Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard #4"), 36, 36);
 		
 		World.addTallObject(new Structure("Tree 1", Plot.class.getResource("/resource/img/trees/tree.png"), 200), 28, 27);
 		World.addTallObject(new Structure("Tree 2", Plot.class.getResource("/resource/img/trees/tree.png"), 200), 36, 27);
 		World.addTallObject(new Structure("Tree 3", Plot.class.getResource("/resource/img/trees/tree.png"), 200), 28, 35);
 		World.addTallObject(new Structure("Tree 4", Plot.class.getResource("/resource/img/trees/tree.png"), 200), 36, 35);
 
-		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER);
+		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER, "Defender");
 		defender.setFacing(SpriteSheet.FACING.S);
 		
-		berserker = Unit.get(ID.BERSERKER, TEAM.ENEMY1);
+		berserker = Unit.get(ID.BERSERKER, TEAM.ENEMY1, "Berserker");
 		berserker.setFacing(SpriteSheet.FACING.S);
 		
-		announcer = Unit.get(ID.ANNOUNCER, TEAM.NONCOMBATANT);
+		announcer = Unit.get(ID.ANNOUNCER, TEAM.NONCOMBATANT, "Announcer");
 		
 		GraphicsPanel.moveScreenTo(24, 23);
 		World.addTallObject(defender, 26, 31);

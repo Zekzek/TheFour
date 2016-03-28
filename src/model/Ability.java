@@ -237,7 +237,7 @@ public class Ability {
 			
 			// Generic status effect attacks 
 			Ability guardAttack = new Ability(ID.GUARD_ATTACK, "Guard Attack", CATEGORY.ATTACK, Ability.TARGET_TYPE.ENEMY,
-					EFFECT.DEBUFF, 1000, 23, "A disorienting strike makes it more difficult to attack effectively",
+					EFFECT.DEBUFF, 1000, 23, "A basic attack used by guards. It disorients the target, making it difficult to attack effectively",
 					SpriteSheet.ANIMATION.MELEE);
 			guardAttack.statusEffects.add(new StatusEffect(StatusEffect.ID.DAMAGE_DOWN, 1500));
 			abilities.put(ID.GUARD_ATTACK, guardAttack);
@@ -273,7 +273,7 @@ public class Ability {
 
 			// Spells
 			Ability vigor = new Ability(ID.VIGOR, "Vigor", CATEGORY.SPELL, TARGET_TYPE.SELF, EFFECT.BUFF, 
-					1000, 0, "Recover some lost health over time", ANIMATION.CAST);
+					1000, -10, "Gradually recover health over a long period of time", ANIMATION.CAST);
 			vigor.statusEffects.add(new StatusEffect(StatusEffect.ID.REGEN, 20000));
 			abilities.put(ID.VIGOR, vigor);
 			

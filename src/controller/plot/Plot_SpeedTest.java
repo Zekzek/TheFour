@@ -47,7 +47,7 @@ public class Plot_SpeedTest extends Plot{
 		
 		Long startTime = System.currentTimeMillis();
 		for (int i = 0; i < 500; i++) {
-			Unit guard = Unit.get(ID.GUARD, TEAM.NONCOMBATANT);
+			Unit guard = Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard");
 			World.addTallObject(guard, i, i);
 		}
 		for (int i = 0; i < 500; i++) {
@@ -66,7 +66,7 @@ public class Plot_SpeedTest extends Plot{
 		String displayObjectTest = "Searched for a screen of objects 10,000 times in " + (endTime - startTime) 
 				+ "ms (found " + objects.size() + ")";
 		
-		Unit announcer = Unit.get(ID.ANNOUNCER, TEAM.NONCOMBATANT);
+		Unit announcer = Unit.get(ID.ANNOUNCER, TEAM.NONCOMBATANT, "Announcer");
 		World.addTallObject(announcer, -1, -1);
 	
 		Dialog[] report = new Dialog[] {

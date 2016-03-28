@@ -3,6 +3,8 @@ package view;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -23,19 +25,27 @@ public class TitleScreenPanel extends JPanel{
 	private static final long serialVersionUID = -8163142113386384945L;
 
 	private static TitleScreenPanel me;
+	private static Map<String, Class<? extends Plot>> plotOptions;
+	private static String selectedPlotString;
 	
 	public TitleScreenPanel() {
+		plotOptions = new HashMap<String, Class<? extends Plot>>();
+		plotOptions.put("Beginnings: Magic Case", Plot_Tutorial_Defend_Sorc_Item.class);
+		plotOptions.put("Beginnings: Arena", Plot_Tutorial_Arena.class);
+		plotOptions.put("Test: Speed Test", Plot_SpeedTest.class);
+		
 		setLayout(new BorderLayout());
-		add(new JLabel("The Four: Forgotten Age ~ Version 0.01", SwingConstants.CENTER), BorderLayout.NORTH);
+		add(new JLabel("The Four: Forgotten Age ~ Version 0.02", SwingConstants.CENTER), BorderLayout.NORTH);
 		
 		JPanel centerWrapperPanel = new JPanel();
-		centerWrapperPanel.add(getPlotButton("Beginnings: Magic Case", Plot_Tutorial_Defend_Sorc_Item.class));
-		centerWrapperPanel.add(getPlotButton("Beginnings: Arena", Plot_Tutorial_Arena.class));
+		centerWrapperPanel.add(new JLabel("Scene:"));
+		centerWrapperPanel.add(getPlotComboBox());
+		centerWrapperPanel.add(new JLabel("     Climate:"));
 		centerWrapperPanel.add(getClimateComboBox());
 		add(centerWrapperPanel, BorderLayout.CENTER);
 		
 		JPanel southWrapperPanel = new JPanel();
-		southWrapperPanel.add(getPlotButton("Test: Speed Test", Plot_SpeedTest.class));
+		southWrapperPanel.add(getStartPlotButton());
 		add(southWrapperPanel, BorderLayout.SOUTH);
 		
 		me = this;
@@ -56,14 +66,30 @@ public class TitleScreenPanel extends JPanel{
 		return climateSelector;
 	}
 	
-	private JButton getPlotButton(String name, Class<? extends Plot> theClass) {
-		Action startPlot = new AbstractAction(name){
+	private JComboBox<String> getPlotComboBox() {
+		String[] plotNames = plotOptions.keySet().toArray(new String[]{});
+		selectedPlotString = plotNames[0];
+		JComboBox<String> plotSelector = new JComboBox<String>(plotNames);
+		plotSelector.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				@SuppressWarnings("unchecked")
+				JComboBox<String> cb = (JComboBox<String>)e.getSource();
+				selectedPlotString = (String) cb.getSelectedItem();
+			}
+		});
+		return plotSelector;
+	}
+	
+	private JButton getStartPlotButton() {
+		Action startPlot = new AbstractAction("Start Scene"){
 			private static final long serialVersionUID = -8836958976794130145L;
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					Plot plot = (Plot) theClass.newInstance();
-					plot.start();
+					Class<? extends Plot> plotClass = plotOptions.get(selectedPlotString);
+					Plot selectedPlot = (Plot) plotClass.newInstance();
+					selectedPlot.start();
 					me.setVisible(false);
 				} catch (InstantiationException | IllegalAccessException e1) {
 					e1.printStackTrace();

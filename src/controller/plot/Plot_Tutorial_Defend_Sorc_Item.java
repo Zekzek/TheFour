@@ -8,7 +8,6 @@ import model.Unit.ID;
 import model.Unit.TEAM;
 import model.World;
 import view.DialogPanel;
-import view.GameFrame;
 import view.GraphicsPanel;
 import view.SceneTransition;
 import view.SpriteSheet.FACING;
@@ -161,9 +160,8 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 				BattleQueue.addCombatant(bandit2);
 				BattleQueue.addCombatant(bandit3);
 				BattleQueue.addRandomCombatDelays();
-				BattleQueue.startPlayingActions();
 				BattleQueue.setPause(false);
-			    GameFrame.updateMenu();
+				BattleQueue.startPlayingActions();
 			}};
 		
 		Dialog[] joinDialog = new Dialog[] {
@@ -234,13 +232,13 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 	}
 	
 	private void initUnits() {
-		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER);
-		sorceress = Unit.get(ID.SORCERESS, TEAM.ALLY);
-		guard1 = Unit.get(ID.GUARD, TEAM.ALLY);
-		guard2 = Unit.get(ID.GUARD, TEAM.ALLY);
-		bandit1 = Unit.get(ID.FEMALE_BANDIT, TEAM.ENEMY1);
-		bandit2 = Unit.get(ID.MALE_BANDIT, TEAM.ENEMY1);
-		bandit3 = Unit.get(ID.FEMALE_BANDIT, TEAM.ENEMY1);
+		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER, "Defender");
+		sorceress = Unit.get(ID.SORCERESS, TEAM.ALLY, "Sorceress");
+		guard1 = Unit.get(ID.GUARD, TEAM.ALLY, "Guard");
+		guard2 = Unit.get(ID.GUARD, TEAM.ALLY, "Guard Captain");
+		bandit1 = Unit.get(ID.FEMALE_BANDIT, TEAM.ENEMY1, "Female bandit #1");
+		bandit2 = Unit.get(ID.MALE_BANDIT, TEAM.ENEMY1, "Male bandit");
+		bandit3 = Unit.get(ID.FEMALE_BANDIT, TEAM.ENEMY1, "Female bandit #2");
 		
 		for (int i = 0; i < trees.length; i+=3) {
 			trees[i] = new Structure("Tree", Plot.class.getResource("/resource/img/trees/tree13.png"), 200);

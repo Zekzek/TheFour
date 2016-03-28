@@ -6,6 +6,16 @@ public class Starter {
 	}
 }
 
+//	Review
+//Fixed?: no abilities to select
+//lifebar jumps when moving
+//lifebar gets blocked (make vertical?)
+//	player lifebars always visible in menus?
+//	show target lifebars in menu
+//	color/flash hp bar as life gets low
+//murderous intent looks like a sad face
+//units go behind menus = bad
+
 //		TODO: Feature improvements
 //	Labels for ability & target?
 //	Win animation, subset of cast animation

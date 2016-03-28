@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.util.HashMap;
@@ -264,18 +263,7 @@ public class Unit extends TallObject {
 		animationThread.start();
 	}
 	
-	@Override
-	public void paint(Graphics2D g2) {
-		super.paint(g2);
-		AffineTransform savedTransorm = g2.getTransform();
-		GridRectangle screenRect = GraphicsPanel.getScreenRectangle();
-		// Convert to pixel space, accounting for units being tall objects
-		//TODO: this is duplicated code, combine with TallObject?
-		g2.translate(GraphicsPanel.CELL_WIDTH * (pos.getX()-screenRect.getX()), 
-				GraphicsPanel.TERRAIN_CELL_HEIGHT * 
-				((pos.getY()-screenRect.getY()) - GraphicsPanel.TALL_OBJECT_CELL_HEIGHT_MULTIPLIER + 1));
-		g2.translate(drawXOffset * GraphicsPanel.CELL_WIDTH, drawYOffset * GraphicsPanel.TERRAIN_CELL_HEIGHT);
-
+	protected void paintDecorations(Graphics2D g2) {
 		int statusEffectCounter = 0;
 		for (Iterator<StatusEffect> iterator = statusEffects.iterator(); iterator.hasNext();) {
 		    BufferedImage icon = iterator.next().getIcon();
@@ -288,8 +276,6 @@ public class Unit extends TallObject {
 		    GraphicsPanel.drawCenteredText(g2, abilityString, GraphicsPanel.CELL_WIDTH/2, GraphicsPanel.TALL_OBJECT_CELL_HEIGHT/4,
 		    		ABILITY_FONT, Color.BLACK, Color.WHITE);
 		}
-		
-		g2.setTransform(savedTransorm);
 	}
 	
 	@Override
@@ -345,8 +331,8 @@ public class Unit extends TallObject {
 		return team == TEAM.ENEMY1 || team == TEAM.ENEMY2;
 	}
 	
-	public static Unit get(ID name, TEAM team) {
-		return UnitFactory.getUnit(name, team);
+	public static Unit get(ID id, TEAM team, String name) {
+		return UnitFactory.getUnit(id, team, name);
 	}
 	
 	public void setStance(SpriteSheet.ANIMATION stance) {
@@ -391,7 +377,7 @@ public class Unit extends TallObject {
 			sorceress.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 1.2);
 			units.put(ID.SORCERESS, sorceress);
 
-			Unit berserker = new Unit("Berserker", 220, Plot.class.getResource("/resource/img/spriteSheet/berserker.png"));
+			Unit berserker = new Unit("Berserker", 180, Plot.class.getResource("/resource/img/spriteSheet/berserker.png"));
 			berserker.learnAction(Ability.get(Ability.ID.CHALLENGE));
 			berserker.learnAction(Ability.get(Ability.ID.SWEEPING_STRIKE));
 			berserker.learnAction(Ability.get(Ability.ID.THROW));
@@ -426,37 +412,38 @@ public class Unit extends TallObject {
 			announcer.setWeapon(Weapon.getWeapon(Weapon.ID.UNARMED));
 			units.put(ID.ANNOUNCER, announcer);
 
-			Unit femaleBandit = new Unit("Female Bandit", 100, Plot.class.getResource("/resource/img/spriteSheet/banditFemale.png"));
+			Unit femaleBandit = new Unit("Female Bandit", 60, Plot.class.getResource("/resource/img/spriteSheet/banditFemale.png"));
 			femaleBandit.learnAction(Ability.get(Ability.ID.QUICK_ATTACK));
 			femaleBandit.learnAction(Ability.get(Ability.ID.ATTACK));
 			femaleBandit.learnAction(Ability.get(Ability.ID.THROW));
 			femaleBandit.setWeapon(Weapon.getWeapon(Weapon.ID.DAGGER));
-			femaleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 0.45);
-			femaleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 0.55);
-			femaleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 0.5);
+			femaleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 0.39);
+			femaleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 0.41);
+			femaleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 0.4);
 			units.put(ID.FEMALE_BANDIT, femaleBandit);
 			
-			Unit maleBandit = new Unit("Male Bandit", 100, Plot.class.getResource("/resource/img/spriteSheet/banditMale.png"));
+			Unit maleBandit = new Unit("Male Bandit", 60, Plot.class.getResource("/resource/img/spriteSheet/banditMale.png"));
 			maleBandit.learnAction(Ability.get(Ability.ID.QUICK_ATTACK));
 			maleBandit.learnAction(Ability.get(Ability.ID.ATTACK));
 			maleBandit.learnAction(Ability.get(Ability.ID.THROW));
 			maleBandit.setWeapon(Weapon.getWeapon(Weapon.ID.DAGGER));
-			maleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 0.55);
-			maleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 0.45);
-			maleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 0.45);
+			maleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 0.41);
+			maleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 0.39);
+			maleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 0.39);
 			units.put(ID.MALE_BANDIT, maleBandit);
 		}
 
-		public static Unit getUnit(ID name, TEAM team) {
+		public static Unit getUnit(ID id, TEAM team, String name) {
 			if (!unitsInitialized) {
 				initUnits();
 			}
-			Unit unit = units.get(name);
+			Unit unit = units.get(id);
 			if (unit == null) {
-				throw new UnsupportedOperationException("Not implemented yet - Unit::" + name.name());
+				throw new UnsupportedOperationException("Not implemented yet - Unit::" + id.name());
 			}
-			unit = new Unit(units.get(name));
+			unit = new Unit(unit);
 			unit.setTeam(team);
+			unit.setName(name);
 			return unit;
 		}
 	}

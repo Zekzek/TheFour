@@ -13,7 +13,6 @@ public class GameFrame extends JFrame {
 	private static final long serialVersionUID = 118154690873028536L;
 	
 	private static GameFrame me;
-//	private World world;
 	private GraphicsPanel graphicsPanel;
 	private AbilityPanel abilityPanel;
 	private MenuPanel menuPanel;
@@ -21,7 +20,6 @@ public class GameFrame extends JFrame {
 	private TitleScreenPanel titleScreenPanel;
 	
 	public GameFrame() {
-//		this.world = world;
 		setPreferredSize(new Dimension(800, 600));
 		setBounds(0, 0, 800, 600);
         setLocationRelativeTo(null);
@@ -53,39 +51,51 @@ public class GameFrame extends JFrame {
 	}
 	
 	public static void updateAll() {
-		me.revalidate();
-		me.repaint();
+		if (me != null) {
+			me.revalidate();
+			me.repaint();
+		}
 	}
 	
 	public static void updateMenu() {
-		me.menuPanel.refreshMenu();
-		me.menuPanel.revalidate();
-		me.menuPanel.repaint();
+		if (me != null) {
+			me.menuPanel.refreshMenu();
+			me.menuPanel.revalidate();
+			me.menuPanel.repaint();
+		}
 	}
 	
 	public static boolean isMenuVisible() {
-		return me.menuPanel.isVisible();
+		return me == null ? false : me.menuPanel.isVisible();
 	}
 	
 	public static void updateDialog() {
-		me.dialogPanel.revalidate();
-		me.dialogPanel.repaint();
+		if (me != null) {
+			me.dialogPanel.revalidate();
+			me.dialogPanel.repaint();
+		}
 	}
 	
 	public static void disableMenu() {
-		me.menuPanel.setEnabled(false);
-		me.menuPanel.setVisible(false);
+		if (me != null) {
+			me.menuPanel.setEnabled(false);
+			me.menuPanel.setVisible(false);
+		}
 	}
 	
 	public static void enableMenu() {
-		me.menuPanel.setEnabled(true);
-		me.menuPanel.setVisible(true);
+		if (me != null) {
+			me.menuPanel.setEnabled(true);
+			me.menuPanel.setVisible(true);
+		}
 	}
 	
 	public static void returnToTitleScreen() {
 		BattleQueue.endCombat();
 		BattleQueue.clearBattleListeners();
 		World.reset();
-		me.titleScreenPanel.setVisible(true);
+		if (me != null) {
+			me.titleScreenPanel.setVisible(true);
+		}
 	}
 }

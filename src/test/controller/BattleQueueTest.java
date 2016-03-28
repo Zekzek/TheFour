@@ -28,8 +28,8 @@ public class BattleQueueTest {
 	
 	@BeforeClass
 	public static void setupUnits() {
-		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER);
-		berserker = Unit.get(ID.BERSERKER, TEAM.ENEMY1);
+		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER, "Defender");
+		berserker = Unit.get(ID.BERSERKER, TEAM.ENEMY1, "Berserker");
 		ability1 = Ability.get(Ability.ID.DELAY);
 		ability2 = Ability.get(Ability.ID.WATCH);
 	}

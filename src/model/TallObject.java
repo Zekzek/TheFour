@@ -65,11 +65,10 @@ public abstract class TallObject implements ITargetable {
 		g2.translate(GraphicsPanel.CELL_WIDTH * (pos.getX()-screenRectangle.getX()), 
 				GraphicsPanel.TERRAIN_CELL_HEIGHT * 
 				((pos.getY()-screenRectangle.getY()) - GraphicsPanel.TALL_OBJECT_CELL_HEIGHT_MULTIPLIER + 1));
-
+		g2.translate(drawXOffset * GraphicsPanel.CELL_WIDTH, drawYOffset * GraphicsPanel.TERRAIN_CELL_HEIGHT);
 		BufferedImage sprite = getSprite();
 		if (sprite != null) {
 			AffineTransform preImageTransorm = g2.getTransform();
-			g2.translate(drawXOffset * GraphicsPanel.CELL_WIDTH, drawYOffset * GraphicsPanel.TERRAIN_CELL_HEIGHT);
 			// Convert to image space
 			g2.scale(((double)GraphicsPanel.CELL_WIDTH) / SpriteSheet.SPRITE_WIDTH, 
 					((double)GraphicsPanel.TALL_OBJECT_CELL_HEIGHT) / SpriteSheet.SPRITE_HEIGHT);
@@ -86,7 +85,13 @@ public abstract class TallObject implements ITargetable {
 			g2.drawRect(0, pos.getHeight() * GraphicsPanel.TALL_OBJECT_CELL_HEIGHT, pos.getWidth() * GraphicsPanel.CELL_WIDTH, 3);
 		}
 		
+		// Draw additional decorations
+		paintDecorations(g2);
+		
 		g2.setTransform(savedTransorm);
+	}
+	
+	protected void paintDecorations(Graphics2D g2) {
 	}
 
 	public void updateWorldPos(int x, int y) {
@@ -102,6 +107,10 @@ public abstract class TallObject implements ITargetable {
 	@Override
 	public String toString() {
 		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public int getId() {

@@ -159,15 +159,16 @@ public class BattleQueue {
 			actionQueue.add(action);
 			Collections.sort(actionQueue, SOONEST_READIED_ACTION);
 		}
+		GameFrame.updateMenu();
 	}
 	
 	private static void handleAiQueueAction() {
 		Unit unit = BattleQueue.getMostReadyCombatant();
-		if (unit == null) {
+		if (unit == null || unit.getTeam() == Unit.TEAM.PLAYER) {
 			return;
-		} else if (unit.getTeam() != Unit.TEAM.PLAYER) {
+		} else {
 			unit.aiQueueAction();
-			GameFrame.updateMenu();
+//			GameFrame.updateMenu();
 		}
 	}
 	
