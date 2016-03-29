@@ -18,17 +18,17 @@ import controller.BattleQueue;
 public class Plot_SpeedTest extends Plot{
 	
 	@Override
-	public void start() {
-		GraphicsPanel.moveScreenTo(24, 23);
-		addUnitsToWorld();
-		
-		BattleQueue.addCombatants(World.getSortedContentsWithin(GraphicsPanel.getScreenRectangle(), Unit.class).iterator());
-	    BattleQueue.addRandomCombatDelays();
+	protected String getStartingScene() {
+		return "Speed Test";
 	}
 	
 	@Override
-	public void initSceneTransitions() {
-		
+	protected void initUnits() {
+		//Do nothing, will be created and added in the first scene
+	}
+	
+	@Override
+	protected void initSceneTransitions() {
 		SceneTransition sorcRequest = new SceneTransition("Speed Test");
 		sorcRequest.setFadeInDuration(0);
 		sorcRequest.setFadedText("Ensure common operations can be done in a timely manner");
@@ -36,6 +36,11 @@ public class Plot_SpeedTest extends Plot{
 		sorcRequest.setStartRunnable(new Runnable() {
 			@Override
 			public void run() {
+				GraphicsPanel.moveScreenTo(24, 23);
+				addUnitsToWorld();
+				
+				BattleQueue.addCombatants(World.getSortedContentsWithin(GraphicsPanel.getScreenRectangle(), Unit.class).iterator());
+			    BattleQueue.addRandomCombatDelays();
 				addUnitsToWorld();
 			}
 		});
@@ -72,8 +77,9 @@ public class Plot_SpeedTest extends Plot{
 		Dialog[] report = new Dialog[] {
 			new Dialog(announcer, addObjectTest + "\n" + displayObjectTest),
 		};
-		DialogPanel.setGoToTitleOnConclusion(true);
-		DialogPanel.showDialog(report, null);
+		DialogPanel.showDialog(report, theEnd);
 	}
+
+
 }
 

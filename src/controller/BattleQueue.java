@@ -168,8 +168,8 @@ public class BattleQueue {
 			return;
 		} else {
 			unit.aiQueueAction();
-//			GameFrame.updateMenu();
 		}
+		GameFrame.updateMenu();
 	}
 	
 	/**

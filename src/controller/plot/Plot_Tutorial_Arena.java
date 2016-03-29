@@ -15,15 +15,35 @@ import controller.BattleQueue;
 public class Plot_Tutorial_Arena extends Plot{
 	
 	private Unit announcer, defender, berserker;
+	private Unit[] guards;
+	private Structure[] trees;
 		
 	@Override
-	public void start() {
-		initSceneTransitions();
-		changeScene("Arena Fight");
+	protected String getStartingScene() {
+		return "Arena Fight";
 	}
 	
 	@Override
-	public void initSceneTransitions() {
+	protected void initUnits() {
+		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER, "Defender");
+		berserker = Unit.get(ID.BERSERKER, TEAM.ENEMY1, "Berserker");
+		announcer = Unit.get(ID.ANNOUNCER, TEAM.NONCOMBATANT, "Announcer");
+		guards = new Unit[] {
+				Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard #1"),
+				Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard #2"),
+				Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard #3"),
+				Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard #4")
+		};
+		trees = new Structure[] {
+				new Structure("Tree 1", Plot.class.getResource("/resource/img/trees/tree.png"), 200),
+				new Structure("Tree 2", Plot.class.getResource("/resource/img/trees/tree.png"), 200),
+				new Structure("Tree 3", Plot.class.getResource("/resource/img/trees/tree.png"), 200),
+				new Structure("Tree 4", Plot.class.getResource("/resource/img/trees/tree.png"), 200)
+		};
+	}
+	
+	@Override
+	protected void initSceneTransitions() {
 		SceneTransition sorcRequest = new SceneTransition("Arena Fight");
 		sorcRequest.setFadeInDuration(0);
 		sorcRequest.setFadedText("One afternoon, in the city arena");
@@ -44,28 +64,22 @@ public class Plot_Tutorial_Arena extends Plot{
 	}
 	
 	private void addArena() {
-		World.addTallObject(Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard #1"), 28, 28);
-		World.addTallObject(Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard #2"), 36, 28);
-		World.addTallObject(Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard #3"), 28, 36);
-		World.addTallObject(Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard #4"), 36, 36);
-		
-		World.addTallObject(new Structure("Tree 1", Plot.class.getResource("/resource/img/trees/tree.png"), 200), 28, 27);
-		World.addTallObject(new Structure("Tree 2", Plot.class.getResource("/resource/img/trees/tree.png"), 200), 36, 27);
-		World.addTallObject(new Structure("Tree 3", Plot.class.getResource("/resource/img/trees/tree.png"), 200), 28, 35);
-		World.addTallObject(new Structure("Tree 4", Plot.class.getResource("/resource/img/trees/tree.png"), 200), 36, 35);
-
-		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER, "Defender");
-		defender.setFacing(SpriteSheet.FACING.S);
-		
-		berserker = Unit.get(ID.BERSERKER, TEAM.ENEMY1, "Berserker");
-		berserker.setFacing(SpriteSheet.FACING.S);
-		
-		announcer = Unit.get(ID.ANNOUNCER, TEAM.NONCOMBATANT, "Announcer");
-		
 		GraphicsPanel.moveScreenTo(24, 23);
+
+		World.addTallObject(guards[0], 28, 28);
+		World.addTallObject(guards[1], 36, 28);
+		World.addTallObject(guards[2], 28, 36);
+		World.addTallObject(guards[3], 36, 36);
+		defender.setFacing(SpriteSheet.FACING.S);
+		berserker.setFacing(SpriteSheet.FACING.S);
 		World.addTallObject(defender, 26, 31);
 		World.addTallObject(berserker, 37, 31);
 		World.addTallObject(announcer, -1, -1);
+		
+		World.addTallObject(trees[0], 28, 27);
+		World.addTallObject(trees[1], 36, 27);
+		World.addTallObject(trees[2], 28, 35);
+		World.addTallObject(trees[3], 36, 35);
 	}
 	
 	private void startArena() {
@@ -90,7 +104,6 @@ public class Plot_Tutorial_Arena extends Plot{
 	@Override
 	public void onTeamDefeated(TEAM team) {
 		BattleQueue.endCombat();
-		DialogPanel.setGoToTitleOnConclusion(true);
 		if (team == Unit.TEAM.ENEMY1) { 
 			Dialog[] announcerSummary = new Dialog[] {
 					new Dialog(announcer, "What's this! Ladies and gentlemen, I can scarcely believe my eyes!!! After dozens " 
@@ -101,7 +114,7 @@ public class Plot_Tutorial_Arena extends Plot{
 							+ "that this does not effect the official standings. That said, I welcome DEENDER to return " 
 							+ "to our little arena as he could clearly be a contender! Will the champion fall a second time?")
 				};
-			DialogPanel.showDialog(announcerSummary, null);
+			DialogPanel.showDialog(announcerSummary, theEnd);
 		}
 		else if (team == Unit.TEAM.PLAYER) { 
 			Dialog[] announcerSummary = new Dialog[] {
@@ -110,15 +123,13 @@ public class Plot_Tutorial_Arena extends Plot{
 							+ " With a bit more time in the arena, DEFENDER may even " 
 							+ "be a contender, and I welcome him back in the coming weeks to prove himself.")
 				};
-			DialogPanel.showDialog(announcerSummary, null);
+			DialogPanel.showDialog(announcerSummary, theEnd);
 		} else {
 			Dialog[] announcerSummary = new Dialog[] {
 					new Dialog(announcer, "Wait... how did you get to this dialog.? " + team + " was defeated?")
 				};
-			DialogPanel.showDialog(announcerSummary, null);
+			DialogPanel.showDialog(announcerSummary, theEnd);
 		}
 	}
-
-	
 }
 

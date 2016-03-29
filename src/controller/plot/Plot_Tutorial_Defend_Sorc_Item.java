@@ -20,16 +20,31 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 	private Unit guard1, guard2;
 	private Unit bandit1, bandit2, bandit3;
 	private Structure trees[] = new Structure[18];
+		
+	@Override
+	protected String getStartingScene() {
+		return "Sorc Request";
+	}
 	
 	@Override
-	public void start() {
-		initSceneTransitions();
-		initUnits();
-		changeScene("Sorc Request");
+	protected void initUnits() {
+		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER, "Defender");
+		sorceress = Unit.get(ID.SORCERESS, TEAM.ALLY, "Sorceress");
+		guard1 = Unit.get(ID.GUARD, TEAM.ALLY, "Guard");
+		guard2 = Unit.get(ID.GUARD, TEAM.ALLY, "Guard Captain");
+		bandit1 = Unit.get(ID.FEMALE_BANDIT, TEAM.ENEMY1, "Female bandit #1");
+		bandit2 = Unit.get(ID.MALE_BANDIT, TEAM.ENEMY1, "Male bandit");
+		bandit3 = Unit.get(ID.FEMALE_BANDIT, TEAM.ENEMY1, "Female bandit #2");
+		
+		for (int i = 0; i < trees.length; i+=3) {
+			trees[i] = new Structure("Tree", Plot.class.getResource("/resource/img/trees/tree13.png"), 200);
+			trees[i+1] = new Structure("Tree", Plot.class.getResource("/resource/img/trees/tree15.png"), 200);
+			trees[i+2] = new Structure("Tree", Plot.class.getResource("/resource/img/trees/tree18.png"), 200);
+		}
 	}
 
 	@Override
-	public void initSceneTransitions() {
+	protected void initSceneTransitions() {
 		SceneTransition sorcRequest = new SceneTransition("Sorc Request");
 		sorcRequest.setFadeInDuration(0);
 		sorcRequest.setFadedText("Deep in the forests of Seargith,\n near the site of the newly unearthed relics");
@@ -227,26 +242,9 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 			new Dialog(defender, "Thank you for the offer. I welcome your company. There are still bandits out there after all"),
 			new Dialog(guard1, "Then let's be off. We haven't got all day to chat in the forest"),
 		};
-		DialogPanel.setGoToTitleOnConclusion(true);
-		DialogPanel.showDialog(guardsCompromise, null);
+		DialogPanel.showDialog(guardsCompromise, theEnd);
 	}
 	
-	private void initUnits() {
-		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER, "Defender");
-		sorceress = Unit.get(ID.SORCERESS, TEAM.ALLY, "Sorceress");
-		guard1 = Unit.get(ID.GUARD, TEAM.ALLY, "Guard");
-		guard2 = Unit.get(ID.GUARD, TEAM.ALLY, "Guard Captain");
-		bandit1 = Unit.get(ID.FEMALE_BANDIT, TEAM.ENEMY1, "Female bandit #1");
-		bandit2 = Unit.get(ID.MALE_BANDIT, TEAM.ENEMY1, "Male bandit");
-		bandit3 = Unit.get(ID.FEMALE_BANDIT, TEAM.ENEMY1, "Female bandit #2");
-		
-		for (int i = 0; i < trees.length; i+=3) {
-			trees[i] = new Structure("Tree", Plot.class.getResource("/resource/img/trees/tree13.png"), 200);
-			trees[i+1] = new Structure("Tree", Plot.class.getResource("/resource/img/trees/tree15.png"), 200);
-			trees[i+2] = new Structure("Tree", Plot.class.getResource("/resource/img/trees/tree18.png"), 200);
-		}
-	}
-
 	@Override
 	public void onUnitDefeated(Unit unit) {
 		if (unit.getTeam() == TEAM.ENEMY1) {

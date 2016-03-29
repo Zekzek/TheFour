@@ -3,24 +3,51 @@ package controller.plot;
 import java.util.HashMap;
 import java.util.Map;
 
+import view.DialogPanel;
 import view.GraphicsPanel;
 import view.SceneTransition;
+import model.Dialog;
 import model.Unit;
 import model.Unit.TEAM;
 import controller.BattleListenerInterface;
 import controller.BattleQueue;
 
 public abstract class Plot implements BattleListenerInterface{
-
 	private final Map<String, SceneTransition> sceneTransitions = new HashMap<String, SceneTransition>();
 	private String sceneName;
+	protected Runnable theEnd = new Runnable() {
+		@Override
+		public void run() {
+			end();
+		}
+	};
 	
 	public Plot() {
 		BattleQueue.addBattleListener(this);
 	}
 	
-	public abstract void start();
-	public abstract void initSceneTransitions();
+	public void start() {
+		initUnits();
+		initSceneTransitions();
+		changeScene(getStartingScene());
+	}
+	
+	protected void end() {
+		Dialog[] theEnd = new Dialog[] {
+			new Dialog(getNarrator(), "The End")
+		};
+		DialogPanel.setGoToTitleOnConclusion(true);
+		DialogPanel.showDialog(theEnd, null);
+	}
+	
+	protected abstract void initUnits();
+	protected abstract void initSceneTransitions();
+	protected abstract String getStartingScene();
+	
+	protected Unit getNarrator() {
+		return Unit.get(Unit.ID.ANNOUNCER, Unit.TEAM.NONCOMBATANT, "Announcer");
+	}
+	
 	
 	public void addSceneTransition(SceneTransition transition) {
 		sceneTransitions.put(transition.getName(), transition);

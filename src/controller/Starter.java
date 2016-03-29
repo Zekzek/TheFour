@@ -7,8 +7,7 @@ public class Starter {
 }
 
 //	Review
-//Fixed?: no abilities to select
-//lifebar jumps when moving
+//Fixed?: no abilities to select after guards show up conversation (shows defender, but no abilities) when special climate selected?
 //lifebar gets blocked (make vertical?)
 //	player lifebars always visible in menus?
 //	show target lifebars in menu

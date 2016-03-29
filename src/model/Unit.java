@@ -27,7 +27,8 @@ import controller.plot.Plot;
 
 public class Unit extends TallObject {
 	public static enum TEAM { PLAYER, ALLY, NONCOMBATANT, ENEMY1, ENEMY2 }
-	public static enum ID { DEFENDER, BERSERKER, SORCERESS, ARCHER, GUARD, FEMALE_BANDIT, MALE_BANDIT, ANNOUNCER }
+	public static enum ID { DEFENDER, BERSERKER, SORCERESS, ARCHER, GUARD, FEMALE_BANDIT, MALE_BANDIT, ANNOUNCER, 
+		FEMALE_GOBLIN, MALE_GOBLIN, GOBLIN_CHIEF, GIRL, BOY }
 	private static final int MINI_SIZE = 32;
 	private static final int ANIMATION_LENGTH = 6;
 	private static final Font ABILITY_FONT = new Font("Impact", 1, 24);
