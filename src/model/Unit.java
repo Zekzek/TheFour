@@ -432,6 +432,50 @@ public class Unit extends TallObject {
 			maleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 0.39);
 			maleBandit.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 0.39);
 			units.put(ID.MALE_BANDIT, maleBandit);
+			
+			Unit femaleGoblin = new Unit("Female Goblin", 60, Plot.class.getResource("/resource/img/spriteSheet/goblinFemale.png"));
+			femaleGoblin.learnAction(Ability.get(Ability.ID.QUICK_ATTACK));
+			femaleGoblin.learnAction(Ability.get(Ability.ID.ATTACK));
+			femaleGoblin.learnAction(Ability.get(Ability.ID.THROW));
+			femaleGoblin.setWeapon(Weapon.getWeapon(Weapon.ID.DAGGER));
+			femaleGoblin.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 0.41);
+			femaleGoblin.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 0.39);
+			femaleGoblin.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 0.39);
+			units.put(ID.FEMALE_GOBLIN, femaleGoblin);
+			
+			Unit maleGoblin = new Unit("Male Goblin", 60, Plot.class.getResource("/resource/img/spriteSheet/goblinMale.png"));
+			maleGoblin.learnAction(Ability.get(Ability.ID.QUICK_ATTACK));
+			maleGoblin.learnAction(Ability.get(Ability.ID.ATTACK));
+			maleGoblin.learnAction(Ability.get(Ability.ID.THROW));
+			maleGoblin.setWeapon(Weapon.getWeapon(Weapon.ID.DAGGER));
+			maleGoblin.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 0.41);
+			maleGoblin.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 0.39);
+			maleGoblin.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 0.39);
+			units.put(ID.MALE_GOBLIN, maleGoblin);
+			
+			Unit goblinChief = new Unit("Goblin Chief", 60, Plot.class.getResource("/resource/img/spriteSheet/goblinChief.png"));
+			goblinChief.learnAction(Ability.get(Ability.ID.QUICK_ATTACK));
+			goblinChief.learnAction(Ability.get(Ability.ID.ATTACK));
+			goblinChief.learnAction(Ability.get(Ability.ID.THROW));
+			goblinChief.setWeapon(Weapon.getWeapon(Weapon.ID.DAGGER));
+			goblinChief.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 0.41);
+			goblinChief.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 0.39);
+			goblinChief.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 0.39);
+			units.put(ID.GOBLIN_CHIEF, goblinChief);
+			
+			Unit girl = new Unit("Girl", 60, Plot.class.getResource("/resource/img/spriteSheet/girl.png"));
+			girl.learnAction(Ability.get(Ability.ID.WATCH));
+			girl.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 0.3);
+			girl.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 0.3);
+			girl.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 0.3);
+			units.put(ID.GIRL, girl);
+			
+			Unit boy = new Unit("Boy", 60, Plot.class.getResource("/resource/img/spriteSheet/boy.png"));
+			boy.learnAction(Ability.get(Ability.ID.WATCH));
+			boy.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 0.3);
+			boy.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 0.3);
+			boy.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 0.3);
+			units.put(ID.BOY, boy);
 		}
 
 		public static Unit getUnit(ID id, TEAM team, String name) {

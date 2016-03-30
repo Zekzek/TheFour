@@ -6,6 +6,7 @@ import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 
 import controller.BattleQueue;
+import model.Unit;
 import model.World;
 
 public class GameFrame extends JFrame {
@@ -18,6 +19,7 @@ public class GameFrame extends JFrame {
 	private MenuPanel menuPanel;
 	private DialogPanel dialogPanel;
 	private TitleScreenPanel titleScreenPanel;
+	private JLayeredPane layeredPane;
 	
 	public GameFrame() {
 		setPreferredSize(new Dimension(800, 600));
@@ -25,7 +27,7 @@ public class GameFrame extends JFrame {
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
-        JLayeredPane layeredPane = new GameLayeredPane();
+        layeredPane = new GameLayeredPane();
 		
         graphicsPanel = new GraphicsPanel();
 		layeredPane.add(graphicsPanel, JLayeredPane.DEFAULT_LAYER);
@@ -57,11 +59,13 @@ public class GameFrame extends JFrame {
 		}
 	}
 	
-	public static void updateMenu() {
+	public static void makeMenuFor(Unit unit) {
 		if (me != null) {
-			me.menuPanel.refreshMenu();
+			me.menuPanel.makeMenuFor(unit);
 			me.menuPanel.revalidate();
 			me.menuPanel.repaint();
+		} else {
+			BattleQueue.finishPlanningAction();
 		}
 	}
 	
@@ -95,6 +99,9 @@ public class GameFrame extends JFrame {
 		BattleQueue.clearBattleListeners();
 		World.reset();
 		if (me != null) {
+			me.layeredPane.remove(me.menuPanel);
+			me.menuPanel = new MenuPanel(me.abilityPanel);
+			me.layeredPane.add(me.menuPanel, JLayeredPane.PALETTE_LAYER);
 			me.titleScreenPanel.setVisible(true);
 		}
 	}

@@ -19,6 +19,7 @@ import controller.MapBuilder;
 import controller.plot.Plot;
 import controller.plot.Plot_SpeedTest;
 import controller.plot.Plot_Tutorial_Arena;
+import controller.plot.Plot_Tutorial_Beserker_Deceit;
 import controller.plot.Plot_Tutorial_Defend_Sorc_Item;
 
 public class TitleScreenPanel extends JPanel{
@@ -32,6 +33,7 @@ public class TitleScreenPanel extends JPanel{
 		plotOptions = new HashMap<String, Class<? extends Plot>>();
 		plotOptions.put("Beginnings: Magic Case", Plot_Tutorial_Defend_Sorc_Item.class);
 		plotOptions.put("Beginnings: Arena", Plot_Tutorial_Arena.class);
+		plotOptions.put("Beginnings: Berserkers Request", Plot_Tutorial_Beserker_Deceit.class);
 		plotOptions.put("Test: Speed Test", Plot_SpeedTest.class);
 		
 		setLayout(new BorderLayout());

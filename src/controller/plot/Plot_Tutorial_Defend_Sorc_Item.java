@@ -48,7 +48,7 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 		SceneTransition sorcRequest = new SceneTransition("Sorc Request");
 		sorcRequest.setFadeInDuration(0);
 		sorcRequest.setFadedText("Deep in the forests of Seargith,\n near the site of the newly unearthed relics");
-		sorcRequest.setFadedDuration(7000);
+		sorcRequest.setFadedDuration(7 * SECOND);
 		sorcRequest.setSetupRunnable(new Runnable() {
 			@Override
 			public void run() {
@@ -65,7 +65,7 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 		
 		SceneTransition banditAttack = new SceneTransition("Bandit Attack");
 		banditAttack.setFadedText("Hours later, finally nearing civilization");
-		banditAttack.setFadedDuration(5000);
+		banditAttack.setFadedDuration(5 * SECOND);
 		banditAttack.setSetupRunnable(new Runnable() {
 			@Override
 			public void run() {

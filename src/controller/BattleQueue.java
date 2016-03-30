@@ -38,38 +38,61 @@ public class BattleQueue {
 	private static final LinkedList<ReadiedAction> actionQueue = new LinkedList<ReadiedAction>();
 	private static final Map<Unit,Integer> lastScheduledTimes = new HashMap<Unit, Integer>();
 	private static final Map<Unit,Integer> completionTimes = new HashMap<Unit, Integer>();
-	private static final Thread playNextAction = new Thread() {
-		@Override
-		public void run() {
-			while(true) {
-				try {
-					handleAiQueueAction();
-					synchronized(actionQueue) {
-						if (!pause && !performingAction && !actionQueue.isEmpty()
-								&& actionQueue.peek().getStartTime() <= getMostReadyCombatantReadyness()) {
-							performNextAction();
-						}
-					}
-					Thread.sleep(PERFORM_ACTION_CHECK_DELAY);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	};
+	private static Thread playNextAction;
 	private static BattleQueue me;
+	private static boolean playingActions = false;
 	private static int battleDuration = 0;
 	private static boolean pause = true;
 	private static boolean performingAction = false;
+	private static Boolean planningAction = false;
 	private static Set<BattleListenerInterface> battleListeners = new HashSet<BattleListenerInterface>();
 	private static Set<Unit.TEAM> activeTeams = new HashSet<Unit.TEAM>();
 	
 	public static void startPlayingActions() {
-		if (!playNextAction.isAlive()) {
+		playingActions = true;
+		if (playNextAction == null || !playNextAction.isAlive()) {
+			playNextAction = new Thread() {
+				@Override
+				public void run() {
+					while(playingActions) {
+						try {
+							Unit readyUnit = BattleQueue.getMostReadyCombatant();
+							synchronized(planningAction) {
+								if (!planningAction) {
+									planningAction = true;
+									if (readyUnit.getTeam() == Unit.TEAM.PLAYER) {
+										GameFrame.makeMenuFor(readyUnit);
+									} else {
+										handleAiQueueAction(readyUnit);
+									}
+								}
+							}
+							synchronized(actionQueue) {
+								if (!pause && !performingAction && !actionQueue.isEmpty()
+										&& actionQueue.peek().getStartTime() <= completionTimes.get(readyUnit)) {
+									performNextAction();
+								}
+							}
+							Thread.sleep(PERFORM_ACTION_CHECK_DELAY);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+					battleDuration = 0;
+					pause = true;
+					performingAction = false;
+					planningAction = false;
+					battleListeners.clear();
+					activeTeams.clear();
+				}
+			};
 			playNextAction.setDaemon(true);
 			playNextAction.start();
 		}
-		GameFrame.updateMenu();
+	}
+	
+	public static void stopPlayingActions() {
+		playingActions = false;
 	}
 	
 	public static void setPause(boolean pause) {
@@ -90,8 +113,10 @@ public class BattleQueue {
     }
 	
 	public static void addCombatant(Unit unit) {
+		System.out.print("addCombatant(" + unit + ")");
 		lastScheduledTimes.put(unit, battleDuration);
 		completionTimes.put(unit, battleDuration);
+		System.out.println("  (" + lastScheduledTimes.get(unit) + "/" + completionTimes.get(unit) + ")");
 		activeTeams.add(unit.getTeam());
 	}
 	
@@ -151,25 +176,24 @@ public class BattleQueue {
 	}
 	
 	public static void queueAction(Ability ability, Unit source, ITargetable target) {
+		System.out.print("\t" + source + " has prepared " + ability + " for " + target);
+		System.out.println("  (" + lastScheduledTimes.get(source) + "/" + completionTimes.get(source) + ")");
 		ReadiedAction action = new ReadiedAction(ability, source, target, completionTimes.get(source));
 		lastScheduledTimes.put(source, completionTimes.get(source));
 		completionTimes.put(source, action.getStartTime() + ability.getDelay());
-		System.out.println("\t" + source + "(" + lastScheduledTimes.get(source) + ") has prepared " + ability + " for " + action.getTarget());
 		synchronized(actionQueue) {
 			actionQueue.add(action);
 			Collections.sort(actionQueue, SOONEST_READIED_ACTION);
 		}
-		GameFrame.updateMenu();
 	}
 	
-	private static void handleAiQueueAction() {
-		Unit unit = BattleQueue.getMostReadyCombatant();
-		if (unit == null || unit.getTeam() == Unit.TEAM.PLAYER) {
-			return;
-		} else {
-			unit.aiQueueAction();
+	private static void handleAiQueueAction(Unit readyUnit) {
+		if (readyUnit != null && readyUnit.getTeam() != Unit.TEAM.PLAYER) {
+			readyUnit.aiQueueAction();
 		}
-		GameFrame.updateMenu();
+		synchronized(planningAction) {
+			planningAction = false;
+		}
 	}
 	
 	/**
@@ -241,19 +265,7 @@ public class BattleQueue {
 		}
 		return mostReadyUnit;
 	}
-	
-	private static int getMostReadyCombatantReadyness() {
-		int unitBusyness = Integer.MAX_VALUE;
-		Iterator<Unit> combatants = completionTimes.keySet().iterator();
-		while (combatants.hasNext()) {
-			Unit combatant = combatants.next();
-			if (completionTimes.get(combatant) < unitBusyness) {
-				unitBusyness = completionTimes.get(combatant);
-			}
-		}
-		return unitBusyness;
-	}
-	
+		
 	public static void performNextAction() {
 		performingAction = true;
 		synchronized(actionQueue) {
@@ -452,5 +464,11 @@ public class BattleQueue {
 			}
 		}
 		return false;
+	}
+
+	public static void finishPlanningAction() {
+		synchronized(planningAction) {
+			planningAction = false;
+		}
 	}
 }

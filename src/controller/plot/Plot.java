@@ -13,6 +13,7 @@ import controller.BattleListenerInterface;
 import controller.BattleQueue;
 
 public abstract class Plot implements BattleListenerInterface{
+	protected static final int SECOND = 1000;
 	private final Map<String, SceneTransition> sceneTransitions = new HashMap<String, SceneTransition>();
 	private String sceneName;
 	protected Runnable theEnd = new Runnable() {
@@ -33,6 +34,8 @@ public abstract class Plot implements BattleListenerInterface{
 	}
 	
 	protected void end() {
+		BattleQueue.endCombat();
+		BattleQueue.stopPlayingActions();
 		Dialog[] theEnd = new Dialog[] {
 			new Dialog(getNarrator(), "The End")
 		};
