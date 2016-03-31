@@ -17,6 +17,7 @@ import model.ITargetable;
 import model.ReadiedAction;
 import model.TallObject;
 import model.Unit;
+import model.Unit.TEAM;
 import model.World;
 import view.GameFrame;
 
@@ -57,6 +58,9 @@ public class BattleQueue {
 					while(playingActions) {
 						try {
 							Unit readyUnit = BattleQueue.getMostReadyCombatant();
+							if (readyUnit == null) {
+								continue;
+							}
 							synchronized(planningAction) {
 								if (!planningAction) {
 									planningAction = true;
@@ -115,7 +119,9 @@ public class BattleQueue {
 	public static void addCombatant(Unit unit) {
 		System.out.print("addCombatant(" + unit + ")");
 		lastScheduledTimes.put(unit, battleDuration);
-		completionTimes.put(unit, battleDuration);
+		synchronized(completionTimes) {
+			completionTimes.put(unit, battleDuration);
+		}
 		System.out.println("  (" + lastScheduledTimes.get(unit) + "/" + completionTimes.get(unit) + ")");
 		activeTeams.add(unit.getTeam());
 	}
@@ -132,28 +138,42 @@ public class BattleQueue {
 				}
 			}
 		}
+		synchronized(planningAction) {
+			if (planningAction && unit.getTeam() == TEAM.PLAYER) {
+				planningAction = false;
+			}
+		}
 		if (exitAbility != null) {
 			Ability death = Ability.get(Ability.ID.DEATH);
 			insertFirstAction(death, unit, unit, null, new Runnable() {
 				@Override
 				public void run() {
-					unitDefeated(unit);
-					// Determine if the team was defeated
-					Unit.TEAM team = unit.getTeam();
-					boolean teamDefeat = true;
-					Iterator<Unit> combatants = lastScheduledTimes.keySet().iterator();
-					while (teamDefeat && combatants.hasNext()) {
-						teamDefeat = !(combatants.next().getTeam() == team);
-					}
-					if (teamDefeat) {
-						activeTeams.remove(team);
-						teamDefeated(team);
-					}
+					reportDefeat(unit);
 				}
 			});
 		}
+		else {
+			reportDefeat(unit);
+		}
 		lastScheduledTimes.remove(unit);
-		completionTimes.remove(unit);
+		synchronized(completionTimes) {
+			completionTimes.remove(unit);
+		}
+	}
+	
+	private static void reportDefeat(Unit unit) {
+		unitDefeated(unit);
+		// Determine if the team was defeated
+		Unit.TEAM team = unit.getTeam();
+		boolean teamDefeat = true;
+		Iterator<Unit> combatants = lastScheduledTimes.keySet().iterator();
+		while (teamDefeat && combatants.hasNext()) {
+			teamDefeat = !(combatants.next().getTeam() == team);
+		}
+		if (teamDefeat) {
+			activeTeams.remove(team);
+			teamDefeated(team);
+		}
 	}
 	
 	public static void addRandomCombatDelays() {
@@ -168,7 +188,9 @@ public class BattleQueue {
 	 */
 	public static void endCombat() {
 		lastScheduledTimes.clear();
-		completionTimes.clear();
+		synchronized(completionTimes) {
+			completionTimes.clear();
+		}
 		synchronized(actionQueue) {	
 			actionQueue.clear();
 		}
@@ -180,7 +202,9 @@ public class BattleQueue {
 		System.out.println("  (" + lastScheduledTimes.get(source) + "/" + completionTimes.get(source) + ")");
 		ReadiedAction action = new ReadiedAction(ability, source, target, completionTimes.get(source));
 		lastScheduledTimes.put(source, completionTimes.get(source));
-		completionTimes.put(source, action.getStartTime() + ability.getDelay());
+		synchronized(completionTimes) {
+			completionTimes.put(source, action.getStartTime() + ability.getDelay());
+		}
 		synchronized(actionQueue) {
 			actionQueue.add(action);
 			Collections.sort(actionQueue, SOONEST_READIED_ACTION);
@@ -233,7 +257,9 @@ public class BattleQueue {
 		Ability ability = action.getAbility();
 		Unit source = action.getSource();
 		lastScheduledTimes.put(source, lastScheduledTimes.get(source) - ability.getDelay());
-		completionTimes.put(source, completionTimes.get(source) - ability.getDelay());
+		synchronized(completionTimes) {
+			completionTimes.put(source, completionTimes.get(source) - ability.getDelay());
+		}
 		synchronized(actionQueue) {
 			for (int i = actionQueue.size() - 1; i >= 0; i--) {
 				ReadiedAction otherAction = actionQueue.get(i);
@@ -255,12 +281,14 @@ public class BattleQueue {
 	public static Unit getMostReadyCombatant() {
 		Unit mostReadyUnit = null;
 		int unitBusyness = Integer.MAX_VALUE;
-		Iterator<Unit> combatants = completionTimes.keySet().iterator();
-		while (combatants.hasNext()) {
-			Unit combatant = combatants.next();
-			if (completionTimes.get(combatant) < unitBusyness) {
-				mostReadyUnit = combatant;
-				unitBusyness = completionTimes.get(combatant);
+		synchronized(completionTimes) {
+			Iterator<Unit> combatants = completionTimes.keySet().iterator();
+			while (combatants.hasNext()) {
+				Unit combatant = combatants.next();
+				if (completionTimes.get(combatant) < unitBusyness) {
+					mostReadyUnit = combatant;
+					unitBusyness = completionTimes.get(combatant);
+				}
 			}
 		}
 		return mostReadyUnit;
@@ -360,7 +388,9 @@ public class BattleQueue {
 				lastScheduledTimes.put(unit, lastScheduledTime + delay);
 			Integer completionTime = completionTimes.get(unit);
 			if (completionTime != null)
-				completionTimes.put(unit, completionTime + delay);
+				synchronized(completionTimes) {
+					completionTimes.put(unit, completionTime + delay);
+				}
 			Collections.sort(actionQueue, SOONEST_READIED_ACTION);
 		}
 	}

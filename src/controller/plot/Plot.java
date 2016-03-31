@@ -31,6 +31,8 @@ public abstract class Plot implements BattleListenerInterface{
 		initUnits();
 		initSceneTransitions();
 		changeScene(getStartingScene());
+		BattleQueue.setPause(false);
+		BattleQueue.startPlayingActions();
 	}
 	
 	protected void end() {

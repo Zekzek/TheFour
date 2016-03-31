@@ -294,7 +294,7 @@ public class Ability {
 					1000, 0, "Wait", SpriteSheet.ANIMATION.WALK));
 			abilities.put(ID.WATCH, new Ability(ID.WATCH, "Watch", CATEGORY.SKILL, TARGET_TYPE.ALL, EFFECT.MOVE, 
 					5000, 0, 16, 0, "Watch", ANIMATION.WALK));
-			abilities.put(ID.DEATH, new Ability(ID.DEATH, "Death", CATEGORY.SKILL, TARGET_TYPE.DEAD, EFFECT.MOVE, 
+			abilities.put(ID.DEATH, new Ability(ID.DEATH, "KO", CATEGORY.SKILL, TARGET_TYPE.DEAD, EFFECT.MOVE, 
 					1000, 0, "Lose the will to fight on", ANIMATION.DEATH));
 		}
 		

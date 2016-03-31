@@ -438,8 +438,8 @@ public class Unit extends TallObject {
 			femaleGoblin.learnAction(Ability.get(Ability.ID.ATTACK));
 			femaleGoblin.learnAction(Ability.get(Ability.ID.THROW));
 			femaleGoblin.setWeapon(Weapon.getWeapon(Weapon.ID.DAGGER));
-			femaleGoblin.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 0.41);
-			femaleGoblin.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 0.39);
+			femaleGoblin.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 0.39);
+			femaleGoblin.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 0.41);
 			femaleGoblin.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 0.39);
 			units.put(ID.FEMALE_GOBLIN, femaleGoblin);
 			
@@ -453,14 +453,11 @@ public class Unit extends TallObject {
 			maleGoblin.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 0.39);
 			units.put(ID.MALE_GOBLIN, maleGoblin);
 			
-			Unit goblinChief = new Unit("Goblin Chief", 60, Plot.class.getResource("/resource/img/spriteSheet/goblinChief.png"));
+			Unit goblinChief = new Unit("Goblin Chief", 300, Plot.class.getResource("/resource/img/spriteSheet/goblinChief.png"));
 			goblinChief.learnAction(Ability.get(Ability.ID.QUICK_ATTACK));
 			goblinChief.learnAction(Ability.get(Ability.ID.ATTACK));
 			goblinChief.learnAction(Ability.get(Ability.ID.THROW));
-			goblinChief.setWeapon(Weapon.getWeapon(Weapon.ID.DAGGER));
-			goblinChief.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 0.41);
-			goblinChief.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 0.39);
-			goblinChief.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 0.39);
+			goblinChief.setWeapon(Weapon.getWeapon(Weapon.ID.MACE));
 			units.put(ID.GOBLIN_CHIEF, goblinChief);
 			
 			Unit girl = new Unit("Girl", 60, Plot.class.getResource("/resource/img/spriteSheet/girl.png"));
