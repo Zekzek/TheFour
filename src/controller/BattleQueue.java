@@ -17,7 +17,6 @@ import model.ITargetable;
 import model.ReadiedAction;
 import model.TallObject;
 import model.Unit;
-import model.Unit.TEAM;
 import model.World;
 import view.GameFrame;
 
@@ -45,9 +44,17 @@ public class BattleQueue {
 	private static int battleDuration = 0;
 	private static boolean pause = true;
 	private static boolean performingAction = false;
-	private static Boolean planningAction = false;
+	private static Unit planningAction = null;
 	private static Set<BattleListenerInterface> battleListeners = new HashSet<BattleListenerInterface>();
 	private static Set<Unit.TEAM> activeTeams = new HashSet<Unit.TEAM>();
+	
+	private static BattleQueue getMe() {
+		if (me == null) {
+			me = new BattleQueue();
+		}
+		return me;
+	}
+	//TODO: queueing is only done by the player while NPCs decide on the fly
 	
 	public static void startPlayingActions() {
 		playingActions = true;
@@ -55,23 +62,22 @@ public class BattleQueue {
 			playNextAction = new Thread() {
 				@Override
 				public void run() {
+					BattleQueue me = getMe();
 					while(playingActions) {
 						try {
 							Unit readyUnit = BattleQueue.getMostReadyCombatant();
 							if (readyUnit == null) {
 								continue;
 							}
-							synchronized(planningAction) {
-								if (!planningAction) {
-									planningAction = true;
+							synchronized(me) {
+								if (planningAction == null) {
+									planningAction = readyUnit;
 									if (readyUnit.getTeam() == Unit.TEAM.PLAYER) {
 										GameFrame.makeMenuFor(readyUnit);
 									} else {
 										handleAiQueueAction(readyUnit);
 									}
 								}
-							}
-							synchronized(actionQueue) {
 								if (!pause && !performingAction && !actionQueue.isEmpty()
 										&& actionQueue.peek().getStartTime() <= completionTimes.get(readyUnit)) {
 									performNextAction();
@@ -85,7 +91,7 @@ public class BattleQueue {
 					battleDuration = 0;
 					pause = true;
 					performingAction = false;
-					planningAction = false;
+					planningAction = null;
 					battleListeners.clear();
 					activeTeams.clear();
 				}
@@ -118,8 +124,8 @@ public class BattleQueue {
 	
 	public static void addCombatant(Unit unit) {
 		System.out.print("addCombatant(" + unit + ")");
-		lastScheduledTimes.put(unit, battleDuration);
-		synchronized(completionTimes) {
+		synchronized(getMe()) {
+			lastScheduledTimes.put(unit, battleDuration);
 			completionTimes.put(unit, battleDuration);
 		}
 		System.out.println("  (" + lastScheduledTimes.get(unit) + "/" + completionTimes.get(unit) + ")");
@@ -127,20 +133,19 @@ public class BattleQueue {
 	}
 	
 	public static void removeCombatant(Unit unit, Ability.ID exitAbility) {
-		if (lastScheduledTimes.get(unit) == null) {
-			return;
-		}
-		synchronized(actionQueue) {
+		BattleQueue me = getMe();
+		synchronized(me) {			
+			if (lastScheduledTimes.get(unit) == null) {
+				return;
+			}
 			Iterator<ReadiedAction> actions = actionQueue.iterator();
 			while (actions.hasNext()) {
 				if (unit.equals(actions.next().getSource())) {
 					actions.remove();
 				}
 			}
-		}
-		synchronized(planningAction) {
-			if (planningAction && unit.getTeam() == TEAM.PLAYER) {
-				planningAction = false;
+			if (planningAction != null && planningAction.equals(unit)) {
+				planningAction = null;
 			}
 		}
 		if (exitAbility != null) {
@@ -155,8 +160,8 @@ public class BattleQueue {
 		else {
 			reportDefeat(unit);
 		}
-		lastScheduledTimes.remove(unit);
-		synchronized(completionTimes) {
+		synchronized(me) {
+			lastScheduledTimes.remove(unit);
 			completionTimes.remove(unit);
 		}
 	}
@@ -187,11 +192,9 @@ public class BattleQueue {
 	 * Clear the action queue and remove all combatants from combat
 	 */
 	public static void endCombat() {
-		lastScheduledTimes.clear();
-		synchronized(completionTimes) {
+		synchronized(getMe()) {
+			lastScheduledTimes.clear();
 			completionTimes.clear();
-		}
-		synchronized(actionQueue) {	
 			actionQueue.clear();
 		}
 		battleDuration = 0;
@@ -201,11 +204,9 @@ public class BattleQueue {
 		System.out.print("\t" + source + " has prepared " + ability + " for " + target);
 		System.out.println("  (" + lastScheduledTimes.get(source) + "/" + completionTimes.get(source) + ")");
 		ReadiedAction action = new ReadiedAction(ability, source, target, completionTimes.get(source));
-		lastScheduledTimes.put(source, completionTimes.get(source));
-		synchronized(completionTimes) {
+		synchronized(getMe()) {
+			lastScheduledTimes.put(source, completionTimes.get(source));
 			completionTimes.put(source, action.getStartTime() + ability.getDelay());
-		}
-		synchronized(actionQueue) {
 			actionQueue.add(action);
 			Collections.sort(actionQueue, SOONEST_READIED_ACTION);
 		}
@@ -215,8 +216,8 @@ public class BattleQueue {
 		if (readyUnit != null && readyUnit.getTeam() != Unit.TEAM.PLAYER) {
 			readyUnit.aiQueueAction();
 		}
-		synchronized(planningAction) {
-			planningAction = false;
+		synchronized(getMe()) {
+			planningAction = null;
 		}
 	}
 	
@@ -247,7 +248,7 @@ public class BattleQueue {
 		action.setDoAtMid(doAtMid);
 		action.setDoAtEnd(doAtEnd);
 		System.out.println("\t" + source + "(" + lastScheduledTimes.get(source) + ") has immediately prepared " + ability + " for " + action.getTarget());
-		synchronized(actionQueue) {
+		synchronized(getMe()) {
 			actionQueue.add(action);
 			Collections.sort(actionQueue, SOONEST_READIED_ACTION);
 		}
@@ -256,11 +257,9 @@ public class BattleQueue {
 	public static void dequeueAction(ReadiedAction action) {
 		Ability ability = action.getAbility();
 		Unit source = action.getSource();
-		lastScheduledTimes.put(source, lastScheduledTimes.get(source) - ability.getDelay());
-		synchronized(completionTimes) {
+		synchronized(getMe()) {
+			lastScheduledTimes.put(source, lastScheduledTimes.get(source) - ability.getDelay());
 			completionTimes.put(source, completionTimes.get(source) - ability.getDelay());
-		}
-		synchronized(actionQueue) {
 			for (int i = actionQueue.size() - 1; i >= 0; i--) {
 				ReadiedAction otherAction = actionQueue.get(i);
 				if (otherAction.equals(action)) {
@@ -281,7 +280,7 @@ public class BattleQueue {
 	public static Unit getMostReadyCombatant() {
 		Unit mostReadyUnit = null;
 		int unitBusyness = Integer.MAX_VALUE;
-		synchronized(completionTimes) {
+		synchronized(getMe()) {
 			Iterator<Unit> combatants = completionTimes.keySet().iterator();
 			while (combatants.hasNext()) {
 				Unit combatant = combatants.next();
@@ -296,7 +295,7 @@ public class BattleQueue {
 		
 	public static void performNextAction() {
 		performingAction = true;
-		synchronized(actionQueue) {
+		synchronized(getMe()) {
 			ReadiedAction nextAction = actionQueue.peek();
 			battleDuration = nextAction.getStartTime();
 			Unit source = nextAction.getSource();
@@ -341,9 +340,7 @@ public class BattleQueue {
 	}
 	
 	private static PathingGridPosition getPathToUseAction(ReadiedAction action) {
-		if (me == null) {
-			me = new BattleQueue();
-		}
+		BattleQueue me = getMe();
 		Unit source = action.getSource();
 		GridPosition targetPos = action.getTarget().getPos();
 		PathingGridPosition node = me.new PathingGridPosition(source.getPos(), null, targetPos);
@@ -360,7 +357,7 @@ public class BattleQueue {
 				return node;
 			}
 			explored.add(node);
-			for(GridPosition n : World.getOpenNeighbors(node)) {
+			for(GridPosition n : World.getTraversableNeighbors(node)) {
 				PathingGridPosition neighbor = me.new PathingGridPosition(n, node, targetPos);
 				if (!explored.contains(neighbor)) {
 					if (!frontier.contains(neighbor)) {
@@ -377,7 +374,7 @@ public class BattleQueue {
 	}
 	
 	public static void delay(Unit unit, int delay) {
-		synchronized((actionQueue)) {
+		synchronized(getMe()) {
 			for (ReadiedAction action : actionQueue) {
 				if (action.getSource().equals(unit)) {
 					action.delay(delay);
@@ -475,30 +472,39 @@ public class BattleQueue {
 	public static String getState() {
 		String state = "@" + battleDuration;
 		state +="\nLast Scheduled/Completion: ";
-		for(Unit unit : lastScheduledTimes.keySet()) {
-			state += "\t" + unit + ":" + lastScheduledTimes.get(unit) + "/" + completionTimes.get(unit);  
-		}
-		state += "\nReady to schedule: " + getMostReadyCombatant();
-		for (ReadiedAction action :actionQueue) {
-			state += "\n\t(" + action.getStartTime() + ")\t"+ action.getSource() 
-					+ " ---" + action.getAbility() + "--> " + action.getTarget();
+		synchronized(getMe()) {
+					for(Unit unit : lastScheduledTimes.keySet()) {
+				state += "\t" + unit + ":" + lastScheduledTimes.get(unit) + "/" + completionTimes.get(unit);  
+			}
+			state += "\nReady to schedule: " + getMostReadyCombatant();
+			for (ReadiedAction action :actionQueue) {
+				state += "\n\t(" + action.getStartTime() + ")\t"+ action.getSource() 
+						+ " ---" + action.getAbility() + "--> " + action.getTarget();
+			}
 		}
 		
 		return state;
 	}
 
-	public static boolean isQueued(Unit source, Ability ability, Unit target) {
-		for (ReadiedAction action :actionQueue) {
-			if (action.getSource().equals(source) && action.getAbility().equals(ability) && action.getTarget().equals(target)) {
-				return true;
+	public static boolean isQueued(Unit source, Ability ability, ITargetable target) {
+		synchronized(getMe()) {
+			for (ReadiedAction action :actionQueue) {
+				if (action.getSource().equals(source) && action.getAbility().equals(ability) && action.getTarget().equals(target)) {
+					return true;
+				}
 			}
 		}
 		return false;
 	}
 
-	public static void finishPlanningAction() {
-		synchronized(planningAction) {
-			planningAction = false;
+	public static void finishPlanningAction(Unit unit) {
+		synchronized(getMe()) {
+			if (planningAction != null && planningAction.equals(unit)) {
+				planningAction = null;
+			}
+			else {
+				System.err.println("Request to finish planning for " + unit + " when " + planningAction + "was planning (IGNORED)");
+			}
 		}
 	}
 }

@@ -12,6 +12,7 @@ import model.World;
 public class GameFrame extends JFrame {
 	
 	private static final long serialVersionUID = 118154690873028536L;
+	private static final Dimension INITIAL_DIMENSIONS = new Dimension(1024, 600);
 	
 	private static GameFrame me;
 	private GraphicsPanel graphicsPanel;
@@ -22,8 +23,8 @@ public class GameFrame extends JFrame {
 	private JLayeredPane layeredPane;
 	
 	public GameFrame() {
-		setPreferredSize(new Dimension(800, 600));
-		setBounds(0, 0, 800, 600);
+		setPreferredSize(INITIAL_DIMENSIONS);
+		setBounds(0, 0, INITIAL_DIMENSIONS.width, INITIAL_DIMENSIONS.height);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
@@ -64,8 +65,6 @@ public class GameFrame extends JFrame {
 			me.menuPanel.makeMenuFor(unit);
 			me.menuPanel.revalidate();
 			me.menuPanel.repaint();
-		} else {
-			BattleQueue.finishPlanningAction();
 		}
 	}
 	
@@ -103,6 +102,12 @@ public class GameFrame extends JFrame {
 			me.menuPanel = new MenuPanel(me.abilityPanel);
 			me.layeredPane.add(me.menuPanel, JLayeredPane.PALETTE_LAYER);
 			me.titleScreenPanel.setVisible(true);
+		}
+	}
+
+	public static void repaintAll() {
+		if (me != null) {
+			me.repaint();
 		}
 	}
 }

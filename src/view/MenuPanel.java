@@ -15,6 +15,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import model.Ability;
+import model.ITargetable;
 import model.Unit;
 import model.World;
 import controller.BattleQueue;
@@ -24,7 +25,7 @@ public class MenuPanel extends JPanel {
 	
 	private final JLabel nameLabel = new JLabel();
 	private JList<Ability> abilityList;
-	private JList<Unit> targetList;
+	private JList<ITargetable> targetList;
 	
 	private Unit activeUnit;
 	private Ability activeAbility;
@@ -56,12 +57,12 @@ public class MenuPanel extends JPanel {
 			public void valueChanged(ListSelectionEvent e) {
 				if (!e.getValueIsAdjusting()) {
 					if (targetList.getSelectedValue() != null) {
-						Unit selectedTarget = targetList.getSelectedValue();
+						ITargetable selectedTarget = targetList.getSelectedValue();
 						BattleQueue.queueAction(activeAbility, activeUnit, selectedTarget);
 						targetList.setVisible(false);
 						abilityPanel.setVisible(false);
 						abilityList.clearSelection();
-						BattleQueue.finishPlanningAction();
+						BattleQueue.finishPlanningAction(activeUnit);
 					}
 				}
 			}

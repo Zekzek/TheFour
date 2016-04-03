@@ -150,9 +150,9 @@ public class Unit extends TallObject {
 		//TODO: more sophisticated AI with variety (prefer closest, prefer weakest, etc)
 		double bestScore = Double.NEGATIVE_INFINITY;
 		Ability bestAbility = null;
-		Unit bestTarget = null;
+		ITargetable bestTarget = null;
 		for (Ability ability : learnedActions) {
-			for (Unit target : World.getTargets(this, ability, GraphicsPanel.getScreenRectangle())) {
+			for (ITargetable target : World.getTargets(this, ability, GraphicsPanel.getScreenRectangle())) {
 				double score = getScore(ability, target);
 //				System.out.println("(" + score + ")  " + ability + " -> " + target);
 				if (score > bestScore) {
@@ -169,13 +169,16 @@ public class Unit extends TallObject {
 		}
 	}
 	
-	private double getScore(Ability ability, Unit target) {
+	private double getScore(Ability ability, ITargetable target) {
 		int damageBonus = ability.getDamage();
 		int debuffBonus = 0;
+		if (target instanceof Unit) {
 		Iterator<StatusEffect> effects = ability.getStatusEffectIterator();
-		while (effects.hasNext()) {
-			if (!target.statusEffects.contains(effects.next())) {
-				debuffBonus += 1;
+			Unit targetUnit = (Unit)target;
+			while (effects.hasNext()) {
+				if (!targetUnit.statusEffects.contains(effects.next())) {
+					debuffBonus += 1;
+				}
 			}
 		}
 		int benefit = damageBonus + 10 * debuffBonus;
@@ -363,9 +366,10 @@ public class Unit extends TallObject {
 		private static void initUnits() {
 			unitsInitialized = true;
 			Unit defender = new Unit("Defender", 250, Plot.class.getResource("/resource/img/spriteSheet/defender.png"));
+			defender.learnAction(Ability.get(Ability.ID.MOVE));
 			defender.learnAction(Ability.get(Ability.ID.GUARD_ATTACK));
 			defender.learnAction(Ability.get(Ability.ID.SHIELD_BASH));
-			defender.learnAction(Ability.get(Ability.ID.SWEEPING_STRIKE));
+			defender.learnAction(Ability.get(Ability.ID.CHALLENGE));
 			defender.learnAction(Ability.get(Ability.ID.VIGOR));
 			defender.setWeapon(Weapon.getWeapon(Weapon.ID.SPEAR_AND_SHIELD));
 			defender.baseModifier.setBonus(FRACTIONAL_BONUS.INCOMING_DAMAGE_MODIFIER_STRIKE, 0.8);
@@ -379,12 +383,10 @@ public class Unit extends TallObject {
 			units.put(ID.SORCERESS, sorceress);
 
 			Unit berserker = new Unit("Berserker", 180, Plot.class.getResource("/resource/img/spriteSheet/berserker.png"));
-			berserker.learnAction(Ability.get(Ability.ID.CHALLENGE));
 			berserker.learnAction(Ability.get(Ability.ID.SWEEPING_STRIKE));
 			berserker.learnAction(Ability.get(Ability.ID.THROW));
 			berserker.learnAction(Ability.get(Ability.ID.QUICK_ATTACK));
 			berserker.learnAction(Ability.get(Ability.ID.HEAVY_ATTACK));
-			berserker.learnAction(Ability.get(Ability.ID.KNOCKDOWN_STRIKE));
 			berserker.setWeapon(Weapon.getWeapon(Weapon.ID.MACE));
 			berserker.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_STRIKE, 1.2);
 			berserker.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SHOT, 1.1);

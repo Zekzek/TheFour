@@ -70,22 +70,21 @@
 	</div>
 	</div>
 	<p>
-		This turn-based, 8-bit styled role playing game is still in early development. There are two short scenarios to play 
+		This turn-based, 8-bit styled role playing game is still in early development. There are three short scenarios to play 
 		through, and everything is controlled by clicking with the mouse. I encourage any and all comments, complaints, and 
-		suggestions at project@doubleastudios.net. Please sign up for the mailing list in the footer if you'd like to receive
-		emails as new versions are unveiled (monthly updates are planned).
+		suggestions at either my personal email or project@doubleastudios.net. Please sign up for the mailing list in the 
+		footer if you'd like to receive emails as new versions are unveiled (monthly updates are planned).
 	</p>
 	
 	<p>
 		There are a number of planned improvements, including:
 		<ul>
-			<li>Character movement</li>
-			<li>Equipment</li>
-			<li>New Abilities (learn and master)</li>
-			<li>Status Effects</li>
-			<li>Keyboard/Controller Input</li>
 			<li>Epic story quest</li>
 			<li>Various side quests</li>
+			<li>Free world exploration</li>
+			<li>Equipment</li>
+			<li>New Abilities (learn and master)</li>
+			<li>Keyboard/Controller Input</li>
 			<li>Multiplayer capability?</li>
 		</ul>
 	</p>

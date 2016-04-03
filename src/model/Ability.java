@@ -262,7 +262,7 @@ public class Ability {
 					EFFECT.ATTACK, 2000, 28, 0, 1, "Twirl about, attacking everything nearby", ANIMATION.SPIN);
 			abilities.put(ID.SWEEPING_STRIKE, sweep);
 			Ability throwObject = new Ability(ID.THROW, "Throw", CATEGORY.STRIKE, TARGET_TYPE.ENEMY, EFFECT.ATTACK, 1200,
-					20, 6, 0, "Hurl your weapon at a distant target (it comes back, obviously...)", ANIMATION.MELEE);
+					17, 6, 0, "Hurl your weapon at a distant target (it comes back, obviously...)", ANIMATION.MELEE);
 			abilities.put(ID.THROW, throwObject);
 			//TODO: force fall down ability, followed by get up ability?
 			Ability knockdown = new Ability(ID.KNOCKDOWN_STRIKE, "Knockdown", CATEGORY.STRIKE, TARGET_TYPE.ENEMY, TARGET_TYPE.ENEMY,
@@ -283,7 +283,7 @@ public class Ability {
 					8000, 25, "Prepare a trap", SpriteSheet.ANIMATION.KNEEL);
 			abilities.put(ID.SNARE, snare);
 			Ability challenge = new Ability(ID.CHALLENGE, "Challenge", CATEGORY.SKILL, TARGET_TYPE.ENEMY, EFFECT.ATTACK, 
-					300, 0, 10, 0, "'Encourage' your oponent to focus on attacking only you.", ANIMATION.POINT);
+					300, 0, 10, 0, "'Discourage' your opponent from attacking your allies.", ANIMATION.POINT);
 			challenge.statusEffects.add(new StatusEffect(StatusEffect.ID.MURDEROUS_INTENT, 10000));
 			abilities.put(ID.CHALLENGE, challenge);
 			
@@ -294,7 +294,7 @@ public class Ability {
 					1000, 0, "Wait", SpriteSheet.ANIMATION.WALK));
 			abilities.put(ID.WATCH, new Ability(ID.WATCH, "Watch", CATEGORY.SKILL, TARGET_TYPE.ALL, EFFECT.MOVE, 
 					5000, 0, 16, 0, "Watch", ANIMATION.WALK));
-			abilities.put(ID.DEATH, new Ability(ID.DEATH, "KO", CATEGORY.SKILL, TARGET_TYPE.DEAD, EFFECT.MOVE, 
+			abilities.put(ID.DEATH, new Ability(ID.DEATH, "PASS OUT", CATEGORY.SKILL, TARGET_TYPE.DEAD, EFFECT.MOVE, 
 					1000, 0, "Lose the will to fight on", ANIMATION.DEATH));
 		}
 		

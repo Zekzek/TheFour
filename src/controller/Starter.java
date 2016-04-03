@@ -6,9 +6,8 @@ public class Starter {
 	}
 }
 
-//	Review
-//Fixed?: no abilities to select after guards show up conversation (shows defender, but no abilities) when special climate selected?
-//lifebar gets blocked (make vertical?)
+//		Issues
+//lifebar gets blocked
 //	player lifebars always visible in menus?
 //	show target lifebars in menu
 //	color/flash hp bar as life gets low
@@ -16,6 +15,10 @@ public class Starter {
 //units go behind menus = bad
 
 //		TODO: Feature improvements
+//	Terrain object spritesheet
+//	object spritesheet
+//	object map (ensure edges are closed)
+//	pathfinding - restrict water
 //	Labels for ability & target?
 //	Win animation, subset of cast animation
 //	Ability Categories

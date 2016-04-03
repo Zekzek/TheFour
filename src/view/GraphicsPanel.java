@@ -46,7 +46,7 @@ public class GraphicsPanel extends JPanel{
 		public void run() {
 			while(true) {
 				try {
-					me.repaint();
+					GameFrame.repaintAll();
 					Thread.sleep(REFRESH_RATE);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
@@ -55,13 +55,8 @@ public class GraphicsPanel extends JPanel{
 		}
 	};
 	
-	private static GraphicsPanel me;
 	private static GridRectangle screenPos = new GridRectangle(0, 0, 16, 16);
 
-	public GraphicsPanel() {
-		me = this;
-	}
-	
 	public void startPainting() {
 		if (!repaint.isAlive()) {
 			repaint.setDaemon(true);
@@ -73,9 +68,16 @@ public class GraphicsPanel extends JPanel{
 	public void paint(Graphics g) {
 		Graphics2D g2 = (Graphics2D)g;
 		
+		double worldPixelWidth = screenPos.getWidth() * CELL_WIDTH;
+		double worldPixelHeight = screenPos.getHeight() * TERRAIN_CELL_HEIGHT;
+		
+		double widthScale = getWidth() / worldPixelWidth;
+		double heightScale = getHeight() / worldPixelHeight;
+		
+		double scale = widthScale < heightScale ? widthScale : heightScale;
+		
 		// Convert to world space
-		g2.scale(getWidth() / (double)(screenPos.getWidth() * CELL_WIDTH),
-				getHeight() / (double)(screenPos.getHeight() * TERRAIN_CELL_HEIGHT));
+		g2.scale(scale, scale);
 		
 		// Draw terrain
 		BufferedImage[][] terrainTiles = MapBuilder.getTiles(screenPos);

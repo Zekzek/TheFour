@@ -3,6 +3,7 @@ package controller;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 
+import model.GridPosition;
 import model.GridRectangle;
 import view.GraphicsPanel;
 import view.SpriteSheet;
@@ -43,8 +44,24 @@ public class MapBuilder {
 	}
 	
 	private static BufferedImage lookupTerrainCell(byte red, byte green, byte blue) {
-		//NOTE: need to open changed images within eclipse before running in order to see updates
-		BufferedImage terrain = null;
+		return TERRAIN_SHEET.getSprite(myClimate, lookupTerrainCellType(red, green, blue));
+	}
+	
+	public static void setClimate(CLIMATE climate) {
+		myClimate = climate;
+	}
+
+	public static TERRAIN getTerrainType(GridPosition pos) {
+		int pixelIndex = pos.getY() * TEMPLATE_WIDTH + pos.getX();
+		int byteIndex = pixelIndex * BYTES_PER_PIXEL;
+		return lookupTerrainCellType(
+			TEMPLATE_BYTES[byteIndex+R], 
+			TEMPLATE_BYTES[byteIndex+G], 
+			TEMPLATE_BYTES[byteIndex+B]);
+	}
+	
+	private static TERRAIN lookupTerrainCellType(byte red, byte green, byte blue) {
+		TERRAIN terrain;
 		int r = red & 0xff;
 		int g = green & 0xff;
 		int b = blue & 0xff;
@@ -52,22 +69,18 @@ public class MapBuilder {
 		int low = 15;
 		
 		if (r > hi && g > hi && b> hi) { //near white
-			terrain = TERRAIN_SHEET.getSprite(myClimate, TERRAIN.ROAD);
+			terrain = TERRAIN.ROAD;
 		} else if (r < low && g < low && b < low){ //near black
-			terrain = TERRAIN_SHEET.getSprite(myClimate, TERRAIN.PATH);
+			terrain = TERRAIN.PATH;
 		} else if (b > r && b > g) { //mostly blue
-			terrain = TERRAIN_SHEET.getSprite(myClimate, TERRAIN.WATER);
+			terrain = TERRAIN.WATER;
 		} else if (g > r && g > b) { //mostly green
-			terrain = TERRAIN_SHEET.getSprite(myClimate, TERRAIN.DENSE);
+			terrain = TERRAIN.DENSE;
 		} else if (r > g && r > b) { //mostly red
-			terrain = TERRAIN_SHEET.getSprite(myClimate, TERRAIN.LIGHT);
+			terrain = TERRAIN.LIGHT;
 		} else { //gray
-			terrain = TERRAIN_SHEET.getSprite(myClimate, TERRAIN.LIGHT);
+			terrain = TERRAIN.LIGHT;
 		}
 		return terrain;
-	}
-	
-	public static void setClimate(CLIMATE climate) {
-		myClimate = climate;
 	}
 }

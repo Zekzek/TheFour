@@ -7,6 +7,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import controller.MapBuilder;
+import view.SpriteSheet.TERRAIN;
+
 public class World {
 	
 	private static Map<GridPosition,TallObject> contents = new ConcurrentHashMap<GridPosition, TallObject>();
@@ -71,18 +74,27 @@ public class World {
 		return subset;
 	}
 	
-	public static ArrayList<Unit> getTargets(Unit source, Ability ability, GridRectangle rect) {
-		Unit.TEAM team = source.getTeam();
+	public static ArrayList<ITargetable> getTargets(Unit source, Ability ability, GridRectangle rect) {
 		Ability.TARGET_TYPE outcome = ability.getSelectionTargetType();
-		ArrayList<Unit.TEAM> targetTeams = new ArrayList<Unit.TEAM>();
-		ArrayList<Unit> targets = new ArrayList<Unit>();
+		ArrayList<ITargetable> targets = new ArrayList<ITargetable>();
 		
+		if (ability.getId() == Ability.ID.MOVE) {
+			for (GridPosition pos : getTraversableNeighbors(source.getPos())) {
+				targets.add(new GroundTarget(pos));
+			}
+			return targets;
+		}
 		if (outcome == Ability.TARGET_TYPE.SELF) {
 			targets.add(source);
 			return targets;
-		} else if (outcome == Ability.TARGET_TYPE.ALL) {
-			return getSortedLivingContentsWithin(rect, Unit.class);
-		} else if (outcome == Ability.TARGET_TYPE.ENEMY) {
+		}
+		if (outcome == Ability.TARGET_TYPE.ALL) {
+			return getSortedLivingContentsWithin(rect, ITargetable.class);
+		}
+		
+		Unit.TEAM team = source.getTeam();
+		ArrayList<Unit.TEAM> targetTeams = new ArrayList<Unit.TEAM>();
+		if (outcome == Ability.TARGET_TYPE.ENEMY) {
 			if (team == Unit.TEAM.PLAYER || team == Unit.TEAM.ALLY) {
 				targetTeams.add(Unit.TEAM.ENEMY1);
 				targetTeams.add(Unit.TEAM.ENEMY2);
@@ -124,24 +136,28 @@ public class World {
 		return contents.get(pos);
 	}
 
-	public static Collection<GridPosition> getOpenNeighbors(GridPosition pos) {
+	public static Collection<GridPosition> getTraversableNeighbors(GridPosition pos) {
 		Set<GridPosition> openNeighbors = new HashSet<GridPosition>();
 		GridPosition above = new GridPosition(pos.getX(), pos.getY() - 1);
 		GridPosition below = new GridPosition(pos.getX(), pos.getY() + 1);
 		GridPosition left = new GridPosition(pos.getX() - 1, pos.getY());
 		GridPosition right = new GridPosition(pos.getX() + 1, pos.getY());
-		if (getTallObject(above) == null) {
+		if (isTraversable(above)) {
 			openNeighbors.add(above);
 		}
-		if (getTallObject(below) == null) {
+		if (isTraversable(below)) {
 			openNeighbors.add(below);
 		}
-		if (getTallObject(left) == null) {
+		if (isTraversable(left)) {
 			openNeighbors.add(left);
 		}
-		if (getTallObject(right) == null) {
+		if (isTraversable(right)) {
 			openNeighbors.add(right);
 		}
 		return openNeighbors;
+	}
+	
+	private static boolean isTraversable(GridPosition pos) {
+		return getTallObject(pos) == null && MapBuilder.getTerrainType(pos) != TERRAIN.WATER;
 	}
 }
