@@ -18,7 +18,6 @@ public class Starter {
 //	Terrain object spritesheet
 //	object spritesheet
 //	object map (ensure edges are closed)
-//	pathfinding - restrict water
 //	Labels for ability & target?
 //	Win animation, subset of cast animation
 //	Ability Categories
@@ -27,7 +26,7 @@ public class Starter {
 // 	climate-type overlay map?
 // 	expanded world template
 // 	Keyboard interaction
-// 	Glowing active player and target selection
+// 	Glowing active player
 // 	damage number on screen
 // 	Triggers on enter a region
 // 	structure template

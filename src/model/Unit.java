@@ -145,8 +145,8 @@ public class Unit extends TallObject {
 		label.setIcon(icon);
 		label.setText(name);
 	}
-	
-	public void aiQueueAction() {
+
+	public ReadiedAction aiGetAction(int time) {
 		//TODO: more sophisticated AI with variety (prefer closest, prefer weakest, etc)
 		double bestScore = Double.NEGATIVE_INFINITY;
 		Ability bestAbility = null;
@@ -154,7 +154,7 @@ public class Unit extends TallObject {
 		for (Ability ability : learnedActions) {
 			for (ITargetable target : World.getTargets(this, ability, GraphicsPanel.getScreenRectangle())) {
 				double score = getScore(ability, target);
-//				System.out.println("(" + score + ")  " + ability + " -> " + target);
+				System.out.println("(" + score + ")  " + ability + " -> " + target);
 				if (score > bestScore) {
 					bestScore = score;
 					bestAbility = ability;
@@ -163,11 +163,14 @@ public class Unit extends TallObject {
 			}
 		}
 		if (bestAbility != null && bestTarget != null) {
-			BattleQueue.queueAction(bestAbility, this, bestTarget);
+			System.out.println("Choosing (" + bestScore + ")  " + bestAbility + " -> " + bestTarget);
+			ReadiedAction action = new ReadiedAction(bestAbility, this, bestTarget, time);
+			return BattleQueue.getFirstStepToUseAction(action);
 		} else {
-			BattleQueue.queueAction(Ability.get(Ability.ID.DELAY), this, this);
-		}
+			return new ReadiedAction(Ability.get(Ability.ID.DELAY), this, this, time);
+		}		
 	}
+	
 	
 	private double getScore(Ability ability, ITargetable target) {
 		int damageBonus = ability.getDamage();
@@ -191,14 +194,14 @@ public class Unit extends TallObject {
 			double range = ability.getRange();
 			double distance = pos.getDistanceTo(target.getPos());
 			if (range >= distance) {
-				rangeBonus = 2.0;
+				rangeBonus = 4.0;
 			} else {
-				rangeBonus = 2.0 - ((distance - range) / 7.0);
+				rangeBonus = 4.0 - ((distance - range) / 3.0);
 			}
 		}
-		double alreadyQueuedPenalty = BattleQueue.isQueued(this, ability, target) ? 0.5 : 1.0;
 		
-		return benefit * delayBonus * rangeBonus * alreadyQueuedPenalty;
+		System.out.println(rangeBonus);
+		return benefit * delayBonus * rangeBonus;
 	}
 	
 	public void face(ITargetable target) {

@@ -14,6 +14,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import view.GraphicsPanel.AMBIENT_LIGHT;
 import view.SpriteSheet.CLIMATE;
 import controller.MapBuilder;
 import controller.plot.Plot;
@@ -44,6 +45,9 @@ public class TitleScreenPanel extends JPanel{
 		centerWrapperPanel.add(getPlotComboBox());
 		centerWrapperPanel.add(new JLabel("     Climate:"));
 		centerWrapperPanel.add(getClimateComboBox());
+		centerWrapperPanel.add(new JLabel("     Light Level:"));
+		centerWrapperPanel.add(getAmbientLightComboBox());
+		
 		add(centerWrapperPanel, BorderLayout.CENTER);
 		
 		JPanel southWrapperPanel = new JPanel();
@@ -64,8 +68,21 @@ public class TitleScreenPanel extends JPanel{
 		        MapBuilder.setClimate(climate);
 			}
 		});
-		
 		return climateSelector;
+	}
+	
+	private JComboBox<AMBIENT_LIGHT> getAmbientLightComboBox() {
+		JComboBox<AMBIENT_LIGHT> lightSelector = new JComboBox<AMBIENT_LIGHT>(AMBIENT_LIGHT.values());
+		lightSelector.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				@SuppressWarnings("unchecked")
+				JComboBox<AMBIENT_LIGHT> cb = (JComboBox<AMBIENT_LIGHT>)e.getSource();
+				AMBIENT_LIGHT light = (AMBIENT_LIGHT) cb.getSelectedItem();
+				GraphicsPanel.setAmbientLight(light);
+			}
+		});
+		return lightSelector;
 	}
 	
 	private JComboBox<String> getPlotComboBox() {

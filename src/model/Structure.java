@@ -26,5 +26,4 @@ public class Structure extends TallObject{
 	public BufferedImage getSprite() {
 		return sprite;
 	}
-
 }

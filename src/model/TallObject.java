@@ -1,7 +1,9 @@
 package model;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
@@ -20,6 +22,8 @@ public abstract class TallObject implements ITargetable {
 	protected double drawXOffset = 0.0;
 	protected double drawYOffset = 0.0;
 	protected Modifier baseModifier;
+	private boolean selectedTarget;
+	private boolean inTargetList;
 	
 	//Original
 	public TallObject(String name, int hp) {
@@ -61,10 +65,34 @@ public abstract class TallObject implements ITargetable {
 	public void paint(Graphics2D g2) {
 		AffineTransform savedTransorm = g2.getTransform();
 		GridRectangle screenRectangle = GraphicsPanel.getScreenRectangle();
-		// Convert to pixel space, accounting for units being tall objects
+
+		// Selection display
 		g2.translate(GraphicsPanel.CELL_WIDTH * (pos.getX()-screenRectangle.getX()), 
+				GraphicsPanel.TERRAIN_CELL_HEIGHT * (pos.getY()-screenRectangle.getY()));
+		if (isSelecetedTarget()) {
+			g2.setColor(new Color(255, 172, 0, 100));
+			g2.fillRect(0, 0, GraphicsPanel.CELL_WIDTH, GraphicsPanel.TERRAIN_CELL_HEIGHT);
+			Stroke oldStroke = g2.getStroke();
+			g2.setStroke(new BasicStroke(3));
+			g2.setColor(Color.ORANGE);
+			g2.drawRect(0, 0, GraphicsPanel.CELL_WIDTH, GraphicsPanel.TERRAIN_CELL_HEIGHT);
+			g2.setStroke(oldStroke);
+		} else 	if (isInTargetList()) {
+			g2.setColor(new Color(200, 200, 200, 100));
+			g2.fillRect(0, 0, GraphicsPanel.CELL_WIDTH, GraphicsPanel.TERRAIN_CELL_HEIGHT);
+			Stroke oldStroke = g2.getStroke();
+			g2.setStroke(new BasicStroke(3));
+			g2.setColor(Color.LIGHT_GRAY);
+			g2.drawRect(0, 0, GraphicsPanel.CELL_WIDTH, GraphicsPanel.TERRAIN_CELL_HEIGHT);
+			g2.setStroke(oldStroke);
+		}
+		g2.setTransform(savedTransorm);
+			
+		// Convert to pixel space, accounting for units being tall objects
+		g2.translate(GraphicsPanel.CELL_WIDTH * (pos.getX()-screenRectangle.getX()),
 				GraphicsPanel.TERRAIN_CELL_HEIGHT * 
-				((pos.getY()-screenRectangle.getY()) - GraphicsPanel.TALL_OBJECT_CELL_HEIGHT_MULTIPLIER + 1));
+				((pos.getY()-screenRectangle.getY()) - GraphicsPanel.TALL_OBJECT_CELL_HEIGHT_MULTIPLIER + 1)
+				- GraphicsPanel.TERRAIN_CELL_HEIGHT / 4);
 		g2.translate(drawXOffset * GraphicsPanel.CELL_WIDTH, drawYOffset * GraphicsPanel.TERRAIN_CELL_HEIGHT);
 		BufferedImage sprite = getSprite();
 		if (sprite != null) {
@@ -109,10 +137,30 @@ public abstract class TallObject implements ITargetable {
 		return name;
 	}
 	
+	@Override
+	public boolean isInTargetList() {
+		return inTargetList;
+	}
+
+	@Override
+	public void setInTargetList(boolean inTargetList) {
+		this.inTargetList = inTargetList;
+	}
+
+	@Override
+	public boolean isSelecetedTarget() {
+		return selectedTarget;
+	}
+
+	@Override
+	public void setSelectedTarget(boolean selectedTarget) {
+		this.selectedTarget = selectedTarget;
+	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
-
+	
 	public int getId() {
 		return id;
 	}

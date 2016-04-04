@@ -217,7 +217,7 @@ public class BattleQueueTest {
 		BattleQueue.addCombatant(defender);
 		BattleQueue.addCombatant(berserker);
 		BattleQueue.queueAction(ability1, defender, defender);
-		assertEquals(berserker, BattleQueue.getMostReadyCombatant());
+		assertEquals(berserker, BattleQueue.getMostReadyPlayer());
 	}
 
 	@Test

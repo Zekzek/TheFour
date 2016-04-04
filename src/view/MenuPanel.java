@@ -3,6 +3,8 @@ package view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Iterator;
 
 import javax.swing.DefaultListModel;
@@ -44,7 +46,7 @@ public class MenuPanel extends JPanel {
 						abilityPanel.updateDisplay(activeAbility);
 						abilityPanel.setVisible(true);
 						targetList.setVisible(true);
-						updateMenuList(targetList, World.getTargets(activeUnit, activeAbility, GraphicsPanel.getScreenRectangle()).iterator());
+						updateTargetMenuList(targetList, World.getTargets(activeUnit, activeAbility, GraphicsPanel.getScreenRectangle()).iterator());
 					}
 				}
 			}
@@ -63,6 +65,7 @@ public class MenuPanel extends JPanel {
 						abilityPanel.setVisible(false);
 						abilityList.clearSelection();
 						BattleQueue.finishPlanningAction(activeUnit);
+						updateTargetMenuList(targetList, new ArrayList<ITargetable>().iterator());
 					}
 				}
 			}
@@ -78,7 +81,7 @@ public class MenuPanel extends JPanel {
 		} else {
 			setVisible(true);
 			activeUnit.convertNameLabel(nameLabel);
-			updateMenuList(abilityList, activeUnit.getKnownActions());
+			updateAbilityMenuList(abilityList, activeUnit.getKnownActions());
 		}
 	}
 	
@@ -94,8 +97,26 @@ public class MenuPanel extends JPanel {
 		return list;
 	}
 	
-	private <T> void updateMenuList(JList<T> list, Iterator<T> menuItems) {
-		DefaultListModel<T> listModel = (DefaultListModel<T>) list.getModel();
+	private void updateTargetMenuList(JList<ITargetable> list, Iterator<ITargetable> menuItems) {
+		DefaultListModel<ITargetable> listModel = (DefaultListModel<ITargetable>) list.getModel();
+		Enumeration<ITargetable> oldTargets = listModel.elements();
+		while (oldTargets.hasMoreElements()) {
+			ITargetable oldTarget = oldTargets.nextElement();
+			oldTarget.setInTargetList(false);
+			oldTarget.setSelectedTarget(false);
+		}
+		listModel.clear();
+		while(menuItems.hasNext()) {
+			ITargetable target = menuItems.next();
+			listModel.addElement(target);
+			target.setInTargetList(true);
+//			target.setSelectedTarget(true);
+		}
+		list.setPreferredSize(new Dimension(getSize().width/2, getSize().height));
+	}
+	
+	private void updateAbilityMenuList(JList<Ability> list, Iterator<Ability> menuItems) {
+		DefaultListModel<Ability> listModel = (DefaultListModel<Ability>) list.getModel();
 		listModel.clear();
 		while(menuItems.hasNext()) {
 			listModel.addElement(menuItems.next());

@@ -15,6 +15,8 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
@@ -26,6 +28,7 @@ import controller.BattleQueue;
 import controller.MapBuilder;
 
 public class GraphicsPanel extends JPanel{
+	public enum AMBIENT_LIGHT {DAY, NIGHT, DUSK}
 	private static final long serialVersionUID = -4779442729968562068L;
 	
 	public static final int CELL_WIDTH = 64;
@@ -34,9 +37,12 @@ public class GraphicsPanel extends JPanel{
 	public static final double TALL_OBJECT_CELL_HEIGHT_MULTIPLIER = 2.0;
 	public static final int TALL_OBJECT_CELL_HEIGHT = (int) (TERRAIN_CELL_HEIGHT * TALL_OBJECT_CELL_HEIGHT_MULTIPLIER);
 	
+	public static final Map<AMBIENT_LIGHT, Color> CLOSE_COLORS = new HashMap<AMBIENT_LIGHT, Color>();
+	public static final Map<AMBIENT_LIGHT, Color> FAR_COLORS = new HashMap<AMBIENT_LIGHT, Color>();
 	public static final Color CLOSE_COLOR = new Color(255,255,245,0);
 	public static final Color FAR_COLOR = new Color(0,0,10,110);
 	public static final int REFRESH_RATE = 100;
+	
 	private static Color fade = new Color(0,0,0,0);
 	private static Font fadeScreenFont = new Font ("MV Boli", Font.BOLD , 24);
 	private static String fadeScreenText;
@@ -56,8 +62,17 @@ public class GraphicsPanel extends JPanel{
 	};
 	
 	private static GridRectangle screenPos = new GridRectangle(0, 0, 16, 16);
-
+	private static AMBIENT_LIGHT ambientLight = AMBIENT_LIGHT.DAY;
+	
 	public void startPainting() {
+		if (CLOSE_COLORS.isEmpty()) {
+			CLOSE_COLORS.put(AMBIENT_LIGHT.DAY, new Color(255,255,245,0));
+			FAR_COLORS.put(AMBIENT_LIGHT.DAY, new Color(0,0,10,110));
+			CLOSE_COLORS.put(AMBIENT_LIGHT.DUSK, new Color(100,100,90,60));
+			FAR_COLORS.put(AMBIENT_LIGHT.DUSK, new Color(0,0,10,130));
+			CLOSE_COLORS.put(AMBIENT_LIGHT.NIGHT, new Color(10,10,0,130));
+			FAR_COLORS.put(AMBIENT_LIGHT.NIGHT, new Color(0,0,10,180));
+		}
 		if (!repaint.isAlive()) {
 			repaint.setDaemon(true);
 			repaint.start();
@@ -87,18 +102,15 @@ public class GraphicsPanel extends JPanel{
 			}
 		}
 		
-		//TODO: fix stretched icons and text when drawing units (due to fixed grid height/width?) 
 		// Draw the objects
-		g2.translate(0, -GraphicsPanel.TERRAIN_CELL_HEIGHT / 4);
 		ArrayList<TallObject> contents = World.getSortedContentsWithin(screenPos, TallObject.class);
 		for (TallObject tallObject : contents) {
 			tallObject.paint(g2);
 		}
-		g2.translate(0, GraphicsPanel.TERRAIN_CELL_HEIGHT / 4);
 		
 		// Draw the shadow gradient
 	    GradientPaint nearToFar = new GradientPaint(screenPos.getX(), screenPos.getY() + screenPos.getHeight()  * TERRAIN_CELL_HEIGHT,
-	    		CLOSE_COLOR, screenPos.getX(), screenPos.getY(), FAR_COLOR);
+	    		CLOSE_COLORS.get(ambientLight), screenPos.getX(), screenPos.getY(), FAR_COLORS.get(ambientLight));
 	    g2.setPaint(nearToFar);
 	    g2.fillRect(0, 0, screenPos.getWidth() * CELL_WIDTH, 
 	    		screenPos.getHeight() * TERRAIN_CELL_HEIGHT);
@@ -210,5 +222,13 @@ public class GraphicsPanel extends JPanel{
 	
 	public static GridRectangle getScreenRectangle() {
 		return screenPos;
+	}
+	
+	public static AMBIENT_LIGHT getAmbientLight() {
+		return ambientLight;
+	}
+
+	public static void setAmbientLight(AMBIENT_LIGHT ambientLight) {
+		GraphicsPanel.ambientLight = ambientLight;
 	}
 }

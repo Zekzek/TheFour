@@ -22,6 +22,7 @@ public class Ability {
 		SHOT, BOW,
 		SPELL };
 	public static enum ID {
+		AI_TURN,
 		ATTACK, WEAK_ATTACK, QUICK_ATTACK, HEAVY_ATTACK, 
 		GUARD_ATTACK, BURNING_ATTACK, PINNING_ATTACK, KNOCKDOWN_STRIKE,
 		SHIELD_BASH, BARRAGE, SWEEPING_STRIKE, THROW,
@@ -223,15 +224,19 @@ public class Ability {
 		
 		private static void initAbilities() {
 			abilitiesInitialized = true;
-			//Should average 25 DPS. Penalty for really fast, ranged, debuff, etc
+			//Should average 25 DPS. Penalty for slow(damage up front), ranged, debuff, etc
+			
+			// AI Placeholder
+			abilities.put(ID.AI_TURN, new Ability(ID.AI_TURN, "", CATEGORY.ATTACK, Ability.TARGET_TYPE.SELF, 
+					EFFECT.BUFF, 1, 0, "AI placeholder to select an ability", SpriteSheet.ANIMATION.WALK));
 			
 			// Generic attacks
 			abilities.put(ID.ATTACK, new Ability(ID.ATTACK, "Attack", CATEGORY.ATTACK, Ability.TARGET_TYPE.ENEMY, 
 					EFFECT.ATTACK, 1000, 25, "A basic attack, average in every way", SpriteSheet.ANIMATION.MELEE));
 			abilities.put(ID.QUICK_ATTACK, new Ability(ID.QUICK_ATTACK, "Quick Attack", CATEGORY.ATTACK, Ability.TARGET_TYPE.ENEMY,
-					EFFECT.ATTACK, 800, 19, "A quick jab", SpriteSheet.ANIMATION.MELEE));
+					EFFECT.ATTACK, 800, 20, "A quick jab", SpriteSheet.ANIMATION.MELEE));
 			abilities.put(ID.HEAVY_ATTACK, new Ability(ID.HEAVY_ATTACK, "Heavy Strike", CATEGORY.ATTACK, Ability.TARGET_TYPE.ENEMY,
-					EFFECT.ATTACK, 1500, 38, "A slow, powerful attack", SpriteSheet.ANIMATION.MELEE));
+					EFFECT.ATTACK, 1500, 35, "A slow, powerful attack", SpriteSheet.ANIMATION.MELEE));
 			abilities.put(ID.WEAK_ATTACK, new Ability(ID.WEAK_ATTACK, "Weak Attack", CATEGORY.ATTACK, Ability.TARGET_TYPE.ENEMY,
 					EFFECT.ATTACK, 1000, 12, "An untrained, weak attack", SpriteSheet.ANIMATION.MELEE));
 			
@@ -261,8 +266,8 @@ public class Ability {
 			Ability sweep = new Ability(ID.SWEEPING_STRIKE, "Sweep", CATEGORY.STRIKE, TARGET_TYPE.SELF, TARGET_TYPE.ENEMY,
 					EFFECT.ATTACK, 2000, 28, 0, 1, "Twirl about, attacking everything nearby", ANIMATION.SPIN);
 			abilities.put(ID.SWEEPING_STRIKE, sweep);
-			Ability throwObject = new Ability(ID.THROW, "Throw", CATEGORY.STRIKE, TARGET_TYPE.ENEMY, EFFECT.ATTACK, 1200,
-					17, 6, 0, "Hurl your weapon at a distant target (it comes back, obviously...)", ANIMATION.MELEE);
+			Ability throwObject = new Ability(ID.THROW, "Throw", CATEGORY.STRIKE, TARGET_TYPE.ENEMY, EFFECT.ATTACK, 1000,
+					18, 6, 0, "Hurl your weapon at a distant target (it comes back, obviously...)", ANIMATION.MELEE);
 			abilities.put(ID.THROW, throwObject);
 			//TODO: force fall down ability, followed by get up ability?
 			Ability knockdown = new Ability(ID.KNOCKDOWN_STRIKE, "Knockdown", CATEGORY.STRIKE, TARGET_TYPE.ENEMY, TARGET_TYPE.ENEMY,
