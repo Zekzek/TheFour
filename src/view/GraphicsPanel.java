@@ -9,6 +9,9 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Shape;
 import java.awt.Transparency;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -16,18 +19,22 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
+import model.GridPosition;
 import model.GridRectangle;
+import model.GroundTarget;
 import model.TallObject;
 import model.World;
 import controller.BattleQueue;
 import controller.MapBuilder;
 
-public class GraphicsPanel extends JPanel{
+public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseListener {
 	public enum AMBIENT_LIGHT {DAY, NIGHT, DUSK}
 	private static final long serialVersionUID = -4779442729968562068L;
 	
@@ -36,17 +43,13 @@ public class GraphicsPanel extends JPanel{
 	public static final int TERRAIN_CELL_HEIGHT = 32;
 	public static final double TALL_OBJECT_CELL_HEIGHT_MULTIPLIER = 2.0;
 	public static final int TALL_OBJECT_CELL_HEIGHT = (int) (TERRAIN_CELL_HEIGHT * TALL_OBJECT_CELL_HEIGHT_MULTIPLIER);
-	
-	public static final Map<AMBIENT_LIGHT, Color> CLOSE_COLORS = new HashMap<AMBIENT_LIGHT, Color>();
-	public static final Map<AMBIENT_LIGHT, Color> FAR_COLORS = new HashMap<AMBIENT_LIGHT, Color>();
-	public static final Color CLOSE_COLOR = new Color(255,255,245,0);
-	public static final Color FAR_COLOR = new Color(0,0,10,110);
 	public static final int REFRESH_RATE = 100;
 	
-	private static Color fade = new Color(0,0,0,0);
-	private static Font fadeScreenFont = new Font ("MV Boli", Font.BOLD , 24);
-	private static String fadeScreenText;
-	
+	private static final Map<AMBIENT_LIGHT, Color> CLOSE_COLORS = new HashMap<AMBIENT_LIGHT, Color>();
+	private static final Map<AMBIENT_LIGHT, Color> FAR_COLORS = new HashMap<AMBIENT_LIGHT, Color>();
+	private static final Set<GroundTarget> groundTargets = new HashSet<GroundTarget>();
+	private static final Set<IGridClickedListener> gridClickedListeners = new HashSet<IGridClickedListener>();
+	private static final Font fadeScreenFont = new Font ("MV Boli", Font.BOLD , 24);
 	private static final Thread repaint = new Thread() {
 		@Override
 		public void run() {
@@ -60,19 +63,30 @@ public class GraphicsPanel extends JPanel{
 			}
 		}
 	};
-	
+
+	private static Color fade = new Color(0,0,0,0);
+	private static String fadeScreenText;
 	private static GridRectangle screenPos = new GridRectangle(0, 0, 16, 16);
 	private static AMBIENT_LIGHT ambientLight = AMBIENT_LIGHT.DAY;
+	private static GridPosition hoverPosition;
+	private static boolean initialized;
+	
+	private void initialize() {
+		initialized = true;
+		CLOSE_COLORS.put(AMBIENT_LIGHT.DAY, new Color(255,255,245,0));
+		FAR_COLORS.put(AMBIENT_LIGHT.DAY, new Color(0,0,10,110));
+		CLOSE_COLORS.put(AMBIENT_LIGHT.DUSK, new Color(100,100,90,60));
+		FAR_COLORS.put(AMBIENT_LIGHT.DUSK, new Color(0,0,10,130));
+		CLOSE_COLORS.put(AMBIENT_LIGHT.NIGHT, new Color(10,10,0,130));
+		FAR_COLORS.put(AMBIENT_LIGHT.NIGHT, new Color(0,0,10,180));
+		addMouseListener(this);
+		addMouseMotionListener(this);
+	}
 	
 	public void startPainting() {
-		if (CLOSE_COLORS.isEmpty()) {
-			CLOSE_COLORS.put(AMBIENT_LIGHT.DAY, new Color(255,255,245,0));
-			FAR_COLORS.put(AMBIENT_LIGHT.DAY, new Color(0,0,10,110));
-			CLOSE_COLORS.put(AMBIENT_LIGHT.DUSK, new Color(100,100,90,60));
-			FAR_COLORS.put(AMBIENT_LIGHT.DUSK, new Color(0,0,10,130));
-			CLOSE_COLORS.put(AMBIENT_LIGHT.NIGHT, new Color(10,10,0,130));
-			FAR_COLORS.put(AMBIENT_LIGHT.NIGHT, new Color(0,0,10,180));
-		}
+		if (!initialized) 
+			initialize();
+
 		if (!repaint.isAlive()) {
 			repaint.setDaemon(true);
 			repaint.start();
@@ -83,15 +97,8 @@ public class GraphicsPanel extends JPanel{
 	public void paint(Graphics g) {
 		Graphics2D g2 = (Graphics2D)g;
 		
-		double worldPixelWidth = screenPos.getWidth() * CELL_WIDTH;
-		double worldPixelHeight = screenPos.getHeight() * TERRAIN_CELL_HEIGHT;
-		
-		double widthScale = getWidth() / worldPixelWidth;
-		double heightScale = getHeight() / worldPixelHeight;
-		
-		double scale = widthScale < heightScale ? widthScale : heightScale;
-		
 		// Convert to world space
+		double scale = getScale();
 		g2.scale(scale, scale);
 		
 		// Draw terrain
@@ -100,6 +107,11 @@ public class GraphicsPanel extends JPanel{
 			for (int y = 0; y < terrainTiles[x].length; y++) {
 				g2.drawImage(terrainTiles[x][y], x * CELL_WIDTH, y * TERRAIN_CELL_HEIGHT, null);
 			}
+		}
+		
+		// Draw active ground targets
+		for (GroundTarget target : groundTargets) {
+			target.paint(g2);
 		}
 		
 		// Draw the objects
@@ -230,5 +242,75 @@ public class GraphicsPanel extends JPanel{
 
 	public static void setAmbientLight(AMBIENT_LIGHT ambientLight) {
 		GraphicsPanel.ambientLight = ambientLight;
+	}
+	
+	public static void clearTargets() {
+		groundTargets.clear();
+	}
+
+	public static void addGroundTarget(GroundTarget target) {
+		groundTargets.add(target);
+	}
+	
+	private double getScale() {
+		double worldPixelWidth = screenPos.getWidth() * CELL_WIDTH;
+		double worldPixelHeight = screenPos.getHeight() * TERRAIN_CELL_HEIGHT;
+		
+		double widthScale = getWidth() / worldPixelWidth;
+		double heightScale = getHeight() / worldPixelHeight;
+		
+		return widthScale < heightScale ? widthScale : heightScale;
+	}
+	
+	public static void addGridClickedListener(IGridClickedListener listener) {
+		gridClickedListeners.add(listener);
+	}
+	
+	public static boolean isHoverGrid(GridPosition pos) {
+		return pos.equals(hoverPosition);
+	}
+
+	private void setHoverPosition(MouseEvent e) {
+		double scale = getScale();
+		hoverPosition = new GridPosition(screenPos.getX() + (int)(e.getX()/scale/CELL_WIDTH), 
+				screenPos.getY() + (int)(e.getY()/scale/TERRAIN_CELL_HEIGHT));
+	}
+	
+	@Override
+	public void mouseDragged(MouseEvent e) {
+		//Do nothing
+	}
+
+	@Override
+	public void mouseMoved(MouseEvent e) {
+		setHoverPosition(e);
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		setHoverPosition(e);
+		for (IGridClickedListener listener : gridClickedListeners) {
+			listener.reportGridClicked(hoverPosition);
+		}
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		//Do nothing
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		//Do nothing
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		//Do nothing
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		//Do nothing
 	}
 }

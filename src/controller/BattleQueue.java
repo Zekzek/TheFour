@@ -170,9 +170,11 @@ public class BattleQueue {
 		// Determine if the team was defeated
 		Unit.TEAM team = unit.getTeam();
 		boolean teamDefeat = true;
-		Iterator<Unit> combatants = lastScheduledTimes.keySet().iterator();
-		while (teamDefeat && combatants.hasNext()) {
-			teamDefeat = !(combatants.next().getTeam() == team);
+		synchronized(getMe()) {
+			Iterator<Unit> combatants = lastScheduledTimes.keySet().iterator();
+			while (teamDefeat && combatants.hasNext()) {
+				teamDefeat = !(combatants.next().getTeam() == team);
+			}
 		}
 		if (teamDefeat) {
 			activeTeams.remove(team);
@@ -184,9 +186,11 @@ public class BattleQueue {
 	 * Delay all active combatants a random amount between 0 and 1000 ms
 	 */
 	public static void addRandomCombatDelays() {
-		Iterator<Unit> combatants = lastScheduledTimes.keySet().iterator();
-		while (combatants.hasNext()) {
-			delay(combatants.next(), RAND.nextInt(1000));
+		synchronized(getMe()) {
+			Iterator<Unit> combatants = lastScheduledTimes.keySet().iterator();
+			while (combatants.hasNext()) {
+				delay(combatants.next(), RAND.nextInt(1000));
+			}
 		}
 	}
 	
@@ -204,8 +208,8 @@ public class BattleQueue {
 	
 	public static void queueAction(Ability ability, Unit source, ITargetable target) {
 		System.out.print("\t" + source + " has prepared " + ability + " for " + target);
-		ReadiedAction action = new ReadiedAction(ability, source, target, completionTimes.get(source));
 		synchronized(getMe()) {
+			ReadiedAction action = new ReadiedAction(ability, source, target, completionTimes.get(source));
 			lastScheduledTimes.put(source, completionTimes.get(source));
 			completionTimes.put(source, action.getStartTime() + ability.getDelay());
 			actionQueue.add(action);
@@ -239,8 +243,8 @@ public class BattleQueue {
 		ReadiedAction action = new ReadiedAction(ability, source, target, battleDuration);
 		action.setDoAtMid(doAtMid);
 		action.setDoAtEnd(doAtEnd);
-		System.out.println("\t" + source + "(" + lastScheduledTimes.get(source) + ") has immediately prepared " + ability + " for " + action.getTarget());
 		synchronized(getMe()) {
+			System.out.println("\t" + source + "(" + lastScheduledTimes.get(source) + ") has immediately prepared " + ability + " for " + action.getTarget());
 			actionQueue.add(action);
 			Collections.sort(actionQueue, SOONEST_READIED_ACTION);
 		}
@@ -265,8 +269,8 @@ public class BattleQueue {
 				}
 			}
 			Collections.sort(actionQueue, SOONEST_READIED_ACTION);
+			System.out.println("\t" + source + "(" + lastScheduledTimes.get(source) + ") has decided not to use " + ability);
 		}
-		System.out.println("\t" + source + "(" + lastScheduledTimes.get(source) + ") has decided not to use " + ability);
 	}
 
 	/**
@@ -479,12 +483,18 @@ public class BattleQueue {
 	}
 	
 	public static int getLastScheduledTime(Unit unit) {
-		Integer time = lastScheduledTimes.get(unit);
+		Integer time;
+		synchronized(getMe()) {
+			time = lastScheduledTimes.get(unit);
+		}
 		return time == null ? -1 : time;
 	}
 	
 	public static int getCompletionTime(Unit unit) {
-		Integer time = completionTimes.get(unit);
+		Integer time;
+		synchronized(getMe()) {
+			time = completionTimes.get(unit);
+		}
 		return time == null ? -1 : time;
 	}
 	

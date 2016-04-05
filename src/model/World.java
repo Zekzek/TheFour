@@ -79,7 +79,7 @@ public class World {
 		ArrayList<ITargetable> targets = new ArrayList<ITargetable>();
 		
 		if (ability.getId() == Ability.ID.MOVE) {
-			for (GridPosition pos : getTraversableNeighbors(source.getPos())) {
+			for (GridPosition pos : getTraversableCells(rect)) {
 				targets.add(new GroundTarget(pos));
 			}
 			return targets;
@@ -136,6 +136,20 @@ public class World {
 		return contents.get(pos);
 	}
 
+
+	private static Collection<GridPosition> getTraversableCells(GridRectangle rect) {
+		Set<GridPosition> openCells = new HashSet<GridPosition>();
+		for (int x = 0; x < rect.getWidth(); x++) {
+			for (int y = 0; y < rect.getHeight(); y++) {
+				GridPosition pos = new GridPosition(rect.getX() + x, rect.getY() + y);
+				if (isTraversable(pos)) {
+					openCells.add(pos);
+				}
+			}
+		}
+		return openCells;
+	}
+	
 	public static Collection<GridPosition> getTraversableNeighbors(GridPosition pos) {
 		Set<GridPosition> openNeighbors = new HashSet<GridPosition>();
 		GridPosition above = new GridPosition(pos.getX(), pos.getY() - 1);

@@ -17,12 +17,14 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import model.Ability;
+import model.GridPosition;
+import model.GroundTarget;
 import model.ITargetable;
 import model.Unit;
 import model.World;
 import controller.BattleQueue;
 
-public class MenuPanel extends JPanel {
+public class MenuPanel extends JPanel implements IGridClickedListener {
 	private static final long serialVersionUID = -5640915321281094627L;
 	
 	private final JLabel nameLabel = new JLabel();
@@ -31,9 +33,11 @@ public class MenuPanel extends JPanel {
 	
 	private Unit activeUnit;
 	private Ability activeAbility;
+	private AbilityPanel abilityPanel;
 	
 	public MenuPanel(AbilityPanel abilityPanel) {
-		this.setLayout(new BorderLayout());
+		this.abilityPanel = abilityPanel;
+		setLayout(new BorderLayout());
 		add(nameLabel, BorderLayout.NORTH);
 	
 		abilityList = makeMenuList();
@@ -59,19 +63,23 @@ public class MenuPanel extends JPanel {
 			public void valueChanged(ListSelectionEvent e) {
 				if (!e.getValueIsAdjusting()) {
 					if (targetList.getSelectedValue() != null) {
-						ITargetable selectedTarget = targetList.getSelectedValue();
-						BattleQueue.queueAction(activeAbility, activeUnit, selectedTarget);
-						targetList.setVisible(false);
-						abilityPanel.setVisible(false);
-						abilityList.clearSelection();
-						BattleQueue.finishPlanningAction(activeUnit);
-						updateTargetMenuList(targetList, new ArrayList<ITargetable>().iterator());
+						queueSelectedAbilityAtTarget(targetList.getSelectedValue());
 					}
 				}
 			}
 		});
 		setVisible(false);
 		add(targetList, BorderLayout.EAST);
+		GraphicsPanel.addGridClickedListener(this);
+	}
+	
+	private void queueSelectedAbilityAtTarget(ITargetable target) {
+		BattleQueue.queueAction(activeAbility, activeUnit, target);
+		targetList.setVisible(false);
+		abilityPanel.setVisible(false);
+		abilityList.clearSelection();
+		BattleQueue.finishPlanningAction(activeUnit);
+		updateTargetMenuList(targetList, new ArrayList<ITargetable>().iterator());
 	}
 	
 	public void makeMenuFor(Unit unit) {
@@ -103,14 +111,15 @@ public class MenuPanel extends JPanel {
 		while (oldTargets.hasMoreElements()) {
 			ITargetable oldTarget = oldTargets.nextElement();
 			oldTarget.setInTargetList(false);
-			oldTarget.setSelectedTarget(false);
 		}
 		listModel.clear();
 		while(menuItems.hasNext()) {
 			ITargetable target = menuItems.next();
 			listModel.addElement(target);
 			target.setInTargetList(true);
-//			target.setSelectedTarget(true);
+			if (target instanceof GroundTarget) {
+				GraphicsPanel.addGroundTarget((GroundTarget)target);
+			}
 		}
 		list.setPreferredSize(new Dimension(getSize().width/2, getSize().height));
 	}
@@ -129,5 +138,18 @@ public class MenuPanel extends JPanel {
 		super.setEnabled(enabled);
 		abilityList.setEnabled(enabled);
 		targetList.setEnabled(enabled);
+	}
+
+	@Override
+	public void reportGridClicked(GridPosition pos) {
+		if (activeAbility != null && activeUnit != null) {
+			ArrayList<ITargetable> targets = World.getTargets(activeUnit, activeAbility, GraphicsPanel.getScreenRectangle());
+			for (ITargetable target : targets) {
+				if (target.getPos().equals(pos)) {
+					queueSelectedAbilityAtTarget(target);
+					break;
+				}
+			}
+		}
 	}
 }

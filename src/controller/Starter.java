@@ -7,6 +7,12 @@ public class Starter {
 }
 
 //		Issues
+//	Exception in thread "Thread-5" java.lang.ArrayIndexOutOfBoundsException: -1965
+//	at controller.MapBuilder.getTerrainType(MapBuilder.java:58)
+//	at model.World.isTraversable(World.java:175)
+//	at model.World.getTraversableNeighbors(World.java:159)
+//	at controller.BattleQueue.getPathToUseAction(BattleQueue.java:383)
+//	at controller.BattleQueue.getFirstStepToUseAction(BattleQueue.java:356)
 //lifebar gets blocked
 //	player lifebars always visible in menus?
 //	show target lifebars in menu
