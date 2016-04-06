@@ -171,6 +171,14 @@ public abstract class TallObject implements ITargetable {
 		return hp;
 	}
 
+	public double getDrawYOffset() {
+		return drawYOffset;
+	}
+
+	public double getDrawXOffset() {
+		return drawXOffset;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

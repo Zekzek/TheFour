@@ -30,6 +30,7 @@ import model.GridPosition;
 import model.GridRectangle;
 import model.GroundTarget;
 import model.TallObject;
+import model.Unit;
 import model.World;
 import controller.BattleQueue;
 import controller.MapBuilder;
@@ -64,6 +65,7 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 		}
 	};
 
+	private static Unit focusUnit = null;
 	private static Color fade = new Color(0,0,0,0);
 	private static String fadeScreenText;
 	private static GridRectangle screenPos = new GridRectangle(0, 0, 16, 16);
@@ -100,12 +102,21 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 		// Convert to world space
 		double scale = getScale();
 		g2.scale(scale, scale);
+		AffineTransform savedTransorm = g2.getTransform();
+		
+		if(focusUnit != null) {
+			GridPosition focusPos = focusUnit.getPos();
+			screenPos.setX(focusPos.getX() - screenPos.getWidth()/2);
+			screenPos.setY(focusPos.getY() - screenPos.getHeight()/2);
+			g2.translate(-focusUnit.getDrawXOffset() * GraphicsPanel.CELL_WIDTH,
+					-focusUnit.getDrawYOffset() * GraphicsPanel.TERRAIN_CELL_HEIGHT);
+		}
 		
 		// Draw terrain
-		BufferedImage[][] terrainTiles = MapBuilder.getTiles(screenPos);
+		BufferedImage[][] terrainTiles = MapBuilder.getTiles(screenPos, 1);
 		for (int x = 0; x < terrainTiles.length; x++) {
 			for (int y = 0; y < terrainTiles[x].length; y++) {
-				g2.drawImage(terrainTiles[x][y], x * CELL_WIDTH, y * TERRAIN_CELL_HEIGHT, null);
+				g2.drawImage(terrainTiles[x][y], (x-1) * CELL_WIDTH, (y-1) * TERRAIN_CELL_HEIGHT, null);
 			}
 		}
 		
@@ -120,6 +131,7 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 			tallObject.paint(g2);
 		}
 		
+		g2.setTransform(savedTransorm);
 		// Draw the shadow gradient
 	    GradientPaint nearToFar = new GradientPaint(screenPos.getX(), screenPos.getY() + screenPos.getHeight()  * TERRAIN_CELL_HEIGHT,
 	    		CLOSE_COLORS.get(ambientLight), screenPos.getX(), screenPos.getY(), FAR_COLORS.get(ambientLight));
@@ -133,6 +145,12 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	    	drawCenteredText(g2, fadeScreenText, screenPos.getWidth() * CELL_WIDTH / 2, 
 		    		screenPos.getHeight() * TERRAIN_CELL_HEIGHT / 2, fadeScreenFont, Color.WHITE, null);
 	    }
+	    
+	    //Black out edges
+	    g2.setColor(Color.BLACK);
+	    g2.fillRect(0, screenPos.getHeight() * TERRAIN_CELL_HEIGHT,
+	    		screenPos.getWidth() * CELL_WIDTH, 16 * TERRAIN_CELL_HEIGHT);
+	    //YODO: calculate distance to bottom of screen instead of arbitrary 16
 	}
 	
 	public static void drawCenteredText(Graphics2D g, String text, int x, int y, Font font, Color fontColor, Color outlineColor) {
@@ -177,7 +195,8 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 				
 				// load the scene
 				fadeScreenText = display;
-				runnable.run();
+				if (runnable != null)
+					runnable.run();
 				
 				// wait
 				try {
@@ -202,7 +221,8 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 				GameFrame.enableMenu();
 				BattleQueue.setPause(false);
 				
-				startScene.run();
+				if (startScene != null)
+					startScene.run();
 			}
 		};
 		prettyLoadScene.start();
@@ -228,8 +248,20 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	}
 	
 	public static void moveScreenTo(int x, int y) {
+		focusUnit = null;
 		screenPos.setX(x);
 		screenPos.setY(y);
+	}
+	
+	public static void moveScreenTo(Unit unit, int duration) {
+		if (focusUnit == null || !focusUnit.equals(unit)) {
+			changeScene(0, "", 300, new Runnable() {
+				@Override
+				public void run() {
+					focusUnit = unit;
+				}}, 
+				0, null);
+		}
 	}
 	
 	public static GridRectangle getScreenRectangle() {

@@ -32,19 +32,16 @@ public class MapBuilder {
 		
 		for (int x = 0; x < rect.getWidth(); x++) {
 			for (int y = 0; y < rect.getWidth(); y++) {
-				int pixelIndex = (rect.getY() + y) * TEMPLATE_WIDTH + rect.getX() + x;
-				int byteIndex = pixelIndex * BYTES_PER_PIXEL;
-				tiles[x][y] = lookupTerrainCell(
-					TEMPLATE_BYTES[byteIndex+R], 
-					TEMPLATE_BYTES[byteIndex+G], 
-					TEMPLATE_BYTES[byteIndex+B]);
+				tiles[x][y] = TERRAIN_SHEET.getSprite(myClimate, getTerrainType(rect.getX() + x, rect.getY() + y));
 			}
 		}
 		return tiles;
 	}
 	
-	private static BufferedImage lookupTerrainCell(byte red, byte green, byte blue) {
-		return TERRAIN_SHEET.getSprite(myClimate, lookupTerrainCellType(red, green, blue));
+	public static BufferedImage[][] getTiles(GridRectangle screenPos, int border) {
+		GridRectangle borderedRect = new GridRectangle(screenPos.getX() - border, screenPos.getY() - border, 
+				screenPos.getWidth() + 2*border, screenPos.getHeight() + 2*border);
+		return getTiles(borderedRect);
 	}
 	
 	public static void setClimate(CLIMATE climate) {
@@ -52,12 +49,23 @@ public class MapBuilder {
 	}
 
 	public static TERRAIN getTerrainType(GridPosition pos) {
-		int pixelIndex = pos.getY() * TEMPLATE_WIDTH + pos.getX();
+		return getTerrainType(pos.getX(), pos.getY());
+	}
+	
+	public static TERRAIN getTerrainType(int x, int y) {
+		int pixelIndex = y * TEMPLATE_WIDTH + x;
 		int byteIndex = pixelIndex * BYTES_PER_PIXEL;
-		return lookupTerrainCellType(
-			TEMPLATE_BYTES[byteIndex+R], 
-			TEMPLATE_BYTES[byteIndex+G], 
-			TEMPLATE_BYTES[byteIndex+B]);
+		TERRAIN terrain;
+		try {
+			terrain = lookupTerrainCellType(
+				TEMPLATE_BYTES[byteIndex+R], 
+				TEMPLATE_BYTES[byteIndex+G], 
+				TEMPLATE_BYTES[byteIndex+B]);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			terrain = TERRAIN.WATER;
+		}
+		
+		return terrain;
 	}
 	
 	private static TERRAIN lookupTerrainCellType(byte red, byte green, byte blue) {

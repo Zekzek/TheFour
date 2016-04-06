@@ -91,6 +91,7 @@ public class MenuPanel extends JPanel implements IGridClickedListener {
 			activeUnit.convertNameLabel(nameLabel);
 			updateAbilityMenuList(abilityList, activeUnit.getKnownActions());
 		}
+		GraphicsPanel.moveScreenTo(activeUnit, 1000);
 	}
 	
 	private <T> JList<T> makeMenuList() {
