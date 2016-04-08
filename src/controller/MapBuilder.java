@@ -31,7 +31,7 @@ public class MapBuilder {
 		BufferedImage[][] tiles = new BufferedImage[rect.getWidth()][rect.getHeight()];
 		
 		for (int x = 0; x < rect.getWidth(); x++) {
-			for (int y = 0; y < rect.getWidth(); y++) {
+			for (int y = 0; y < rect.getHeight(); y++) {
 				tiles[x][y] = TERRAIN_SHEET.getSprite(myClimate, getTerrainType(rect.getX() + x, rect.getY() + y));
 			}
 		}

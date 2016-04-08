@@ -44,7 +44,7 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	public static final int TERRAIN_CELL_HEIGHT = 32;
 	public static final double TALL_OBJECT_CELL_HEIGHT_MULTIPLIER = 2.0;
 	public static final int TALL_OBJECT_CELL_HEIGHT = (int) (TERRAIN_CELL_HEIGHT * TALL_OBJECT_CELL_HEIGHT_MULTIPLIER);
-	public static final int REFRESH_RATE = 100;
+	public static final int REFRESH_RATE = 20;
 	
 	private static final Map<AMBIENT_LIGHT, Color> CLOSE_COLORS = new HashMap<AMBIENT_LIGHT, Color>();
 	private static final Map<AMBIENT_LIGHT, Color> FAR_COLORS = new HashMap<AMBIENT_LIGHT, Color>();
@@ -68,10 +68,12 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	private static Unit focusUnit = null;
 	private static Color fade = new Color(0,0,0,0);
 	private static String fadeScreenText;
-	private static GridRectangle screenPos = new GridRectangle(0, 0, 16, 16);
+	private static GridRectangle screenPos = new GridRectangle(0, 0, 24, 26);
 	private static AMBIENT_LIGHT ambientLight = AMBIENT_LIGHT.DAY;
 	private static GridPosition hoverPosition;
 	private static boolean initialized;
+	private static GridPosition moveScreenStartPosition;
+	private static volatile double moveCompletePercentage;
 	
 	private void initialize() {
 		initialized = true;
@@ -104,12 +106,26 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 		g2.scale(scale, scale);
 		AffineTransform savedTransorm = g2.getTransform();
 		
-		if(focusUnit != null) {
-			GridPosition focusPos = focusUnit.getPos();
-			screenPos.setX(focusPos.getX() - screenPos.getWidth()/2);
-			screenPos.setY(focusPos.getY() - screenPos.getHeight()/2);
-			g2.translate(-focusUnit.getDrawXOffset() * GraphicsPanel.CELL_WIDTH,
-					-focusUnit.getDrawYOffset() * GraphicsPanel.TERRAIN_CELL_HEIGHT);
+		if (focusUnit != null) {
+			if (moveScreenStartPosition != null) {
+				int startX = moveScreenStartPosition.getX();
+				int startY = moveScreenStartPosition.getY();
+				int endX = focusUnit.getPos().getX() - screenPos.getWidth()/2;
+				int endY = focusUnit.getPos().getY() - screenPos.getHeight()/2;
+				double posX = startX + moveCompletePercentage * (endX - startX);
+				double posY = startY + moveCompletePercentage * (endY - startY);
+				screenPos.setX((int) posX);
+				screenPos.setY((int) posY);
+				g2.translate(((int)posX - posX) * GraphicsPanel.CELL_WIDTH,
+						((int)posY - posY) * GraphicsPanel.TERRAIN_CELL_HEIGHT);
+			}
+			else {
+				GridPosition focusPos = focusUnit.getPos();
+				screenPos.setX(focusPos.getX() - screenPos.getWidth()/2);
+				screenPos.setY(focusPos.getY() - screenPos.getHeight()/2);
+				g2.translate(-focusUnit.getDrawXOffset() * GraphicsPanel.CELL_WIDTH,
+						-focusUnit.getDrawYOffset() * GraphicsPanel.TERRAIN_CELL_HEIGHT);
+			}
 		}
 		
 		// Draw terrain
@@ -150,7 +166,7 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	    g2.setColor(Color.BLACK);
 	    g2.fillRect(0, screenPos.getHeight() * TERRAIN_CELL_HEIGHT,
 	    		screenPos.getWidth() * CELL_WIDTH, 16 * TERRAIN_CELL_HEIGHT);
-	    //YODO: calculate distance to bottom of screen instead of arbitrary 16
+	    //TODO: calculate distance to bottom of screen instead of arbitrary 16
 	}
 	
 	public static void drawCenteredText(Graphics2D g, String text, int x, int y, Font font, Color fontColor, Color outlineColor) {
@@ -249,18 +265,31 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	
 	public static void moveScreenTo(int x, int y) {
 		focusUnit = null;
+		moveScreenStartPosition = null;
 		screenPos.setX(x);
 		screenPos.setY(y);
 	}
 	
 	public static void moveScreenTo(Unit unit, int duration) {
 		if (focusUnit == null || !focusUnit.equals(unit)) {
-			changeScene(0, "", 300, new Runnable() {
+			focusUnit = unit;
+			moveScreenStartPosition = new GridPosition(screenPos.getX(), screenPos.getY());
+			Thread moveCameraThread = new Thread() {
 				@Override
 				public void run() {
-					focusUnit = unit;
-				}}, 
-				0, null);
+					moveCompletePercentage = 0.0;
+					for (int i = REFRESH_RATE; i < duration; i += REFRESH_RATE) {
+						try {
+							Thread.sleep(REFRESH_RATE);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+						moveCompletePercentage = i / (double)duration;
+					}
+					moveScreenStartPosition = null;
+				}
+			};
+			moveCameraThread.start();
 		}
 	}
 	
