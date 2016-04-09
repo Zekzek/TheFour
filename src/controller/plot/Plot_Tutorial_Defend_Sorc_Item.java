@@ -2,7 +2,6 @@ package controller.plot;
 
 import model.Ability;
 import model.Dialog;
-import model.Structure;
 import model.Unit;
 import model.Unit.ID;
 import model.Unit.TEAM;
@@ -19,7 +18,6 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 	private Unit sorceress;
 	private Unit guard1, guard2;
 	private Unit bandit1, bandit2, bandit3;
-	private Structure trees[] = new Structure[18];
 		
 	@Override
 	protected String getStartingScene() {
@@ -35,12 +33,6 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 		bandit1 = Unit.get(ID.FEMALE_BANDIT, TEAM.ENEMY1, "Female bandit #1");
 		bandit2 = Unit.get(ID.MALE_BANDIT, TEAM.ENEMY1, "Male bandit");
 		bandit3 = Unit.get(ID.FEMALE_BANDIT, TEAM.ENEMY1, "Female bandit #2");
-		
-		for (int i = 0; i < trees.length; i+=3) {
-			trees[i] = new Structure("Tree", Plot.class.getResource("/resource/img/trees/tree13.png"), 200);
-			trees[i+1] = new Structure("Tree", Plot.class.getResource("/resource/img/trees/tree15.png"), 200);
-			trees[i+2] = new Structure("Tree", Plot.class.getResource("/resource/img/trees/tree18.png"), 200);
-		}
 	}
 
 	@Override
@@ -117,23 +109,6 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 		World.addTallObject(defender, 151, 131);
 		sorceress.setFacing(FACING.N);
 		World.addTallObject(sorceress, 151, 132);
-		
-		World.addTallObject(trees[0], 141, 121);
-		World.addTallObject(trees[1], 142, 124);
-		World.addTallObject(trees[2], 141, 129);
-		World.addTallObject(trees[3], 145, 131);
-		World.addTallObject(trees[4], 145, 133);
-		World.addTallObject(trees[5], 151, 135);
-		World.addTallObject(trees[6], 154, 135);
-		World.addTallObject(trees[7], 156, 136);
-		World.addTallObject(trees[10], 143, 122);
-		World.addTallObject(trees[11], 143, 126);
-		World.addTallObject(trees[12], 143, 127);
-		World.addTallObject(trees[13], 144, 133);
-		World.addTallObject(trees[14], 144, 137);
-		World.addTallObject(trees[15], 148, 130);
-		World.addTallObject(trees[16], 148, 132);
-		World.addTallObject(trees[17], 155, 122);
 	}
 	
 	private void startSorcMeeting() {
@@ -161,8 +136,6 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 		World.addTallObject(bandit2, 51, 20);
 		bandit3.setFacing(FACING.W);
 		World.addTallObject(bandit3, 58, 32);
-		World.addTallObject(trees[8], 48, 29);
-		World.addTallObject(trees[9], 53, 23);	
 	}
 	
 	private void startBanditMeeting() {

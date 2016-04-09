@@ -7,6 +7,7 @@ import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Transparency;
 import java.awt.event.MouseEvent;
@@ -14,6 +15,8 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
@@ -46,8 +49,9 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	public static final int TALL_OBJECT_CELL_HEIGHT = (int) (TERRAIN_CELL_HEIGHT * TALL_OBJECT_CELL_HEIGHT_MULTIPLIER);
 	public static final int REFRESH_RATE = 20;
 	
-	private static final Map<AMBIENT_LIGHT, Color> CLOSE_COLORS = new HashMap<AMBIENT_LIGHT, Color>();
-	private static final Map<AMBIENT_LIGHT, Color> FAR_COLORS = new HashMap<AMBIENT_LIGHT, Color>();
+	private static final Color CLOSE_COLOR = new Color(255,255,245,0);
+	private static final Color FAR_COLOR = new Color(0,0,10,110);
+	private static final Map<AMBIENT_LIGHT, Color> LIGHT_COLORS = new HashMap<AMBIENT_LIGHT, Color>();
 	private static final Set<GroundTarget> groundTargets = new HashSet<GroundTarget>();
 	private static final Set<IGridClickedListener> gridClickedListeners = new HashSet<IGridClickedListener>();
 	private static final Font fadeScreenFont = new Font ("MV Boli", Font.BOLD , 24);
@@ -77,12 +81,9 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	
 	private void initialize() {
 		initialized = true;
-		CLOSE_COLORS.put(AMBIENT_LIGHT.DAY, new Color(255,255,245,0));
-		FAR_COLORS.put(AMBIENT_LIGHT.DAY, new Color(0,0,10,110));
-		CLOSE_COLORS.put(AMBIENT_LIGHT.DUSK, new Color(100,100,90,60));
-		FAR_COLORS.put(AMBIENT_LIGHT.DUSK, new Color(0,0,10,130));
-		CLOSE_COLORS.put(AMBIENT_LIGHT.NIGHT, new Color(10,10,0,130));
-		FAR_COLORS.put(AMBIENT_LIGHT.NIGHT, new Color(0,0,10,180));
+		LIGHT_COLORS.put(AMBIENT_LIGHT.DAY, new Color(255,255,250,10));
+		LIGHT_COLORS.put(AMBIENT_LIGHT.DUSK, new Color(80,80,75,80));
+		LIGHT_COLORS.put(AMBIENT_LIGHT.NIGHT, new Color(20,20,20,140));
 		addMouseListener(this);
 		addMouseMotionListener(this);
 	}
@@ -143,17 +144,29 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 		
 		// Draw the objects
 		ArrayList<TallObject> contents = World.getSortedContentsWithin(screenPos, TallObject.class);
-		for (TallObject tallObject : contents) {
+		Area darkArea = new Area(new Rectangle(0, 0, screenPos.getWidth() * CELL_WIDTH, 
+	    		screenPos.getHeight() * TERRAIN_CELL_HEIGHT));
+	    for (TallObject tallObject : contents) {
 			tallObject.paint(g2);
+			if (tallObject instanceof Unit) {
+				darkArea.subtract(new Area(new Ellipse2D.Double(
+						(tallObject.getPos().getX() + tallObject.getDrawXOffset() - screenPos.getX() - 1) * CELL_WIDTH, 
+						(tallObject.getPos().getY() + tallObject.getDrawYOffset() - screenPos.getY() - 1) * TERRAIN_CELL_HEIGHT, 
+						CELL_WIDTH * 3, TERRAIN_CELL_HEIGHT * 3)));
+			}
 		}
 		
-		g2.setTransform(savedTransorm);
-		// Draw the shadow gradient
-	    GradientPaint nearToFar = new GradientPaint(screenPos.getX(), screenPos.getY() + screenPos.getHeight()  * TERRAIN_CELL_HEIGHT,
-	    		CLOSE_COLORS.get(ambientLight), screenPos.getX(), screenPos.getY(), FAR_COLORS.get(ambientLight));
+	    //Draw the shadow gradient
+	    g2.setPaint(LIGHT_COLORS.get(ambientLight));
+	    g2.fill(darkArea);
+	    g2.setTransform(savedTransorm);
+		GradientPaint nearToFar = new GradientPaint(screenPos.getX(), screenPos.getY() + screenPos.getHeight()  * TERRAIN_CELL_HEIGHT,
+	    		CLOSE_COLOR, screenPos.getX(), screenPos.getY(), FAR_COLOR);
 	    g2.setPaint(nearToFar);
 	    g2.fillRect(0, 0, screenPos.getWidth() * CELL_WIDTH, 
 	    		screenPos.getHeight() * TERRAIN_CELL_HEIGHT);
+	    
+	    //Draw fade to black
 	    g2.setPaint(fade);
 	    g2.fillRect(0, 0, screenPos.getWidth() * CELL_WIDTH, 
 	    		screenPos.getHeight() * TERRAIN_CELL_HEIGHT);
@@ -165,8 +178,8 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	    //Black out edges
 	    g2.setColor(Color.BLACK);
 	    g2.fillRect(0, screenPos.getHeight() * TERRAIN_CELL_HEIGHT,
-	    		screenPos.getWidth() * CELL_WIDTH, 16 * TERRAIN_CELL_HEIGHT);
-	    //TODO: calculate distance to bottom of screen instead of arbitrary 16
+	    		screenPos.getWidth() * CELL_WIDTH, screenPos.getHeight() * TERRAIN_CELL_HEIGHT);
+	    //TODO: calculate distance to bottom of screen instead of screen height
 	}
 	
 	public static void drawCenteredText(Graphics2D g, String text, int x, int y, Font font, Color fontColor, Color outlineColor) {
@@ -184,10 +197,10 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	    }
 	}
 	
-	public static void changeScene(SceneTransition sorcRequest) {
-		changeScene(sorcRequest.getFadeInDuration(), 
-				sorcRequest.getFadedText(), sorcRequest.getFadedDuration(), sorcRequest.getSetupRunnable(), 
-				sorcRequest.getFadeOutDuration(), sorcRequest.getStartRunnable());
+	public static void changeScene(SceneTransition transition) {
+		changeScene(transition.getFadeInDuration(), 
+				transition.getFadedText(), transition.getFadedDuration(), transition.getSetupRunnable(), 
+				transition.getFadeOutDuration(), transition.getStartRunnable());
 	}
 	
 	public static void changeScene(int fadeOutDuration, String display, int displayDuration, Runnable runnable, 

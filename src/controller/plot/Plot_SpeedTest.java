@@ -7,12 +7,13 @@ import model.GridRectangle;
 import model.Structure;
 import model.TallObject;
 import model.Unit;
-import model.Unit.TEAM;
 import model.Unit.ID;
+import model.Unit.TEAM;
 import model.World;
 import view.DialogPanel;
 import view.GraphicsPanel;
 import view.SceneTransition;
+import view.SpriteSheet.CLIMATE;
 import controller.BattleQueue;
 
 public class Plot_SpeedTest extends Plot{
@@ -51,16 +52,16 @@ public class Plot_SpeedTest extends Plot{
 		GridRectangle searchScreen = new GridRectangle(490, 490, 16, 16);
 		
 		Long startTime = System.currentTimeMillis();
-		for (int i = 0; i < 500; i++) {
+		for (int i = 0; i < 5000; i++) {
 			Unit guard = Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard");
 			World.addTallObject(guard, i, i);
 		}
-		for (int i = 0; i < 500; i++) {
-			Structure tree = new Structure("Tree 1", Plot.class.getResource("/resource/img/trees/tree.png"), 100);
+		for (int i = 0; i < 5000; i++) {
+			Structure tree = Structure.get(Structure.ID.TREE, CLIMATE.CASTLE);
 			World.addTallObject(tree, i, i+1);
 		}
 		Long endTime = System.currentTimeMillis();
-		String addObjectTest = "Added 1,000 objects (500 units and 500 structures) in " + (endTime - startTime) + "ms";
+		String addObjectTest = "Added 10,000 objects (5,000 units and 5,000 structures) in " + (endTime - startTime) + "ms";
 		
 		ArrayList<TallObject> objects = null;
 		startTime = System.currentTimeMillis();

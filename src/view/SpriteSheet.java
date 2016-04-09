@@ -8,7 +8,9 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
+import controller.plot.Plot;
 import model.StatusEffect;
+import model.Structure;
 
 public class SpriteSheet {
 	public static enum FACING {N, W, S, E}
@@ -30,6 +32,7 @@ public class SpriteSheet {
 	};
 	public static enum CLIMATE {PLAINS, JUNGLE, TUNDRA, FOREST, DESERT, ROCKY, VOLCANIC, CASTLE, UNDERGROUND}
 	public static enum TERRAIN {ROAD, PATH, LIGHT, DENSE, WATER}
+	
 	public static final int SPRITE_HEIGHT = 64;
 	public static final int TERRAIN_SPRITE_HEIGHT = 32;
 	public static final int SPRITE_WIDTH = 64;
@@ -47,6 +50,25 @@ public class SpriteSheet {
 			e.printStackTrace();
 			sheet = new BufferedImage(1, 1, BufferedImage.TYPE_4BYTE_ABGR);
 		}
+	}
+	
+	public static void preloadSpriteSheets() {
+		getSpriteSheet(Plot.class.getResource("/resource/img/spriteSheet/terrain.png"));
+		getSpriteSheet(Plot.class.getResource("/resource/img/spriteSheet/objects.png"));
+		getSpriteSheet(Plot.class.getResource("/resource/img/spriteSheet/statusEffects.png"));
+		
+		getSpriteSheet(Plot.class.getResource("/resource/img/spriteSheet/defender.png"));
+		getSpriteSheet(Plot.class.getResource("/resource/img/spriteSheet/sorceress.png"));
+		getSpriteSheet(Plot.class.getResource("/resource/img/spriteSheet/berserker.png"));
+		getSpriteSheet(Plot.class.getResource("/resource/img/spriteSheet/archer.png"));
+		getSpriteSheet(Plot.class.getResource("/resource/img/spriteSheet/guard.png"));
+		getSpriteSheet(Plot.class.getResource("/resource/img/spriteSheet/banditFemale.png"));
+		getSpriteSheet(Plot.class.getResource("/resource/img/spriteSheet/banditMale.png"));
+		getSpriteSheet(Plot.class.getResource("/resource/img/spriteSheet/goblinFemale.png"));
+		getSpriteSheet(Plot.class.getResource("/resource/img/spriteSheet/goblinMale.png"));
+		getSpriteSheet(Plot.class.getResource("/resource/img/spriteSheet/goblinChief.png"));
+		getSpriteSheet(Plot.class.getResource("/resource/img/spriteSheet/girl.png"));
+		getSpriteSheet(Plot.class.getResource("/resource/img/spriteSheet/boy.png"));
 	}
 	
 	public static SpriteSheet getSpriteSheet(URL url) {
@@ -83,12 +105,11 @@ public class SpriteSheet {
 				ICON_WIDTH,
 				ICON_HEIGHT);
 	}
-	
-//	private int getRow(ANIMATION animation, FACING facing) {
-//		int row = 4 * animation.ordinal() + facing.ordinal();
-//		if (animation == ANIMATION.DEATH) {
-//			row = 4 * animation.ordinal();
-//		}
-//		return row;
-//	}
+
+	public BufferedImage getSprite(Structure.ID id, CLIMATE climate) {
+		int index = id.getIndex(climate);
+		return sheet.getSubimage(index % CLIMATE.values().length * SPRITE_WIDTH,
+				index / CLIMATE.values().length * SPRITE_HEIGHT,
+				SPRITE_WIDTH, SPRITE_HEIGHT);
+	}
 }

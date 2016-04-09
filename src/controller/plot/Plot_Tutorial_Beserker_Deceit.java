@@ -46,7 +46,7 @@ public class Plot_Tutorial_Beserker_Deceit extends Plot{
 				Unit.get(Unit.ID.GIRL, TEAM.NONCOMBATANT, "Berserker Fan #5"),
 				Unit.get(Unit.ID.BOY, TEAM.NONCOMBATANT, "Berserker Fan #6"),
 		};
-		treasure = new Structure("Treasure", Plot.class.getResource("/resource/img/trees/treasure.png"), 200);
+		treasure = Structure.get(Structure.ID.TREASURE, null);
 	}
 
 	@Override

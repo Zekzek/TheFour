@@ -51,6 +51,7 @@ public class GameFrame extends JFrame {
 		me = this;
 		
 		graphicsPanel.startPainting();
+		SpriteSheet.preloadSpriteSheets();
 	}
 	
 	public static void updateAll() {

@@ -1,18 +1,24 @@
 package controller.plot;
 
+import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
+import model.Dialog;
+import model.Structure;
+import model.Unit;
+import model.World;
+import model.Unit.TEAM;
 import view.DialogPanel;
 import view.GraphicsPanel;
 import view.SceneTransition;
-import model.Dialog;
-import model.Unit;
-import model.Unit.TEAM;
 import controller.BattleListenerInterface;
 import controller.BattleQueue;
+import controller.MapBuilder;
+import controller.TemplateReader;
 
 public abstract class Plot implements BattleListenerInterface{
+	private static boolean initialized = false;
 	protected static final int SECOND = 1000;
 	private final Map<String, SceneTransition> sceneTransitions = new HashMap<String, SceneTransition>();
 	private String sceneName;
@@ -25,6 +31,33 @@ public abstract class Plot implements BattleListenerInterface{
 	
 	public Plot() {
 		BattleQueue.addBattleListener(this);
+		if (!initialized) {
+			initialized = true;
+			initialize();
+		}
+	}
+	
+	private void initialize() {
+		TemplateReader objectTemplate = new TemplateReader("/resource/img/templates/objects.png");
+		for (int x = 0; x < objectTemplate.getWidth(); x++) {
+			for (int y = 0; y < objectTemplate.getHeight(); y++) {
+				Color color = objectTemplate.getColorAt(x, y);
+				boolean reddish = color.getRed() > 125;
+				boolean greenish = color.getGreen() > 125;
+				boolean blueish = color.getBlue() > 125;
+				boolean visible = color.getAlpha() > 125;
+				
+				if (visible) {
+					if (greenish) {
+						if (!reddish && !blueish) {//green
+							World.addTallObject(Structure.get(Structure.ID.TREE, MapBuilder.getClimateType(x, y)), x, y);
+						}
+					} else if (!reddish && !blueish) {//black
+						World.addTallObject(Structure.get(Structure.ID.WALL, MapBuilder.getClimateType(x, y)), x, y);
+					}
+				}
+			}
+		}
 	}
 	
 	public void start() {
@@ -52,7 +85,6 @@ public abstract class Plot implements BattleListenerInterface{
 	protected Unit getNarrator() {
 		return Unit.get(Unit.ID.ANNOUNCER, Unit.TEAM.NONCOMBATANT, "Announcer");
 	}
-	
 	
 	public void addSceneTransition(SceneTransition transition) {
 		sceneTransitions.put(transition.getName(), transition);

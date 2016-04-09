@@ -368,7 +368,7 @@ public class Unit extends TallObject {
 
 		private static void initUnits() {
 			unitsInitialized = true;
-			Unit defender = new Unit("Defender", 250, Plot.class.getResource("/resource/img/spriteSheet/defender.png"));
+			Unit defender = new Unit("Steele", 250, Plot.class.getResource("/resource/img/spriteSheet/defender.png"));
 			defender.learnAction(Ability.get(Ability.ID.MOVE));
 			defender.learnAction(Ability.get(Ability.ID.GUARD_ATTACK));
 			defender.learnAction(Ability.get(Ability.ID.SHIELD_BASH));
@@ -380,12 +380,12 @@ public class Unit extends TallObject {
 			defender.baseModifier.setBonus(FRACTIONAL_BONUS.INCOMING_DAMAGE_MODIFIER_SPELL, 0.9);
 			units.put(ID.DEFENDER, defender);
 			
-			Unit sorceress = new Unit("Sorceress", 160, Plot.class.getResource("/resource/img/spriteSheet/sorceress.png"));
+			Unit sorceress = new Unit("Juliana", 160, Plot.class.getResource("/resource/img/spriteSheet/sorceress.png"));
 			sorceress.setWeapon(Weapon.getWeapon(Weapon.ID.DAGGER));
 			sorceress.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 1.2);
 			units.put(ID.SORCERESS, sorceress);
 
-			Unit berserker = new Unit("Berserker", 180, Plot.class.getResource("/resource/img/spriteSheet/berserker.png"));
+			Unit berserker = new Unit("Destrox", 180, Plot.class.getResource("/resource/img/spriteSheet/berserker.png"));
 			berserker.learnAction(Ability.get(Ability.ID.SWEEPING_STRIKE));
 			berserker.learnAction(Ability.get(Ability.ID.THROW));
 			berserker.learnAction(Ability.get(Ability.ID.QUICK_ATTACK));
@@ -458,7 +458,7 @@ public class Unit extends TallObject {
 			maleGoblin.baseModifier.setBonus(FRACTIONAL_BONUS.OUTGOING_DAMAGE_MODIFIER_SPELL, 0.39);
 			units.put(ID.MALE_GOBLIN, maleGoblin);
 			
-			Unit goblinChief = new Unit("Goblin Chief", 300, Plot.class.getResource("/resource/img/spriteSheet/goblinChief.png"));
+			Unit goblinChief = new Unit("Chief Drenug", 300, Plot.class.getResource("/resource/img/spriteSheet/goblinChief.png"));
 			goblinChief.learnAction(Ability.get(Ability.ID.QUICK_ATTACK));
 			goblinChief.learnAction(Ability.get(Ability.ID.ATTACK));
 			goblinChief.learnAction(Ability.get(Ability.ID.THROW));
@@ -490,7 +490,9 @@ public class Unit extends TallObject {
 			}
 			unit = new Unit(unit);
 			unit.setTeam(team);
-			unit.setName(name);
+			if (unit != null) {
+				unit.setName(name);
+			}
 			return unit;
 		}
 	}

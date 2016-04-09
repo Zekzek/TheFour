@@ -1,7 +1,6 @@
 package controller.plot;
 
 import model.Dialog;
-import model.Structure;
 import model.Unit;
 import model.Unit.ID;
 import model.Unit.TEAM;
@@ -16,7 +15,6 @@ public class Plot_Tutorial_Arena extends Plot{
 	
 	private Unit announcer, defender, berserker;
 	private Unit[] guards;
-	private Structure[] trees;
 		
 	@Override
 	protected String getStartingScene() {
@@ -33,12 +31,6 @@ public class Plot_Tutorial_Arena extends Plot{
 				Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard #2"),
 				Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard #3"),
 				Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard #4")
-		};
-		trees = new Structure[] {
-				new Structure("Tree 1", Plot.class.getResource("/resource/img/trees/tree.png"), 200),
-				new Structure("Tree 2", Plot.class.getResource("/resource/img/trees/tree.png"), 200),
-				new Structure("Tree 3", Plot.class.getResource("/resource/img/trees/tree.png"), 200),
-				new Structure("Tree 4", Plot.class.getResource("/resource/img/trees/tree.png"), 200)
 		};
 	}
 	
@@ -75,11 +67,6 @@ public class Plot_Tutorial_Arena extends Plot{
 		World.addTallObject(defender, 26, 31);
 		World.addTallObject(berserker, 37, 31);
 		World.addTallObject(announcer, -1, -1);
-		
-		World.addTallObject(trees[0], 28, 27);
-		World.addTallObject(trees[1], 36, 27);
-		World.addTallObject(trees[2], 28, 35);
-		World.addTallObject(trees[3], 36, 35);
 	}
 	
 	private void startArena() {
@@ -132,4 +119,3 @@ public class Plot_Tutorial_Arena extends Plot{
 		}
 	}
 }
-
