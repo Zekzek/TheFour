@@ -47,7 +47,7 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	public static final int TERRAIN_CELL_HEIGHT = 32;
 	public static final double TALL_OBJECT_CELL_HEIGHT_MULTIPLIER = 2.0;
 	public static final int TALL_OBJECT_CELL_HEIGHT = (int) (TERRAIN_CELL_HEIGHT * TALL_OBJECT_CELL_HEIGHT_MULTIPLIER);
-	public static final int REFRESH_RATE = 20;
+	public static final int REFRESH_RATE = 50;
 	
 	private static final Color CLOSE_COLOR = new Color(255,255,245,0);
 	private static final Color FAR_COLOR = new Color(0,0,10,110);
@@ -72,7 +72,7 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	private static Unit focusUnit = null;
 	private static Color fade = new Color(0,0,0,0);
 	private static String fadeScreenText;
-	private static GridRectangle screenPos = new GridRectangle(0, 0, 24, 26);
+	private static GridRectangle screenPos = new GridRectangle(0, 0, 24, 22);
 	private static AMBIENT_LIGHT ambientLight = AMBIENT_LIGHT.DAY;
 	private static GridPosition hoverPosition;
 	private static boolean initialized;
@@ -143,7 +143,8 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 		}
 		
 		// Draw the objects
-		ArrayList<TallObject> contents = World.getSortedContentsWithin(screenPos, TallObject.class);
+		GridRectangle visibleScreen = new GridRectangle(screenPos.getX(), screenPos.getY(), screenPos.getWidth(), screenPos.getHeight() + 1);
+		ArrayList<TallObject> contents = World.getSortedContentsWithin(visibleScreen, TallObject.class);
 		Area darkArea = new Area(new Rectangle(0, 0, screenPos.getWidth() * CELL_WIDTH, 
 	    		screenPos.getHeight() * TERRAIN_CELL_HEIGHT));
 	    for (TallObject tallObject : contents) {

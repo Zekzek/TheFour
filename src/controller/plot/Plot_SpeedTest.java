@@ -53,7 +53,7 @@ public class Plot_SpeedTest extends Plot{
 		
 		Long startTime = System.currentTimeMillis();
 		for (int i = 0; i < 5000; i++) {
-			Unit guard = Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard");
+			Unit guard = Unit.get(ID.GUARD, TEAM.NONCOMBATANT);
 			World.addTallObject(guard, i, i);
 		}
 		for (int i = 0; i < 5000; i++) {

@@ -338,6 +338,10 @@ public class Unit extends TallObject {
 		return team == TEAM.ENEMY1 || team == TEAM.ENEMY2;
 	}
 	
+	public static Unit get(ID id, TEAM team) {
+		return UnitFactory.getUnit(id, team, null);
+	}
+	
 	public static Unit get(ID id, TEAM team, String name) {
 		return UnitFactory.getUnit(id, team, name);
 	}
@@ -490,7 +494,7 @@ public class Unit extends TallObject {
 			}
 			unit = new Unit(unit);
 			unit.setTeam(team);
-			if (unit != null) {
+			if (name != null) {
 				unit.setName(name);
 			}
 			return unit;

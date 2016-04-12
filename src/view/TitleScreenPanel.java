@@ -16,6 +16,7 @@ import javax.swing.SwingConstants;
 
 import view.GraphicsPanel.AMBIENT_LIGHT;
 import controller.plot.Plot;
+import controller.plot.Plot_Beginnings;
 import controller.plot.Plot_SpeedTest;
 import controller.plot.Plot_Tutorial_Arena;
 import controller.plot.Plot_Tutorial_Beserker_Deceit;
@@ -30,13 +31,14 @@ public class TitleScreenPanel extends JPanel{
 	
 	public TitleScreenPanel() {
 		plotOptions = new HashMap<String, Class<? extends Plot>>();
+		plotOptions.put("Beginnings", Plot_Beginnings.class);
 		plotOptions.put("Beginnings: Magic Case", Plot_Tutorial_Defend_Sorc_Item.class);
 		plotOptions.put("Beginnings: Arena", Plot_Tutorial_Arena.class);
 		plotOptions.put("Beginnings: Berserkers Request", Plot_Tutorial_Beserker_Deceit.class);
 		plotOptions.put("Test: Speed Test", Plot_SpeedTest.class);
 		
 		setLayout(new BorderLayout());
-		add(new JLabel("The Four: Forgotten Age ~ Version 0.02", SwingConstants.CENTER), BorderLayout.NORTH);
+		add(new JLabel("The Four: Forgotten Age ~ Version 0.03", SwingConstants.CENTER), BorderLayout.NORTH);
 		
 		JPanel centerWrapperPanel = new JPanel();
 		centerWrapperPanel.add(new JLabel("Scene:"));

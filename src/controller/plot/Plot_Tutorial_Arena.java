@@ -23,14 +23,14 @@ public class Plot_Tutorial_Arena extends Plot{
 	
 	@Override
 	protected void initUnits() {
-		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER, "Defender");
-		berserker = Unit.get(ID.BERSERKER, TEAM.ENEMY1, "Berserker");
-		announcer = Unit.get(ID.ANNOUNCER, TEAM.NONCOMBATANT, "Announcer");
+		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER);
+		berserker = Unit.get(ID.BERSERKER, TEAM.ENEMY1);
+		announcer = Unit.get(ID.ANNOUNCER, TEAM.NONCOMBATANT);
 		guards = new Unit[] {
-				Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard #1"),
-				Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard #2"),
-				Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard #3"),
-				Unit.get(ID.GUARD, TEAM.NONCOMBATANT, "Guard #4")
+				Unit.get(ID.GUARD, TEAM.NONCOMBATANT),
+				Unit.get(ID.GUARD, TEAM.NONCOMBATANT),
+				Unit.get(ID.GUARD, TEAM.NONCOMBATANT),
+				Unit.get(ID.GUARD, TEAM.NONCOMBATANT)
 		};
 	}
 	

@@ -11,6 +11,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -55,21 +56,25 @@ public class MenuPanel extends JPanel implements IGridClickedListener {
 				}
 			}
 		});
-		add(abilityList, BorderLayout.WEST);
+//		JPanel abilityScrollWrapper = new JPanel();
+//		add();
+		add(new JScrollPane(abilityList), BorderLayout.SOUTH);
 		
 		targetList = makeMenuList();
-		targetList.addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent e) {
-				if (!e.getValueIsAdjusting()) {
-					if (targetList.getSelectedValue() != null) {
-						queueSelectedAbilityAtTarget(targetList.getSelectedValue());
-					}
-				}
-			}
-		});
+//		targetList.addListSelectionListener(new ListSelectionListener() {
+//			@Override
+//			public void valueChanged(ListSelectionEvent e) {
+//				if (!e.getValueIsAdjusting()) {
+//					if (targetList.getSelectedValue() != null) {
+//						queueSelectedAbilityAtTarget(targetList.getSelectedValue());
+//					}
+//				}
+//			}
+//		});
 		setVisible(false);
-		add(targetList, BorderLayout.EAST);
+//		JPanel targetScrollWrapper = new JPanel();
+//		targetScrollWrapper.add(new JScrollPane(targetList));
+//		add(targetScrollWrapper, BorderLayout.EAST);
 		GraphicsPanel.addGridClickedListener(this);
 	}
 	

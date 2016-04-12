@@ -320,8 +320,7 @@ public class BattleQueue {
 					BattleQueue.insertFirstAction(Ability.get(Ability.ID.MOVE), source, new GroundTarget(moveTo));
 					performNextAction();
 				} else {
-					BattleQueue.insertFirstAction(Ability.get(Ability.ID.DELAY), source, source);
-					performNextAction();
+					actionQueue.poll(); //remove from the queue
 				}
 			} else {
 				nextAction.activate();
@@ -362,6 +361,7 @@ public class BattleQueue {
 		return null;
 	}
 	
+	//TODO: sometimes takes forever / arbitrarily long
 	private static PathingGridPosition getPathToUseAction(ReadiedAction action) {
 		BattleQueue me = getMe();
 		Unit source = action.getSource();

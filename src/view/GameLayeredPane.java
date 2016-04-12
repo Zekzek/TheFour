@@ -7,6 +7,7 @@ import javax.swing.JLayeredPane;
 public class GameLayeredPane extends JLayeredPane {
 
 	private static final long serialVersionUID = -7110358661003446126L;
+	private static final int MENU_HEIGHT = 120;
 
 	public GameLayeredPane() {
 	}
@@ -19,11 +20,11 @@ public class GameLayeredPane extends JLayeredPane {
             
             for(Component c : getComponents()) {
             	if (c instanceof GraphicsPanel) {
-            		c.setBounds(0, 0, w, h);
+            		c.setBounds(0, 0, w, h - MENU_HEIGHT);
             	} else if (c instanceof AbilityPanel) {
-            		c.setBounds(w/3, h*5/6, w/3, h/6);
+            		c.setBounds(w/3, h - MENU_HEIGHT, w/3, MENU_HEIGHT);
             	} else if (c instanceof MenuPanel) {
-            		c.setBounds(0, h*4/5, w/3, h/5);
+            		c.setBounds(0, h - MENU_HEIGHT, w/3, MENU_HEIGHT);
             	} else if (c instanceof DialogPanel) {
             		c.setBounds(w/4, h/20, w/2, h/3);
             	} else if (c instanceof TitleScreenPanel) {

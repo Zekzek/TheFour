@@ -5,9 +5,9 @@ import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 
-import controller.BattleQueue;
 import model.Unit;
 import model.World;
+import controller.BattleQueue;
 
 public class GameFrame extends JFrame {
 	
@@ -23,6 +23,7 @@ public class GameFrame extends JFrame {
 	private JLayeredPane layeredPane;
 	
 	public GameFrame() {
+		me = this;
 		setPreferredSize(INITIAL_DIMENSIONS);
 		setBounds(0, 0, INITIAL_DIMENSIONS.width, INITIAL_DIMENSIONS.height);
         setLocationRelativeTo(null);
@@ -47,8 +48,8 @@ public class GameFrame extends JFrame {
 		
 		getContentPane().add(layeredPane);
 		
+		pack();
 		setVisible(true);
-		me = this;
 		
 		graphicsPanel.startPainting();
 		SpriteSheet.preloadSpriteSheets();

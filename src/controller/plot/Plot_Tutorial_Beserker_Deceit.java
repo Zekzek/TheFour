@@ -29,15 +29,15 @@ public class Plot_Tutorial_Beserker_Deceit extends Plot{
 	
 	@Override
 	protected void initUnits() {
-		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER, "Defender");
-		berserker = Unit.get(ID.BERSERKER, TEAM.NONCOMBATANT, "Berserker");
+		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER);
+		berserker = Unit.get(ID.BERSERKER, TEAM.NONCOMBATANT);
 		goblinMooks = new Unit[] {
 				Unit.get(Unit.ID.FEMALE_GOBLIN, TEAM.ENEMY1, "Goblin Mook #1"),
 				Unit.get(Unit.ID.MALE_GOBLIN, TEAM.ENEMY1, "Goblin Mook #2"),
 				Unit.get(Unit.ID.FEMALE_GOBLIN, TEAM.ENEMY1, "Goblin Mook #3"),
 				Unit.get(Unit.ID.MALE_GOBLIN, TEAM.ENEMY1, "Goblin Mook #4")
 		};
-		goblinChief = Unit.get(Unit.ID.GOBLIN_CHIEF, TEAM.ENEMY1, "Goblin Chieftain");
+		goblinChief = Unit.get(Unit.ID.GOBLIN_CHIEF, TEAM.ENEMY1);
 		fans = new Unit[] {
 				Unit.get(Unit.ID.GIRL, TEAM.NONCOMBATANT, "Berserker Fan #1"),
 				Unit.get(Unit.ID.GIRL, TEAM.NONCOMBATANT, "Berserker Fan #2"),

@@ -26,9 +26,9 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 	
 	@Override
 	protected void initUnits() {
-		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER, "Defender");
-		sorceress = Unit.get(ID.SORCERESS, TEAM.ALLY, "Sorceress");
-		guard1 = Unit.get(ID.GUARD, TEAM.ALLY, "Guard");
+		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER);
+		sorceress = Unit.get(ID.SORCERESS, TEAM.ALLY);
+		guard1 = Unit.get(ID.GUARD, TEAM.ALLY);
 		guard2 = Unit.get(ID.GUARD, TEAM.ALLY, "Guard Captain");
 		bandit1 = Unit.get(ID.FEMALE_BANDIT, TEAM.ENEMY1, "Female bandit #1");
 		bandit2 = Unit.get(ID.MALE_BANDIT, TEAM.ENEMY1, "Male bandit");
