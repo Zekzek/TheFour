@@ -16,6 +16,7 @@ public class GameFrame extends JFrame {
 	
 	private static GameFrame me;
 	private GraphicsPanel graphicsPanel;
+	private PartyPanel partyPanel;
 	private AbilityPanel abilityPanel;
 	private MenuPanel menuPanel;
 	private DialogPanel dialogPanel;
@@ -33,6 +34,9 @@ public class GameFrame extends JFrame {
 		
         graphicsPanel = new GraphicsPanel();
 		layeredPane.add(graphicsPanel, JLayeredPane.DEFAULT_LAYER);
+		
+		partyPanel = new PartyPanel();
+		layeredPane.add(partyPanel, JLayeredPane.PALETTE_LAYER);
 		
 		abilityPanel = new AbilityPanel();
 		layeredPane.add(abilityPanel, JLayeredPane.PALETTE_LAYER);

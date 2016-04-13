@@ -1,6 +1,5 @@
 package view;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.util.ArrayList;
@@ -38,9 +37,6 @@ public class MenuPanel extends JPanel implements IGridClickedListener {
 	
 	public MenuPanel(AbilityPanel abilityPanel) {
 		this.abilityPanel = abilityPanel;
-		setLayout(new BorderLayout());
-		add(nameLabel, BorderLayout.NORTH);
-	
 		abilityList = makeMenuList();
 		abilityList.addListSelectionListener(new ListSelectionListener() {
 			@Override
@@ -56,25 +52,10 @@ public class MenuPanel extends JPanel implements IGridClickedListener {
 				}
 			}
 		});
-//		JPanel abilityScrollWrapper = new JPanel();
-//		add();
-		add(new JScrollPane(abilityList), BorderLayout.SOUTH);
+		add(new JScrollPane(abilityList));
 		
 		targetList = makeMenuList();
-//		targetList.addListSelectionListener(new ListSelectionListener() {
-//			@Override
-//			public void valueChanged(ListSelectionEvent e) {
-//				if (!e.getValueIsAdjusting()) {
-//					if (targetList.getSelectedValue() != null) {
-//						queueSelectedAbilityAtTarget(targetList.getSelectedValue());
-//					}
-//				}
-//			}
-//		});
 		setVisible(false);
-//		JPanel targetScrollWrapper = new JPanel();
-//		targetScrollWrapper.add(new JScrollPane(targetList));
-//		add(targetScrollWrapper, BorderLayout.EAST);
 		GraphicsPanel.addGridClickedListener(this);
 	}
 	

@@ -34,6 +34,7 @@ public class Unit extends TallObject {
 	private static final Font ABILITY_FONT = new Font("Impact", 1, 24);
     
 	private SpriteSheet sheet;
+	private BufferedImage mini;
 	private ImageIcon icon;
 	private SpriteSheet.ANIMATION defaultStance = SpriteSheet.ANIMATION.WALK;
 	private TEAM team;
@@ -49,7 +50,7 @@ public class Unit extends TallObject {
 		super(name, hp);
 		if (sheetPath !=null) {
 			sheet = SpriteSheet.getSpriteSheet(sheetPath);
-			BufferedImage mini = new BufferedImage(SpriteSheet.SPRITE_WIDTH, MINI_SIZE, BufferedImage.TYPE_INT_RGB);
+			mini = new BufferedImage(SpriteSheet.SPRITE_WIDTH, MINI_SIZE, BufferedImage.TYPE_INT_RGB);
 			Graphics g = mini.createGraphics();
 			g.drawImage(sheet.getSprite(SpriteSheet.ANIMATION.WALK, SpriteSheet.FACING.S, 0), 0, -8, 
 					SpriteSheet.SPRITE_WIDTH, SpriteSheet.SPRITE_HEIGHT, null);
@@ -61,6 +62,7 @@ public class Unit extends TallObject {
 	private Unit(Unit otherUnit) {
 		super(otherUnit);
 		this.sheet = otherUnit.sheet;
+		this.mini = otherUnit.mini;
 		this.icon = otherUnit.icon;
 		this.defaultStance = otherUnit.defaultStance;
 		this.team = otherUnit.team;
@@ -320,6 +322,10 @@ public class Unit extends TallObject {
 		return mod;
 	}
 	
+	public BufferedImage getMini() {
+		return mini;
+	}
+	
 	public boolean isAllyOf(Unit unit) {
 		return (isPlayerTeam() && unit.isPlayerTeam()) ||
 				(isEnemyTeam() && unit.isEnemyTeam());
@@ -499,5 +505,9 @@ public class Unit extends TallObject {
 			}
 			return unit;
 		}
+	}
+
+	public Iterator<StatusEffect> getStatusEffects() {
+		return statusEffects.iterator();
 	}
 }

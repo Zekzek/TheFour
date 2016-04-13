@@ -20,6 +20,7 @@ import model.Unit;
 import model.Unit.TEAM;
 import model.World;
 import view.GameFrame;
+import view.PartyPanel;
 
 public class BattleQueue {
 	private static final Comparator<ReadiedAction> SOONEST_READIED_ACTION = new Comparator<ReadiedAction>(){
@@ -71,8 +72,7 @@ public class BattleQueue {
 							}
 							synchronized(me) {
 								if (planningAction == null) {
-									planningAction = readyUnit;
-									GameFrame.makeMenuFor(readyUnit);
+									setActivePlayer(readyUnit);
 								}
 								// if not paused, not already doing something, and not waiting for someone to plan an action
 								if (!pause && !performingAction && !actionQueue.isEmpty()
@@ -129,6 +129,9 @@ public class BattleQueue {
 		if (unit.getTeam() != TEAM.PLAYER) {
 			queueAction(Ability.get(Ability.ID.AI_TURN), unit, unit);
 		}
+		if (unit.getTeam() == TEAM.PLAYER) {
+			PartyPanel.addPlayer(unit);
+		}
 	}
 	
 	public static void removeCombatant(Unit unit, Ability.ID exitAbility) {
@@ -162,6 +165,9 @@ public class BattleQueue {
 		synchronized(me) {
 			lastScheduledTimes.remove(unit);
 			completionTimes.remove(unit);
+		}
+		if (unit.getTeam() == TEAM.PLAYER) {
+			PartyPanel.removePlayer(unit);
 		}
 	}
 	
@@ -535,5 +541,11 @@ public class BattleQueue {
 				System.err.println("Request to finish planning for " + unit + " when " + planningAction + "was planning (IGNORED)");
 			}
 		}
+	}
+
+	public static void setActivePlayer(Unit unit) {
+		planningAction = unit;
+		GameFrame.makeMenuFor(planningAction);
+		PartyPanel.setActivePlayer(planningAction);
 	}
 }
