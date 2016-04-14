@@ -293,7 +293,7 @@ public class Ability {
 			abilities.put(ID.CHALLENGE, challenge);
 			
 			// Movement & Time killers
-			abilities.put(ID.MOVE, new Ability(ID.MOVE, "MOVE", CATEGORY.MOVE, TARGET_TYPE.SELF, TARGET_TYPE.SELF, 
+			abilities.put(ID.MOVE, new Ability(ID.MOVE, "Move", CATEGORY.MOVE, TARGET_TYPE.SELF, TARGET_TYPE.SELF, 
 					EFFECT.MOVE, 500, 0, 1, 0, "Walk, while keeping your guard up", SpriteSheet.ANIMATION.WALK, 1, 0));
 			abilities.put(ID.DELAY, new Ability(ID.DELAY, "Delay", CATEGORY.SKILL, TARGET_TYPE.SELF, EFFECT.MOVE, 
 					1000, 0, "Wait", SpriteSheet.ANIMATION.WALK));

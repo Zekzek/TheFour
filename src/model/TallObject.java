@@ -48,6 +48,9 @@ public abstract class TallObject implements ITargetable {
 	
 	public void damage(int damage) {
 		hp -= damage;
+		if (hp > maxHp) {
+			hp = maxHp;
+		}
 	}
 	
 	public void heal(int amount) {

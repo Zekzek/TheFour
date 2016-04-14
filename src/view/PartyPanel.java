@@ -12,24 +12,26 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
+import model.ReadiedAction;
 import model.StatusEffect;
 import model.Unit;
+import model.Unit.TEAM;
 import controller.BattleQueue;
+import controller.IBattleListener;
 
-public class PartyPanel extends JPanel implements MouseListener{
+public class PartyPanel extends JPanel implements IBattleListener, MouseListener{
 	private static final long serialVersionUID = -8724521387521550507L;
 	private static final int HEIGHT = 27;
 	private static final double ICON_SCALE = 0.85;
 	private static final Color SELECTED_UNIT_COLOR = new Color(100, 100, 0);
 	private static final Color SELECTION_ARROW_COLOR = new Color(255, 255, 0);
-	private static PartyPanel me;
-	private List<Unit> units;
+	
+	private List<Unit> units = new ArrayList<Unit>();
 	private Unit activePlayer;
 	
 	public PartyPanel() {
-		units = new ArrayList<Unit>();
 		addMouseListener(this);
-		me = this;
+		BattleQueue.addBattleListener(this);
 	}
 	
 	@Override
@@ -70,28 +72,8 @@ public class PartyPanel extends JPanel implements MouseListener{
 			transform.translate(0, HEIGHT / ICON_SCALE);
 			count++;
 		}
-		g2.scale(2.0, 2.0);
 	}
 	
-	public static void setActivePlayer(Unit activePlayer) {
-		if (me != null)
-			me.activePlayer = activePlayer;
-	}
-	
-	public static void addPlayer(Unit unit) {
-		if (me != null) {
-			if (!me.units.contains(unit)) {
-				me.units.add(unit);
-			}
-		}
-	}
-	
-	public static void removePlayer(Unit unit) {
-		if (me != null) {
-			me.units.remove(unit);
-		}
-	}
-
 	@Override
 	public void mousePressed(MouseEvent e) {
 		int clickedIndex = e.getY() / HEIGHT;
@@ -100,18 +82,40 @@ public class PartyPanel extends JPanel implements MouseListener{
 	}
 
 	@Override
-	public void mouseClicked(MouseEvent e) {
+	public void mouseClicked(MouseEvent e) {}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {}
+
+	@Override
+	public void mouseExited(MouseEvent e) {}
+
+	@Override
+	public void onUnitAdded(Unit unit) {
+		if (unit.getTeam() == TEAM.PLAYER && !units.contains(unit)) {
+			units.add(unit);
+		}
 	}
 
 	@Override
-	public void mouseReleased(MouseEvent e) {
+	public void onUnitRemoved(Unit unit) {
+		units.remove(unit);
 	}
 
 	@Override
-	public void mouseEntered(MouseEvent e) {
-	}
+	public void onUnitDefeated(Unit unit) {}
 
 	@Override
-	public void mouseExited(MouseEvent e) {
+	public void onTeamDefeated(TEAM team) {}
+
+	@Override
+	public void onChangedActivePlayer(Unit unit) {
+		activePlayer = unit;
 	}
+	
+	@Override
+	public void onActivePlayerAbilityQueueChanged(Iterator<ReadiedAction> actions) {}
 }

@@ -1,11 +1,11 @@
 package controller.plot;
 
-import controller.BattleQueue;
-import view.GraphicsPanel;
-import view.SceneTransition;
 import model.Unit;
 import model.Unit.TEAM;
 import model.World;
+import view.GraphicsPanel;
+import view.SceneTransition;
+import controller.BattleQueue;
 
 public class Plot_Beginnings extends Plot {
 

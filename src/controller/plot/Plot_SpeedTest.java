@@ -25,7 +25,7 @@ public class Plot_SpeedTest extends Plot{
 	
 	@Override
 	protected void initUnits() {
-		//Do nothing, will be created and added in the first scene
+		//Do nothing, will be created and added as part of the speed test
 	}
 	
 	@Override
@@ -80,7 +80,5 @@ public class Plot_SpeedTest extends Plot{
 		};
 		DialogPanel.showDialog(report, theEnd);
 	}
-
-
 }
 

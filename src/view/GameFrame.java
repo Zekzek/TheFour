@@ -5,7 +5,6 @@ import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 
-import model.Unit;
 import model.World;
 import controller.BattleQueue;
 
@@ -19,6 +18,7 @@ public class GameFrame extends JFrame {
 	private PartyPanel partyPanel;
 	private AbilityPanel abilityPanel;
 	private MenuPanel menuPanel;
+	private UnitQueuePanel unitQueuePanel;
 	private DialogPanel dialogPanel;
 	private TitleScreenPanel titleScreenPanel;
 	private JLayeredPane layeredPane;
@@ -44,6 +44,9 @@ public class GameFrame extends JFrame {
 		menuPanel = new MenuPanel(abilityPanel);
 		layeredPane.add(menuPanel, JLayeredPane.PALETTE_LAYER);
 		
+		unitQueuePanel = new UnitQueuePanel();
+		layeredPane.add(unitQueuePanel, JLayeredPane.PALETTE_LAYER);
+		
 		dialogPanel = new DialogPanel();
 		layeredPane.add(dialogPanel, JLayeredPane.MODAL_LAYER);
 		
@@ -63,14 +66,6 @@ public class GameFrame extends JFrame {
 		if (me != null) {
 			me.revalidate();
 			me.repaint();
-		}
-	}
-	
-	public static void makeMenuFor(Unit unit) {
-		if (me != null) {
-			me.menuPanel.makeMenuFor(unit);
-			me.menuPanel.revalidate();
-			me.menuPanel.repaint();
 		}
 	}
 	

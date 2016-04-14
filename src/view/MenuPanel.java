@@ -20,11 +20,14 @@ import model.Ability;
 import model.GridPosition;
 import model.GroundTarget;
 import model.ITargetable;
+import model.ReadiedAction;
 import model.Unit;
+import model.Unit.TEAM;
 import model.World;
 import controller.BattleQueue;
+import controller.IBattleListener;
 
-public class MenuPanel extends JPanel implements IGridClickedListener {
+public class MenuPanel extends JPanel implements IGridClickedListener, IBattleListener {
 	private static final long serialVersionUID = -5640915321281094627L;
 	
 	private final JLabel nameLabel = new JLabel();
@@ -37,6 +40,7 @@ public class MenuPanel extends JPanel implements IGridClickedListener {
 	
 	public MenuPanel(AbilityPanel abilityPanel) {
 		this.abilityPanel = abilityPanel;
+		BattleQueue.addBattleListener(this);
 		abilityList = makeMenuList();
 		abilityList.addListSelectionListener(new ListSelectionListener() {
 			@Override
@@ -61,23 +65,10 @@ public class MenuPanel extends JPanel implements IGridClickedListener {
 	
 	private void queueSelectedAbilityAtTarget(ITargetable target) {
 		BattleQueue.queueAction(activeAbility, activeUnit, target);
-		targetList.setVisible(false);
 		abilityPanel.setVisible(false);
 		abilityList.clearSelection();
 		BattleQueue.finishPlanningAction(activeUnit);
 		updateTargetMenuList(targetList, new ArrayList<ITargetable>().iterator());
-	}
-	
-	public void makeMenuFor(Unit unit) {
-		activeUnit = unit;
-		if (activeUnit == null || activeUnit.getTeam() != Unit.TEAM.PLAYER) {
-			setVisible(false);
-		} else {
-			setVisible(true);
-			activeUnit.convertNameLabel(nameLabel);
-			updateAbilityMenuList(abilityList, activeUnit.getKnownActions());
-		}
-		GraphicsPanel.moveScreenTo(activeUnit, 1000);
 	}
 	
 	private <T> JList<T> makeMenuList() {
@@ -139,4 +130,34 @@ public class MenuPanel extends JPanel implements IGridClickedListener {
 			}
 		}
 	}
+
+	@Override
+	public void onUnitAdded(Unit unit) {}
+
+	@Override
+	public void onUnitRemoved(Unit unit) {}
+
+	@Override
+	public void onUnitDefeated(Unit unit) {}
+
+	@Override
+	public void onTeamDefeated(TEAM team) {}
+
+	@Override
+	public void onChangedActivePlayer(Unit unit) {
+		activeUnit = unit;
+		if (activeUnit == null || activeUnit.getTeam() != Unit.TEAM.PLAYER) {
+			setVisible(false);
+		} else {
+			setVisible(true);
+			activeUnit.convertNameLabel(nameLabel);
+			updateAbilityMenuList(abilityList, activeUnit.getKnownActions());
+		}
+		revalidate();
+		repaint();
+		GraphicsPanel.moveScreenTo(activeUnit, 1000);
+	}
+	
+	@Override
+	public void onActivePlayerAbilityQueueChanged(Iterator<ReadiedAction> actions) {}
 }

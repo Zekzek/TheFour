@@ -2,9 +2,11 @@ package controller.plot;
 
 import java.awt.Color;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import model.Dialog;
+import model.ReadiedAction;
 import model.Structure;
 import model.Unit;
 import model.World;
@@ -12,12 +14,12 @@ import model.Unit.TEAM;
 import view.DialogPanel;
 import view.GraphicsPanel;
 import view.SceneTransition;
-import controller.BattleListenerInterface;
+import controller.IBattleListener;
 import controller.BattleQueue;
 import controller.MapBuilder;
 import controller.TemplateReader;
 
-public abstract class Plot implements BattleListenerInterface{
+public abstract class Plot implements IBattleListener{
 	private static boolean initialized = false;
 	protected static final int SECOND = 1000;
 	private final Map<String, SceneTransition> sceneTransitions = new HashMap<String, SceneTransition>();
@@ -104,10 +106,20 @@ public abstract class Plot implements BattleListenerInterface{
 	}
 	
 	@Override
-	public void onUnitDefeated(Unit unit) {
-	}
+	public void onUnitDefeated(Unit unit) {}
 	
 	@Override
-	public void onTeamDefeated(TEAM team) {
-	}
+	public void onTeamDefeated(TEAM team) {}
+
+	@Override
+	public void onUnitAdded(Unit unit) {}
+
+	@Override
+	public void onUnitRemoved(Unit unit) {}
+
+	@Override
+	public void onChangedActivePlayer(Unit unit) {}
+	
+	@Override
+	public void onActivePlayerAbilityQueueChanged(Iterator<ReadiedAction> actions) {}
 }
