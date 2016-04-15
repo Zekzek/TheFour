@@ -13,7 +13,7 @@ import view.SpriteSheet.TERRAIN;
 public class World {
 	
 	private static Map<GridPosition,TallObject> contents = new ConcurrentHashMap<GridPosition, TallObject>();
-	
+	private static Set<Quest> quests = new HashSet<Quest>();
 	private World() {
 	}
 	
@@ -40,6 +40,9 @@ public class World {
 			contents.put(pos, tallObject);
 			contents.remove(tallObject.getPos());
 			tallObject.updateWorldPos(x, y);
+			for (Quest quest : quests) {
+				quest.checkTrigger(pos);
+			}
 			return true;
 		} else {
 			return false;
@@ -173,5 +176,9 @@ public class World {
 	
 	private static boolean isTraversable(GridPosition pos) {
 		return getTallObject(pos) == null && MapBuilder.getTerrainType(pos) != TERRAIN.WATER;
+	}
+
+	public static void addQueust(Quest quest) {
+		quests.add(quest);
 	}
 }

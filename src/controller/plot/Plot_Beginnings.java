@@ -1,5 +1,7 @@
 package controller.plot;
 
+import model.Dialog;
+import model.Quest;
 import model.Unit;
 import model.Unit.TEAM;
 import model.World;
@@ -31,6 +33,7 @@ public class Plot_Beginnings extends Plot {
 				BattleQueue.addCombatant(defender);
 				
 				World.addTallObject(savior, 69, 23);
+				World.addQueust(new Quest(savior, 2, new Dialog[]{new Dialog(savior, "Hi")}, null));
 			}
 		});
 		
