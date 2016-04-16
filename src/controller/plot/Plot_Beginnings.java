@@ -1,13 +1,16 @@
 package controller.plot;
 
 import model.Dialog;
-import model.Quest;
+import model.GridPosition;
+import model.GroundTarget;
 import model.Unit;
 import model.Unit.TEAM;
 import model.World;
 import view.GraphicsPanel;
 import view.SceneTransition;
 import controller.BattleQueue;
+import controller.ProximityTrigger;
+import controller.Trigger;
 
 public class Plot_Beginnings extends Plot {
 
@@ -33,7 +36,14 @@ public class Plot_Beginnings extends Plot {
 				BattleQueue.addCombatant(defender);
 				
 				World.addTallObject(savior, 69, 23);
-				World.addQueust(new Quest(savior, 2, new Dialog[]{new Dialog(savior, "Hi")}, null));
+				ProximityTrigger lovedOneTrigger = new ProximityTrigger(Trigger.ID.BEGINNINGS_TALK_LOVED_ONE_1, savior, 2, 
+						new Dialog[]{new Dialog(savior, "Hi")}, null);
+				World.addQueust(lovedOneTrigger);
+				ProximityTrigger testQuest = new ProximityTrigger(Trigger.ID.BEGINNINGS_TALK_LOVED_ONE_1, 
+						new GroundTarget(new GridPosition(73, 28)), 2, 
+						new Dialog[]{new Dialog(defender, "TEST: You already talked to your uncle.")}, null);
+				testQuest.setMinAllowed(Trigger.ID.BEGINNINGS_TALK_LOVED_ONE_1, 1);
+				World.addQueust(testQuest);
 			}
 		});
 		
