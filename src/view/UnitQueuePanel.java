@@ -17,11 +17,10 @@ import javax.swing.JPanel;
 import model.ITargetable;
 import model.ReadiedAction;
 import model.Unit;
-import model.Unit.TEAM;
 import controller.BattleQueue;
-import controller.IBattleListener;
+import controller.IPlayerListener;
 
-public class UnitQueuePanel extends JPanel implements MouseListener, IBattleListener {
+public class UnitQueuePanel extends JPanel implements MouseListener, IPlayerListener {
 
 	private static final long serialVersionUID = -6109804051676468346L;
 	private static final int HEIGHT = 27;
@@ -32,7 +31,7 @@ public class UnitQueuePanel extends JPanel implements MouseListener, IBattleList
 	
 	public UnitQueuePanel() {
 		addMouseListener(this);
-		BattleQueue.addBattleListener(this);
+		BattleQueue.addPlayerListener(this);
 	}
 	
 	@Override
@@ -79,18 +78,6 @@ public class UnitQueuePanel extends JPanel implements MouseListener, IBattleList
 
 	@Override
 	public void mouseExited(MouseEvent e) {}
-	
-	@Override
-	public void onUnitAdded(Unit unit) {}
-
-	@Override
-	public void onUnitRemoved(Unit unit) {}
-
-	@Override
-	public void onUnitDefeated(Unit unit) {}
-
-	@Override
-	public void onTeamDefeated(TEAM team) {}
 
 	@Override
 	public void onChangedActivePlayer(Unit unit) {}
@@ -102,4 +89,7 @@ public class UnitQueuePanel extends JPanel implements MouseListener, IBattleList
 			unitActions.add(actions.next());
 		}
 	}
+
+	@Override
+	public void onPlayerUsedAbility(ReadiedAction action) {}
 }

@@ -8,7 +8,7 @@ import view.DialogPanel;
 
 public abstract class Trigger {
 	public static enum ID {
-		BEGINNINGS_TALK_LOVED_ONE_1
+		BEGINNINGS_TALK_LOVED_ONE_1, BEGINNINGS_GUARDS_1, BEGINNINGS_GUARDS_2, BEGINNINGS_GUARDS_3
 	}
 	
 	private static final Map<ID, Integer> TRIGGER_COUNT = new HashMap<ID, Integer>();

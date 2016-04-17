@@ -101,7 +101,7 @@ public class Unit extends TallObject {
 		}
 		super.damage(damage);
 		if (hp <= 0) {
-			BattleQueue.removeCombatant(this, Ability.ID.DEATH);
+			BattleQueue.removeCombatant(this, Ability.get(Ability.ID.DEATH), this);
 		}
 	}
 	

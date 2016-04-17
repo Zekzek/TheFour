@@ -22,12 +22,11 @@ import model.GroundTarget;
 import model.ITargetable;
 import model.ReadiedAction;
 import model.Unit;
-import model.Unit.TEAM;
 import model.World;
 import controller.BattleQueue;
-import controller.IBattleListener;
+import controller.IPlayerListener;
 
-public class MenuPanel extends JPanel implements IGridClickedListener, IBattleListener {
+public class MenuPanel extends JPanel implements IGridClickedListener, IPlayerListener {
 	private static final long serialVersionUID = -5640915321281094627L;
 	
 	private final JLabel nameLabel = new JLabel();
@@ -40,7 +39,7 @@ public class MenuPanel extends JPanel implements IGridClickedListener, IBattleLi
 	
 	public MenuPanel(AbilityPanel abilityPanel) {
 		this.abilityPanel = abilityPanel;
-		BattleQueue.addBattleListener(this);
+		BattleQueue.addPlayerListener(this);
 		abilityList = makeMenuList();
 		abilityList.addListSelectionListener(new ListSelectionListener() {
 			@Override
@@ -132,18 +131,6 @@ public class MenuPanel extends JPanel implements IGridClickedListener, IBattleLi
 	}
 
 	@Override
-	public void onUnitAdded(Unit unit) {}
-
-	@Override
-	public void onUnitRemoved(Unit unit) {}
-
-	@Override
-	public void onUnitDefeated(Unit unit) {}
-
-	@Override
-	public void onTeamDefeated(TEAM team) {}
-
-	@Override
 	public void onChangedActivePlayer(Unit unit) {
 		activeUnit = unit;
 		if (activeUnit == null || activeUnit.getTeam() != Unit.TEAM.PLAYER) {
@@ -160,4 +147,7 @@ public class MenuPanel extends JPanel implements IGridClickedListener, IBattleLi
 	
 	@Override
 	public void onActivePlayerAbilityQueueChanged(Iterator<ReadiedAction> actions) {}
+
+	@Override
+	public void onPlayerUsedAbility(ReadiedAction action) {}
 }

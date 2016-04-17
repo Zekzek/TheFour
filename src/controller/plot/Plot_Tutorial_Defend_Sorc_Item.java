@@ -191,9 +191,9 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 	}
 	
 	private void addRetreatBandits() {
-		BattleQueue.removeCombatant(bandit1, Ability.ID.MOVE);
-		BattleQueue.removeCombatant(bandit2, Ability.ID.MOVE);
-		BattleQueue.removeCombatant(bandit3, Ability.ID.MOVE);
+		BattleQueue.removeCombatant(bandit1, Ability.get(Ability.ID.MOVE), bandit1);
+		BattleQueue.removeCombatant(bandit2, Ability.get(Ability.ID.MOVE), bandit2);
+		BattleQueue.removeCombatant(bandit3, Ability.get(Ability.ID.MOVE), bandit3);
 		World.remove(bandit1);
 		World.remove(bandit2);
 		World.remove(bandit3);

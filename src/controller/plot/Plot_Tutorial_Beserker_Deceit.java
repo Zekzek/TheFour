@@ -180,7 +180,7 @@ public class Plot_Tutorial_Beserker_Deceit extends Plot{
 
 	private void addSolo() {
 		GraphicsPanel.moveScreenTo(200, 10);
-		BattleQueue.removeCombatant(berserker, null);
+		BattleQueue.removeCombatant(berserker, null, null);
 		berserker.setTeam(TEAM.NONCOMBATANT);
 		World.moveObject(berserker, 208, 12);
 		berserker.setFacing(FACING.E);

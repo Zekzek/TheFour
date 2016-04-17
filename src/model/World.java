@@ -7,14 +7,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import view.SpriteSheet.TERRAIN;
 import controller.MapBuilder;
 import controller.ProximityTrigger;
-import view.SpriteSheet.TERRAIN;
+import controller.Trigger;
 
 public class World {
 	
 	private static Map<GridPosition,TallObject> contents = new ConcurrentHashMap<GridPosition, TallObject>();
-	private static Set<ProximityTrigger> quests = new HashSet<ProximityTrigger>();
+	private static Set<Trigger> triggers = new HashSet<Trigger>();
 	private World() {
 	}
 	
@@ -41,8 +42,10 @@ public class World {
 			contents.put(pos, tallObject);
 			contents.remove(tallObject.getPos());
 			tallObject.updateWorldPos(x, y);
-			for (ProximityTrigger quest : quests) {
-				quest.checkTrigger(pos);
+			for (Trigger trigger : triggers) {
+				if (trigger instanceof ProximityTrigger) {
+					((ProximityTrigger)trigger).checkTrigger(pos);
+				}
 			}
 			return true;
 		} else {
@@ -179,7 +182,7 @@ public class World {
 		return getTallObject(pos) == null && MapBuilder.getTerrainType(pos) != TERRAIN.WATER;
 	}
 
-	public static void addQueust(ProximityTrigger quest) {
-		quests.add(quest);
+	public static void addTrigger(Trigger trigger) {
+		triggers.add(trigger);
 	}
 }

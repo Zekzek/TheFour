@@ -118,6 +118,10 @@ public class ReadiedAction {
 			}	
 		}
 	}
+	
+	public boolean sourceAbilityTargetEquals(ReadiedAction otherAction) {
+		return source.equals(otherAction.source) && ability.equals(otherAction.ability) && target.equals(otherAction.target);
+	}
 
 	public Ability getAbility() {
 		return ability;
@@ -135,11 +139,35 @@ public class ReadiedAction {
 		return startTime;
 	}
 
-	public void setDoAtMid(Runnable doAtMid) {
-		this.doAtMid = doAtMid;
+	public void addDoAtMid(Runnable doAtMid) {
+		if (this.doAtMid == null) {
+			this.doAtMid = doAtMid;
+		}
+		else {
+			final Runnable oldDoAtMid = this.doAtMid;
+			this.doAtMid = new Runnable() {
+				@Override
+				public void run() {
+					oldDoAtMid.run();
+					doAtMid.run();
+				}
+			};
+		}
 	}
 
-	public void setDoAtEnd(Runnable doAtEnd) {
-		this.doAtEnd = doAtEnd;
+	public void addDoAtEnd(Runnable doAtEnd) {
+		if (this.doAtEnd == null) {
+			this.doAtEnd = doAtEnd;
+		}
+		else {
+			final Runnable oldDoAtEnd = this.doAtEnd;
+			this.doAtEnd = new Runnable() {
+				@Override
+				public void run() {
+					oldDoAtEnd.run();
+					doAtEnd.run();
+				}
+			};
+		}
 	}
 }

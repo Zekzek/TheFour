@@ -2,20 +2,18 @@ package controller.plot;
 
 import java.awt.Color;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import model.Dialog;
-import model.ReadiedAction;
 import model.Structure;
 import model.Unit;
-import model.World;
 import model.Unit.TEAM;
+import model.World;
 import view.DialogPanel;
 import view.GraphicsPanel;
 import view.SceneTransition;
-import controller.IBattleListener;
 import controller.BattleQueue;
+import controller.IBattleListener;
 import controller.MapBuilder;
 import controller.TemplateReader;
 
@@ -116,10 +114,4 @@ public abstract class Plot implements IBattleListener{
 
 	@Override
 	public void onUnitRemoved(Unit unit) {}
-
-	@Override
-	public void onChangedActivePlayer(Unit unit) {}
-	
-	@Override
-	public void onActivePlayerAbilityQueueChanged(Iterator<ReadiedAction> actions) {}
 }

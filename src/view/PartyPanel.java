@@ -18,8 +18,9 @@ import model.Unit;
 import model.Unit.TEAM;
 import controller.BattleQueue;
 import controller.IBattleListener;
+import controller.IPlayerListener;
 
-public class PartyPanel extends JPanel implements IBattleListener, MouseListener{
+public class PartyPanel extends JPanel implements IBattleListener, IPlayerListener, MouseListener{
 	private static final long serialVersionUID = -8724521387521550507L;
 	private static final int HEIGHT = 27;
 	private static final double ICON_SCALE = 0.85;
@@ -32,6 +33,7 @@ public class PartyPanel extends JPanel implements IBattleListener, MouseListener
 	public PartyPanel() {
 		addMouseListener(this);
 		BattleQueue.addBattleListener(this);
+		BattleQueue.addPlayerListener(this);
 	}
 	
 	@Override
@@ -118,4 +120,7 @@ public class PartyPanel extends JPanel implements IBattleListener, MouseListener
 	
 	@Override
 	public void onActivePlayerAbilityQueueChanged(Iterator<ReadiedAction> actions) {}
+
+	@Override
+	public void onPlayerUsedAbility(ReadiedAction action) {}
 }

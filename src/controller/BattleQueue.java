@@ -40,15 +40,18 @@ public class BattleQueue {
 	private static final LinkedList<ReadiedAction> actionQueue = new LinkedList<ReadiedAction>();
 	private static final Map<Unit,Integer> lastScheduledTimes = new HashMap<Unit, Integer>();
 	private static final Map<Unit,Integer> completionTimes = new HashMap<Unit, Integer>();
-	private static Thread playNextAction;
+
 	private static BattleQueue me;
+	private static Thread playNextAction;
 	private static boolean playingActions = false;
 	private static int battleDuration = 0;
+	private static boolean inBattle = false;
 	private static boolean pause = true;
 	private static boolean performingAction = false;
+	private static Set<Unit.TEAM> activeTeams = new HashSet<Unit.TEAM>();
 	private static Unit activePlayer = null;
 	private static Set<IBattleListener> battleListeners = new HashSet<IBattleListener>();
-	private static Set<Unit.TEAM> activeTeams = new HashSet<Unit.TEAM>();
+	private static Set<IPlayerListener> playerListeners = new HashSet<IPlayerListener>();
 	
 	private static BattleQueue getMe() {
 		if (me == null) {
@@ -66,29 +69,39 @@ public class BattleQueue {
 					BattleQueue me = getMe();
 					while(playingActions) {
 						try {
-							Unit readyUnit = getMostReadyPlayer();
-							if (readyUnit == null) {
-								continue;
-							}
-							synchronized(me) {
-								if (activePlayer == null) {
-									setActivePlayer(readyUnit);
-								}
-								// if not paused, not already doing something, and not waiting for someone to plan an action
-								if (!pause && !performingAction && !actionQueue.isEmpty()
-										&& actionQueue.peek().getStartTime() <= completionTimes.get(readyUnit)) {
-									performNextAction();
-								}
-							}
 							Thread.sleep(PERFORM_ACTION_CHECK_DELAY);
 						} catch (InterruptedException e) {
 							e.printStackTrace();
+						}
+						Unit readyUnit = getMostReadyPlayer();
+						if (readyUnit == null) {
+							continue;
+						}
+						synchronized(me) {
+							if (activePlayer == null) {
+								setActivePlayer(readyUnit);
+							}
+							// if not paused, and not waiting for someone to plan an action
+							if (!pause && !actionQueue.isEmpty()
+									&& actionQueue.peek().getStartTime() <= completionTimes.get(readyUnit)) {
+								if (inBattle) {
+									if (!performingAction) {
+										performNextAction();
+									}
+								} else {
+									while (!actionQueue.isEmpty() && actionQueue.peek().getStartTime() < battleDuration) {
+										performNextAction();
+									}
+									battleDuration += PERFORM_ACTION_CHECK_DELAY;
+								}
+							}
 						}
 					}
 					battleDuration = 0;
 					pause = true;
 					performingAction = false;
 					activePlayer = null;
+					inBattle = false;
 					battleListeners.clear();
 					activeTeams.clear();
 				}
@@ -132,7 +145,7 @@ public class BattleQueue {
 		unitAdded(unit);
 	}
 	
-	public static void removeCombatant(Unit unit, Ability.ID exitAbility) {
+	public static void removeCombatant(Unit unit, Ability exitAbility, ITargetable target) {
 		BattleQueue me = getMe();
 		synchronized(me) {			
 			if (lastScheduledTimes.get(unit) == null) {
@@ -149,8 +162,9 @@ public class BattleQueue {
 			}
 		}
 		if (exitAbility != null) {
-			Ability death = Ability.get(Ability.ID.DEATH);
-			insertFirstAction(death, unit, unit, null, new Runnable() {
+			if (target == null) 
+				target = unit;
+			insertFirstAction(exitAbility, unit, target, null, new Runnable() {
 				@Override
 				public void run() {
 					reportDefeat(unit);
@@ -196,17 +210,27 @@ public class BattleQueue {
 		}
 	}
 	
+	public static void startCombat() {
+		inBattle = true;
+	}
+	
 	/**
 	 * Clear the action queue and remove all combatants from combat
 	 */
 	public static void endCombat() {
-		synchronized(getMe()) {
-			lastScheduledTimes.clear();
-			completionTimes.clear();
-			actionQueue.clear();
+//		synchronized(getMe()) {
+//			lastScheduledTimes.clear();
+//			completionTimes.clear();
+//			actionQueue.clear();
 			//TODO: keep players, but reset to 0?
-		}
-		battleDuration = 0;
+//		}
+//		battleDuration = 0;
+		inBattle = false;
+	}
+	
+	public static void nonCombatantQueueAction(Ability ability, Unit source, ITargetable target) {
+		addCombatant(source);
+		removeCombatant(source, ability, target);
 	}
 	
 	public static void queueAction(Ability ability, Unit source, ITargetable target) {
@@ -246,8 +270,8 @@ public class BattleQueue {
 	public static void insertFirstAction(Ability ability, Unit source, ITargetable target, Runnable doAtMid, Runnable doAtEnd) {
 		delay(source, ability.getDelay());
 		ReadiedAction action = new ReadiedAction(ability, source, target, battleDuration);
-		action.setDoAtMid(doAtMid);
-		action.setDoAtEnd(doAtEnd);
+		action.addDoAtMid(doAtMid);
+		action.addDoAtEnd(doAtEnd);
 		synchronized(getMe()) {
 			System.out.println("\t" + source + "(" + lastScheduledTimes.get(source) + ") has immediately prepared " + ability + " for " + action.getTarget());
 			actionQueue.add(action);
@@ -307,7 +331,8 @@ public class BattleQueue {
 		performingAction = true;
 		synchronized(getMe()) {
 			ReadiedAction nextAction = actionQueue.peek();
-			battleDuration = nextAction.getStartTime();
+			if (inBattle)
+				battleDuration = nextAction.getStartTime();
 			Unit source = nextAction.getSource();
 			if (!isValidAction(nextAction)) {
 				System.out.println(source + " abandoning " + nextAction.getAbility());
@@ -332,6 +357,15 @@ public class BattleQueue {
 						activePlayerAbilityQueuedChanged();
 				}
 			} else {
+				if (source.getTeam() == TEAM.PLAYER) {
+					final ReadiedAction playerAction = nextAction;
+					nextAction.addDoAtEnd(new Runnable() {
+						@Override
+						public void run() {
+							playerUsedAbility(playerAction);
+						}
+					});
+				}
 				nextAction.activate();
 				actionQueue.poll(); //remove from the queue
 				if (source.equals(activePlayer))
@@ -439,6 +473,14 @@ public class BattleQueue {
 		battleListeners.clear();
 	}
 	
+	public static void addPlayerListener(IPlayerListener listener) {
+		playerListeners.add(listener);
+	}
+	
+	public static void clearPlayerListeners() {
+		playerListeners.clear();
+	}
+	
 	private static void unitAdded(Unit unit) {
 		for (IBattleListener listener : battleListeners) {
 			listener.onUnitAdded(unit);
@@ -470,16 +512,22 @@ public class BattleQueue {
 				actions.add(action);
 			}
 		}
-		for (IBattleListener listener : battleListeners) {
+		for (IPlayerListener listener : playerListeners) {
 			listener.onActivePlayerAbilityQueueChanged(actions.iterator());
 		}
 	}
 	
 	private static void changedActivePlayer(Unit unit) {
-		for (IBattleListener listener : battleListeners) {
+		for (IPlayerListener listener : playerListeners) {
 			listener.onChangedActivePlayer(unit);
 		}
 		activePlayerAbilityQueuedChanged();
+	}
+	
+	private static void playerUsedAbility(ReadiedAction action) {
+		for (IPlayerListener listener : playerListeners) {
+			listener.onPlayerUsedAbility(action);
+		}
 	}
 		
 	private class PathingGridPosition extends GridPosition {
