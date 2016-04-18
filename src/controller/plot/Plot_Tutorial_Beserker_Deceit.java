@@ -2,9 +2,9 @@ package controller.plot;
 
 import model.Dialog;
 import model.Structure;
+import model.TallObject.TEAM;
 import model.Unit;
 import model.Unit.ID;
-import model.Unit.TEAM;
 import model.World;
 import view.DialogPanel;
 import view.GraphicsPanel;

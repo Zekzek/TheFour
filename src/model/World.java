@@ -67,20 +67,6 @@ public class World {
 		return subset;
 	}
 	
-	@SuppressWarnings("unchecked")
-	private static <T> ArrayList<T> getSortedLivingContentsWithin(GridRectangle pos, Class<T> theClass) {
-		ArrayList<T> subset = new ArrayList<T>();
-		for (int y = pos.getY(); y < pos.getY() + pos.getHeight(); y++) {
-			for (int x = pos.getX(); x < pos.getX() + pos.getWidth(); x++) {
-				TallObject tallObject = contents.get(new GridPosition(x, y));
-				if (tallObject != null && tallObject.isAlive() && theClass.isAssignableFrom(tallObject.getClass())) {
-					subset.add((T)tallObject);
-				}
-			}
-		}
-		return subset;
-	}
-	
 	public static ArrayList<ITargetable> getTargets(Unit source, Ability ability, GridRectangle rect) {
 		Ability.TARGET_TYPE outcome = ability.getSelectionTargetType();
 		ArrayList<ITargetable> targets = new ArrayList<ITargetable>();
@@ -96,7 +82,7 @@ public class World {
 			return targets;
 		}
 		if (outcome == Ability.TARGET_TYPE.ALL) {
-			return getSortedLivingContentsWithin(rect, ITargetable.class);
+			return getSortedContentsWithin(rect, ITargetable.class);
 		}
 		
 		Unit.TEAM team = source.getTeam();
@@ -125,10 +111,10 @@ public class World {
 			}
 		}
 		
-		ArrayList<Unit> units = getSortedLivingContentsWithin(rect, Unit.class);
-		for (Unit unit : units){
-			if (targetTeams.contains(unit.getTeam())) {
-				targets.add(unit);
+		ArrayList<TallObject> objects = getSortedContentsWithin(rect, TallObject.class);
+		for (TallObject object : objects){
+			if (targetTeams.contains(object.getTeam())) {
+				targets.add(object);
 			}
 		}
 		

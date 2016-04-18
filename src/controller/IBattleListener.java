@@ -1,7 +1,7 @@
 package controller;
 
+import model.TallObject.TEAM;
 import model.Unit;
-import model.Unit.TEAM;
 
 public interface IBattleListener {
 	public void onUnitAdded(Unit unit);

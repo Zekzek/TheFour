@@ -5,8 +5,8 @@ import java.util.Iterator;
 import model.Ability;
 import model.Dialog;
 import model.ReadiedAction;
+import model.TallObject.TEAM;
 import model.Unit;
-import model.Unit.TEAM;
 
 public class BattleTrigger extends Trigger implements IBattleListener, IPlayerListener{
 
@@ -18,21 +18,29 @@ public class BattleTrigger extends Trigger implements IBattleListener, IPlayerLi
 	public BattleTrigger(ID id, Unit unit, Dialog[] dialog, Runnable effect) {
 		super(id, dialog, effect);
 		triggerUnit = unit;
+		BattleQueue.addBattleListener(this);
+		BattleQueue.addPlayerListener(this);
 	}
 	
 	public BattleTrigger(ID id, TEAM team, Dialog[] dialog, Runnable effect) {
 		super(id, dialog, effect);
 		triggerTeam = team;
+		BattleQueue.addBattleListener(this);
+		BattleQueue.addPlayerListener(this);
 	}
 	
 	public BattleTrigger(ID id, Ability.ID abilityId, Dialog[] dialog, Runnable effect) {
 		super(id, dialog, effect);
 		triggerAbilityId = abilityId;
+		BattleQueue.addBattleListener(this);
+		BattleQueue.addPlayerListener(this);
 	}
 	
 	public BattleTrigger(ID id, ReadiedAction action, TEAM team, Dialog[] dialog, Runnable effect) {
 		super(id, dialog, effect);
 		triggerAction = action;
+		BattleQueue.addBattleListener(this);
+		BattleQueue.addPlayerListener(this);
 	}
 
 	@Override

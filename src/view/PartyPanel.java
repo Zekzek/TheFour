@@ -14,8 +14,8 @@ import javax.swing.JPanel;
 
 import model.ReadiedAction;
 import model.StatusEffect;
+import model.TallObject.TEAM;
 import model.Unit;
-import model.Unit.TEAM;
 import controller.BattleQueue;
 import controller.IBattleListener;
 import controller.IPlayerListener;

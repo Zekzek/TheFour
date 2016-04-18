@@ -13,7 +13,7 @@ public class Structure extends TallObject{
 	private static final SpriteSheet STRUCTURE_SHEET = 
 			SpriteSheet.getSpriteSheet(Plot.class.getResource("/resource/img/spriteSheet/objects.png"));
 	public static enum ID {
-		TREE(0,true), WALL(9,true), TREASURE(18,false);
+		TREE(0,true), WALL(9,true), TREASURE(18,false), TARGET_DUMMY(19, false);
 		private final int index; //used by spriteSheet to select an icon
 		private final boolean climateSpecific;
 		
@@ -32,6 +32,7 @@ public class Structure extends TallObject{
 	private Structure(ID id, String name, int hp) {
 		super(name, hp);
 		this.id = id;
+		this.team = TEAM.NONCOMBATANT;
 	}
 
 	private Structure(Structure structure) {
@@ -62,6 +63,7 @@ public class Structure extends TallObject{
 			structures.put(ID.TREE, new Structure(ID.TREE, "Tree", 200));
 			structures.put(ID.WALL, new Structure(ID.WALL, "Wall", 200));
 			structures.put(ID.TREASURE, new Structure(ID.TREASURE, "Treasure", 200));
+			structures.put(ID.TARGET_DUMMY, new Structure(ID.TARGET_DUMMY, "Target Dummy", 2000));
 		}
 
 		public static Structure getStructure(ID id, CLIMATE climate) {

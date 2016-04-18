@@ -12,10 +12,12 @@ import view.SpriteSheet;
 
 
 public abstract class TallObject implements ITargetable {
-
+	public static enum TEAM { PLAYER, ALLY, NONCOMBATANT, ENEMY1, ENEMY2 }
+	
 	private static int nextId = 0;
 	private final int id;
 	protected String name;
+	protected TEAM team;
 	protected GridPosition pos = new GridPosition(0, 0);
 	protected int maxHp;
 	protected int hp;
@@ -38,6 +40,7 @@ public abstract class TallObject implements ITargetable {
 		this.id = nextId;
 		nextId++;
 		this.name = otherObject.name;
+		this.team = otherObject.team;
 		this.maxHp = otherObject.maxHp;
 		this.hp = otherObject.hp;
 		this.baseModifier = new Modifier(otherObject.baseModifier);
@@ -136,6 +139,24 @@ public abstract class TallObject implements ITargetable {
 		}
 	}
 	
+	public boolean isAllyOf(Unit unit) {
+		return (isPlayerTeam() && unit.isPlayerTeam()) ||
+				(isEnemyTeam() && unit.isEnemyTeam());
+	}
+	
+	public boolean isEnemyOf(Unit unit) {
+		return (isPlayerTeam() && unit.isEnemyTeam()) ||
+				(isEnemyTeam() && unit.isPlayerTeam());
+	}
+	
+	public boolean isPlayerTeam() {
+		return team == TEAM.PLAYER || team == TEAM.ALLY;
+	}
+	
+	public boolean isEnemyTeam() {
+		return team == TEAM.ENEMY1 || team == TEAM.ENEMY2;
+	}
+	
 	@Override
 	public String toString() {
 		return name;
@@ -153,6 +174,10 @@ public abstract class TallObject implements ITargetable {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public TEAM getTeam() {
+		return team;
 	}
 	
 	public int getId() {
@@ -182,6 +207,10 @@ public abstract class TallObject implements ITargetable {
 		return drawXOffset;
 	}
 
+	public void setTeam(TEAM team) {
+		this.team = team;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

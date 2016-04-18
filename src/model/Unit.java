@@ -26,7 +26,6 @@ import controller.BattleQueue;
 import controller.plot.Plot;
 
 public class Unit extends TallObject {
-	public static enum TEAM { PLAYER, ALLY, NONCOMBATANT, ENEMY1, ENEMY2 }
 	public static enum ID { DEFENDER, BERSERKER, SORCERESS, ARCHER, GUARD, FEMALE_BANDIT, MALE_BANDIT, ANNOUNCER, 
 		FEMALE_GOBLIN, MALE_GOBLIN, GOBLIN_CHIEF, GIRL, BOY }
 	private static final int MINI_SIZE = 32;
@@ -37,7 +36,6 @@ public class Unit extends TallObject {
 	private BufferedImage mini;
 	private ImageIcon icon;
 	private SpriteSheet.ANIMATION defaultStance = SpriteSheet.ANIMATION.WALK;
-	private TEAM team;
 	private SpriteSheet.FACING facing = SpriteSheet.FACING.S;
 	private int animationSequence = 0;
 	private SpriteSheet.ANIMATION stance = SpriteSheet.ANIMATION.WALK;
@@ -65,7 +63,6 @@ public class Unit extends TallObject {
 		this.mini = otherUnit.mini;
 		this.icon = otherUnit.icon;
 		this.defaultStance = otherUnit.defaultStance;
-		this.team = otherUnit.team;
 		this.facing = otherUnit.facing;
 		this.animationSequence = otherUnit.animationSequence;
 		this.stance = otherUnit.stance;
@@ -326,24 +323,6 @@ public class Unit extends TallObject {
 		return mini;
 	}
 	
-	public boolean isAllyOf(Unit unit) {
-		return (isPlayerTeam() && unit.isPlayerTeam()) ||
-				(isEnemyTeam() && unit.isEnemyTeam());
-	}
-	
-	public boolean isEnemyOf(Unit unit) {
-		return (isPlayerTeam() && unit.isEnemyTeam()) ||
-				(isEnemyTeam() && unit.isPlayerTeam());
-	}
-	
-	public boolean isPlayerTeam() {
-		return team == TEAM.PLAYER || team == TEAM.ALLY;
-	}
-	
-	public boolean isEnemyTeam() {
-		return team == TEAM.ENEMY1 || team == TEAM.ENEMY2;
-	}
-	
 	public static Unit get(ID id, TEAM team) {
 		return UnitFactory.getUnit(id, team, null);
 	}
@@ -360,16 +339,8 @@ public class Unit extends TallObject {
 		this.facing = facing;
 	}
 		
-	public TEAM getTeam() {
-		return team;
-	}
-	
 	public Iterator<Ability> getKnownActions() {
 		return learnedActions.iterator();
-	}
-	
-	public void setTeam(TEAM team) {
-		this.team = team;
 	}
 	
 	private static class UnitFactory {

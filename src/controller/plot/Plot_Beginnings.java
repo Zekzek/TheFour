@@ -3,8 +3,9 @@ package controller.plot;
 import model.Ability;
 import model.Dialog;
 import model.GroundTarget;
+import model.Structure;
+import model.TallObject.TEAM;
 import model.Unit;
-import model.Unit.TEAM;
 import model.World;
 import view.GraphicsPanel;
 import view.SceneTransition;
@@ -18,6 +19,7 @@ public class Plot_Beginnings extends Plot {
 
 	private Unit defender, savior, guardCaptain;
 	private Unit[] guards;
+	private Structure targetDummy;
 	
 	@Override
 	protected void initUnits() {
@@ -42,8 +44,10 @@ public class Plot_Beginnings extends Plot {
 		guards[2].setName("Guard Meriel");
 		guards[3].setName("Guard Nob");
 		
-		//TODO: add target dummy
-		
+		targetDummy = Structure.get(Structure.ID.TARGET_DUMMY, null);
+		targetDummy.setName("Old Stuffy");
+		targetDummy.setTeam(TEAM.ENEMY1);
+		World.addTallObject(targetDummy, 59, 17);
 	}
 
 	@Override
@@ -89,7 +93,7 @@ public class Plot_Beginnings extends Plot {
 							new Dialog(guards[0], "Pssh, what's with that ridiculous shield?"),
 							new Dialog(guards[1], "Haha, ya, he must be a bit of a coward."),
 							new Dialog(guardCaptain, "Enough! For now, let's review the ability I showed you yesterday. "
-									+ "Show me what your Guard Attack can do to old stuffy, here.")
+									+ "Show me what your Guard Attack can do to " + targetDummy.getName() + ", here.")
 						}, null);
 				World.addTrigger(guardCaptainTrigger);
 				

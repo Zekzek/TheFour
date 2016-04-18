@@ -10,9 +10,9 @@ import java.util.Set;
 
 import model.Ability;
 import model.ReadiedAction;
+import model.TallObject.TEAM;
 import model.Unit;
 import model.Unit.ID;
-import model.Unit.TEAM;
 
 import org.junit.After;
 import org.junit.BeforeClass;

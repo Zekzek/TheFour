@@ -18,8 +18,8 @@ import model.GroundTarget;
 import model.ITargetable;
 import model.ReadiedAction;
 import model.TallObject;
+import model.TallObject.TEAM;
 import model.Unit;
-import model.Unit.TEAM;
 import model.World;
 
 public class BattleQueue {
