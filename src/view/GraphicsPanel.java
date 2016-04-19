@@ -354,8 +354,19 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 
 	private void setHoverPosition(MouseEvent e) {
 		double scale = getScale();
-		hoverPosition = new GridPosition(screenPos.getX() + (int)(e.getX()/scale/CELL_WIDTH), 
-				screenPos.getY() + (int)(e.getY()/scale/TERRAIN_CELL_HEIGHT));
+		int drawnHeight = (int) (screenPos.getHeight() * TERRAIN_CELL_HEIGHT * scale);
+	    int drawnWidth = (int) (screenPos.getWidth() * CELL_WIDTH * scale);
+	    int horizontalPadding = (getWidth() - drawnWidth)/2;
+	    int verticalPadding = (getHeight() - drawnHeight)/2;
+	    if (horizontalPadding < 0)
+	    	horizontalPadding = 0;
+	    if (verticalPadding < 0)
+	    	verticalPadding = 0;
+	    
+		//TODO: adjust for borders
+		
+		hoverPosition = new GridPosition(screenPos.getX() + (int)((e.getX() - horizontalPadding) / scale / CELL_WIDTH), 
+				screenPos.getY() + (int)((e.getY() - verticalPadding) / scale / TERRAIN_CELL_HEIGHT));
 	}
 	
 	@Override
