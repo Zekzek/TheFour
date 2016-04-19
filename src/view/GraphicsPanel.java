@@ -54,7 +54,7 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	private static final Map<AMBIENT_LIGHT, Color> LIGHT_COLORS = new HashMap<AMBIENT_LIGHT, Color>();
 	private static final Set<GroundTarget> groundTargets = new HashSet<GroundTarget>();
 	private static final Set<IGridClickedListener> gridClickedListeners = new HashSet<IGridClickedListener>();
-	private static final Font fadeScreenFont = new Font ("MV Boli", Font.BOLD , 24);
+	private static final Font fadeScreenFont = new Font ("MV Boli", Font.BOLD , 20);
 	private static final Thread repaint = new Thread() {
 		@Override
 		public void run() {
@@ -101,11 +101,21 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	@Override
 	public void paint(Graphics g) {
 		Graphics2D g2 = (Graphics2D)g;
+		AffineTransform savedTransorm = g2.getTransform();
 		
 		// Convert to world space
 		double scale = getScale();
-		g2.scale(scale, scale);
-		AffineTransform savedTransorm = g2.getTransform();
+		int drawnHeight = (int) (screenPos.getHeight() * TERRAIN_CELL_HEIGHT * scale);
+	    int drawnWidth = (int) (screenPos.getWidth() * CELL_WIDTH * scale);
+	    int horizontalPadding = (getWidth() - drawnWidth)/2;
+	    int verticalPadding = (getHeight() - drawnHeight)/2;
+	    if (horizontalPadding < 0)
+	    	horizontalPadding = 0;
+	    if (verticalPadding < 0)
+	    	verticalPadding = 0;
+	    
+	    g2.translate(horizontalPadding, verticalPadding);
+	    g2.scale(scale, scale);
 		
 		if (focusUnit != null) {
 			if (moveScreenStartPosition != null) {
@@ -158,29 +168,26 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 		}
 		
 	    //Draw the shadow gradient
-	    g2.setPaint(LIGHT_COLORS.get(ambientLight));
-	    g2.fill(darkArea);
 	    g2.setTransform(savedTransorm);
-		GradientPaint nearToFar = new GradientPaint(screenPos.getX(), screenPos.getY() + screenPos.getHeight()  * TERRAIN_CELL_HEIGHT,
-	    		CLOSE_COLOR, screenPos.getX(), screenPos.getY(), FAR_COLOR);
+		g2.setPaint(LIGHT_COLORS.get(ambientLight));
+	    g2.fill(darkArea);
+	    GradientPaint nearToFar = new GradientPaint(0, drawnHeight, CLOSE_COLOR, 0, 0, FAR_COLOR);
 	    g2.setPaint(nearToFar);
-	    g2.fillRect(0, 0, screenPos.getWidth() * CELL_WIDTH, 
-	    		screenPos.getHeight() * TERRAIN_CELL_HEIGHT);
+	    g2.fillRect(horizontalPadding, verticalPadding, drawnWidth, drawnHeight);
 	    
 	    //Draw fade to black
 	    g2.setPaint(fade);
-	    g2.fillRect(0, 0, screenPos.getWidth() * CELL_WIDTH, 
-	    		screenPos.getHeight() * TERRAIN_CELL_HEIGHT);
+	    g2.fillRect(horizontalPadding, verticalPadding, drawnWidth, drawnHeight);
 	    if (fadeScreenText != null) {
-	    	drawCenteredText(g2, fadeScreenText, screenPos.getWidth() * CELL_WIDTH / 2, 
-		    		screenPos.getHeight() * TERRAIN_CELL_HEIGHT / 2, fadeScreenFont, Color.WHITE, null);
+	    	drawCenteredText(g2, fadeScreenText, getWidth() / 2, getHeight() / 2, fadeScreenFont, Color.WHITE, null);
 	    }
 	    
 	    //Black out edges
 	    g2.setColor(Color.BLACK);
-	    g2.fillRect(0, screenPos.getHeight() * TERRAIN_CELL_HEIGHT,
-	    		screenPos.getWidth() * CELL_WIDTH, screenPos.getHeight() * TERRAIN_CELL_HEIGHT);
-	    //TODO: calculate distance to bottom of screen instead of screen height
+	    g2.fillRect(0, 0, getWidth(), verticalPadding);
+	    g2.fillRect(0, drawnHeight + verticalPadding, getWidth(), verticalPadding);
+	    g2.fillRect(0, 0, horizontalPadding, getHeight());
+	    g2.fillRect(drawnWidth + horizontalPadding, 0, horizontalPadding, getHeight());
 	}
 	
 	public static void drawCenteredText(Graphics2D g, String text, int x, int y, Font font, Color fontColor, Color outlineColor) {
