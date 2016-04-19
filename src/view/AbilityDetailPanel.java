@@ -9,14 +9,14 @@ import javax.swing.SwingConstants;
 
 import model.Ability;
 
-public class AbilityPanel extends JPanel {
+public class AbilityDetailPanel extends JPanel {
 	private static final long serialVersionUID = -5640915321281094627L;
 	
 	private JLabel damageLabel;
 	private JLabel delayLabel;
 	private JTextArea specialLabel;
 	
-	public AbilityPanel() {
+	public AbilityDetailPanel() {
 		this.setLayout(new BorderLayout());
 		JPanel upperPanel = new JPanel(new BorderLayout());
 		damageLabel = new JLabel("Damage: ", SwingConstants.CENTER);

@@ -16,8 +16,8 @@ public class GameFrame extends JFrame {
 	private static GameFrame me;
 	private GraphicsPanel graphicsPanel;
 	private PartyPanel partyPanel;
-	private AbilityPanel abilityPanel;
-	private MenuPanel menuPanel;
+	private AbilityDetailPanel abilityPanel;
+	private AbilitySelectionPanel menuPanel;
 	private UnitQueuePanel unitQueuePanel;
 	private DialogPanel dialogPanel;
 	private TitleScreenPanel titleScreenPanel;
@@ -38,10 +38,10 @@ public class GameFrame extends JFrame {
 		partyPanel = new PartyPanel();
 		layeredPane.add(partyPanel, JLayeredPane.PALETTE_LAYER);
 		
-		abilityPanel = new AbilityPanel();
+		abilityPanel = new AbilityDetailPanel();
 		layeredPane.add(abilityPanel, JLayeredPane.PALETTE_LAYER);
 		
-		menuPanel = new MenuPanel(abilityPanel);
+		menuPanel = new AbilitySelectionPanel(abilityPanel);
 		layeredPane.add(menuPanel, JLayeredPane.PALETTE_LAYER);
 		
 		unitQueuePanel = new UnitQueuePanel();
@@ -100,7 +100,7 @@ public class GameFrame extends JFrame {
 		World.reset();
 		if (me != null) {
 			me.layeredPane.remove(me.menuPanel);
-			me.menuPanel = new MenuPanel(me.abilityPanel);
+			me.menuPanel = new AbilitySelectionPanel(me.abilityPanel);
 			me.layeredPane.add(me.menuPanel, JLayeredPane.PALETTE_LAYER);
 			me.titleScreenPanel.setVisible(true);
 		}

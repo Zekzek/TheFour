@@ -2,12 +2,11 @@ package view;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Iterator;
 
 import javax.swing.DefaultListModel;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -26,20 +25,20 @@ import model.World;
 import controller.BattleQueue;
 import controller.IPlayerListener;
 
-public class MenuPanel extends JPanel implements IGridClickedListener, IPlayerListener {
+public class AbilitySelectionPanel extends JPanel implements IGridClickedListener, IPlayerListener {
 	private static final long serialVersionUID = -5640915321281094627L;
 	
-	private final JLabel nameLabel = new JLabel();
 	private JList<Ability> abilityList;
-	private JList<ITargetable> targetList;
-	
+	private AbilityDetailPanel abilityDetailPanel;
+
+	private ArrayList<ITargetable> validTargets;
 	private Unit activeUnit;
 	private Ability activeAbility;
-	private AbilityPanel abilityPanel;
 	
-	public MenuPanel(AbilityPanel abilityPanel) {
-		this.abilityPanel = abilityPanel;
+	public AbilitySelectionPanel(AbilityDetailPanel abilityDetailPanel) {
+		this.abilityDetailPanel = abilityDetailPanel;
 		BattleQueue.addPlayerListener(this);
+		setLayout(new GridLayout(1,1));
 		abilityList = makeMenuList();
 		abilityList.addListSelectionListener(new ListSelectionListener() {
 			@Override
@@ -47,27 +46,18 @@ public class MenuPanel extends JPanel implements IGridClickedListener, IPlayerLi
 				if (!e.getValueIsAdjusting()) {
 					if (abilityList.getSelectedValue() != null) {
 						activeAbility = abilityList.getSelectedValue();
-						abilityPanel.updateDisplay(activeAbility);
-						abilityPanel.setVisible(true);
-						targetList.setVisible(true);
-						updateTargetMenuList(targetList, World.getTargets(activeUnit, activeAbility, GraphicsPanel.getScreenRectangle()).iterator());
+						abilityDetailPanel.updateDisplay(activeAbility);
+						abilityDetailPanel.setVisible(true);
+						updateTargets();
 					}
 				}
 			}
 		});
 		add(new JScrollPane(abilityList));
 		
-		targetList = makeMenuList();
+		validTargets = new ArrayList<ITargetable>();
 		setVisible(false);
 		GraphicsPanel.addGridClickedListener(this);
-	}
-	
-	private void queueSelectedAbilityAtTarget(ITargetable target) {
-		BattleQueue.queueAction(activeAbility, activeUnit, target);
-		abilityPanel.setVisible(false);
-		abilityList.clearSelection();
-		BattleQueue.finishPlanningAction(activeUnit);
-		updateTargetMenuList(targetList, new ArrayList<ITargetable>().iterator());
 	}
 	
 	private <T> JList<T> makeMenuList() {
@@ -75,30 +65,18 @@ public class MenuPanel extends JPanel implements IGridClickedListener, IPlayerLi
 		JList<T> list = new JList<T>(listModel);
 		list.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		list.setLayoutOrientation(JList.VERTICAL);
-		list.setVisibleRowCount(4);
+		list.setVisibleRowCount(5);
 		list.setBorder(new BevelBorder(BevelBorder.RAISED));
 		list.setBackground(Color.LIGHT_GRAY);
-		list.setPreferredSize(new Dimension(getSize().width/2, getSize().height));
 		return list;
 	}
 	
-	private void updateTargetMenuList(JList<ITargetable> list, Iterator<ITargetable> menuItems) {
-		DefaultListModel<ITargetable> listModel = (DefaultListModel<ITargetable>) list.getModel();
-		Enumeration<ITargetable> oldTargets = listModel.elements();
-		while (oldTargets.hasMoreElements()) {
-			ITargetable oldTarget = oldTargets.nextElement();
-			oldTarget.setInTargetList(false);
-		}
-		listModel.clear();
-		while(menuItems.hasNext()) {
-			ITargetable target = menuItems.next();
-			listModel.addElement(target);
-			target.setInTargetList(true);
-			if (target instanceof GroundTarget) {
-				GraphicsPanel.addGroundTarget((GroundTarget)target);
-			}
-		}
-		list.setPreferredSize(new Dimension(getSize().width/2, getSize().height));
+	private void queueSelectedAbilityAtTarget(ITargetable target) {
+		BattleQueue.queueAction(activeAbility, activeUnit, target);
+		abilityDetailPanel.setVisible(false);
+		abilityList.clearSelection();
+		BattleQueue.finishPlanningAction(activeUnit);
+		clearTargets();
 	}
 	
 	private void updateAbilityMenuList(JList<Ability> list, Iterator<Ability> menuItems) {
@@ -110,11 +88,28 @@ public class MenuPanel extends JPanel implements IGridClickedListener, IPlayerLi
 		list.setPreferredSize(new Dimension(getSize().width/2, getSize().height));
 	}
 	
+	private void clearTargets() {
+		for (ITargetable oldTarget : validTargets) {
+			oldTarget.setInTargetList(false);
+		}
+		validTargets.clear();
+	}
+	
+	private void updateTargets() {
+		clearTargets();
+		validTargets = World.getTargets(activeUnit, activeAbility, GraphicsPanel.getScreenRectangle());
+		for (ITargetable target : validTargets) {
+			target.setInTargetList(true);
+			if (target instanceof GroundTarget) {
+				GraphicsPanel.addGroundTarget((GroundTarget)target);
+			}
+		}
+	}
+	
 	@Override
 	public void setEnabled(boolean enabled) {
 		super.setEnabled(enabled);
 		abilityList.setEnabled(enabled);
-		targetList.setEnabled(enabled);
 	}
 
 	@Override
@@ -137,7 +132,6 @@ public class MenuPanel extends JPanel implements IGridClickedListener, IPlayerLi
 			setVisible(false);
 		} else {
 			setVisible(true);
-			activeUnit.convertNameLabel(nameLabel);
 			updateAbilityMenuList(abilityList, activeUnit.getKnownActions());
 		}
 		revalidate();
