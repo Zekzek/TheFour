@@ -46,7 +46,8 @@ public class Ability {
 	
 	private int moveDistance;
 	private int delayOpponent;
-	private Set<StatusEffect> statusEffects = new HashSet<StatusEffect>();
+	private Set<StatusEffect> statusEffectsToTarget = new HashSet<StatusEffect>();
+	private Set<StatusEffect> statusEffectsToSource = new HashSet<StatusEffect>();
 	
 	private JLabel label;
 		
@@ -214,8 +215,11 @@ public class Ability {
 	public JLabel getLabel() {
 		return label;
 	}
-	public Iterator<StatusEffect> getStatusEffectIterator() {
-		return statusEffects.iterator();
+	public Iterator<StatusEffect> getStatusToTargetEffectIterator() {
+		return statusEffectsToTarget.iterator();
+	}
+	public Iterator<StatusEffect> getStatusToSourceEffectIterator() {
+		return statusEffectsToSource.iterator();
 	}
 
 	private static class AbilityFactory {
@@ -244,21 +248,21 @@ public class Ability {
 			Ability guardAttack = new Ability(ID.GUARD_ATTACK, "Guard Attack", CATEGORY.ATTACK, Ability.TARGET_TYPE.ENEMY,
 					EFFECT.DEBUFF, 1000, 23, "A basic attack used by guards. It disorients the target, making it difficult to attack effectively",
 					SpriteSheet.ANIMATION.MELEE);
-			guardAttack.statusEffects.add(new StatusEffect(StatusEffect.ID.DAMAGE_DOWN, 1500));
+			guardAttack.statusEffectsToTarget.add(new StatusEffect(StatusEffect.ID.DAMAGE_DOWN, 1500));
 			abilities.put(ID.GUARD_ATTACK, guardAttack);
 			Ability ignite = new Ability(ID.BURNING_ATTACK, "Ignite", CATEGORY.ATTACK, TARGET_TYPE.ENEMY, 
 					EFFECT.DEBUFF, 1200, 25, "Set the enemy ablaze", ANIMATION.RANGE);
-			ignite.statusEffects.add(new StatusEffect(StatusEffect.ID.BURNING, 8000));
+			ignite.statusEffectsToTarget.add(new StatusEffect(StatusEffect.ID.BURNING, 8000));
 			abilities.put(ID.BURNING_ATTACK, ignite);
 			Ability pinningAttack = new Ability(ID.PINNING_ATTACK, "Pinning Shot", CATEGORY.ATTACK, TARGET_TYPE.ENEMY,
 					EFFECT.DEBUFF, 1400, 30, "An attack aimed at the legs. It is designed to prevent movement", ANIMATION.RANGE);
-			pinningAttack.statusEffects.add(new StatusEffect(StatusEffect.ID.BIND, 2500));
+			pinningAttack.statusEffectsToTarget.add(new StatusEffect(StatusEffect.ID.BIND, 2500));
 			abilities.put(ID.PINNING_ATTACK, pinningAttack);
 			
 			// Weapon-specific attacks
 			Ability shieldBash = new Ability(ID.SHIELD_BASH, "Shield Bash", CATEGORY.SHIELD, TARGET_TYPE.ENEMY, TARGET_TYPE.ENEMY,
 					EFFECT.DEBUFF, 1400, 25, 1, 0, "Briefly disorients the target", SpriteSheet.ANIMATION.MELEE, 0, 500);
-			shieldBash.statusEffects.add(new StatusEffect(StatusEffect.ID.SLOW, 10000));
+			shieldBash.statusEffectsToTarget.add(new StatusEffect(StatusEffect.ID.SLOW, 10000));
 			abilities.put(ID.SHIELD_BASH, shieldBash);
 			Ability barrage = new Ability(ID.BARRAGE, "Barrage", CATEGORY.SHOT, TARGET_TYPE.GROUND, TARGET_TYPE.ENEMY, 
 					EFFECT.ATTACK, 1500, 20, 1, 2, "Pepper an area with shots", ANIMATION.RANGE);
@@ -273,13 +277,13 @@ public class Ability {
 			Ability knockdown = new Ability(ID.KNOCKDOWN_STRIKE, "Knockdown", CATEGORY.STRIKE, TARGET_TYPE.ENEMY, TARGET_TYPE.ENEMY,
 					EFFECT.DEBUFF, 2000, 10, 1, 0, "A forceful, ramming attack that will bring your oponent to his knees",
 					ANIMATION.MELEE, 0, 800);
-			knockdown.statusEffects.add(new StatusEffect(StatusEffect.ID.KNOCKDOWN, 800));
+			knockdown.statusEffectsToTarget.add(new StatusEffect(StatusEffect.ID.KNOCKDOWN, 800));
 			abilities.put(ID.KNOCKDOWN_STRIKE, knockdown);
 
 			// Spells
 			Ability vigor = new Ability(ID.VIGOR, "Vigor", CATEGORY.SPELL, TARGET_TYPE.SELF, EFFECT.BUFF, 
 					1000, -10, "Gradually recover health over a long period of time", ANIMATION.CAST);
-			vigor.statusEffects.add(new StatusEffect(StatusEffect.ID.REGEN, 20000));
+			vigor.statusEffectsToTarget.add(new StatusEffect(StatusEffect.ID.REGEN, 20000));
 			abilities.put(ID.VIGOR, vigor);
 			
 			// Skills
@@ -289,7 +293,7 @@ public class Ability {
 			abilities.put(ID.SNARE, snare);
 			Ability challenge = new Ability(ID.CHALLENGE, "Challenge", CATEGORY.SKILL, TARGET_TYPE.ENEMY, EFFECT.ATTACK, 
 					300, 0, 10, 0, "'Discourage' your opponent from attacking your allies.", ANIMATION.POINT);
-			challenge.statusEffects.add(new StatusEffect(StatusEffect.ID.MURDEROUS_INTENT, 10000));
+			challenge.statusEffectsToTarget.add(new StatusEffect(StatusEffect.ID.MURDEROUS_INTENT, 10000));
 			abilities.put(ID.CHALLENGE, challenge);
 			
 			// Movement & Time killers

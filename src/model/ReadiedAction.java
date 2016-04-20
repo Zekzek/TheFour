@@ -50,6 +50,9 @@ public class ReadiedAction {
 	
 	public void activate() {
 		System.out.println(source + " uses " + ability + " on " + target);
+		if (!BattleQueue.isInBattle()) {
+			source.heal(source.getMaxHp() / 10 * ability.getDelay() / 1000);		
+		}
 		activateAtStart();
 		SCHEDULE_ACTIVATE_AT_MID.start();
 		SCHEDULE_ACTIVATE_AT_END.start();
@@ -109,7 +112,7 @@ public class ReadiedAction {
 				targetObject.damage(ability.calcDamage(source.getModifier(), targetObject.getModifier()));
 				if (targetObject.isAlive() && targetObject instanceof Unit) {
 					Unit targetUnit = (Unit) targetObject;
-					Iterator<StatusEffect> appliedStatusEffects = ability.getStatusEffectIterator();
+					Iterator<StatusEffect> appliedStatusEffects = ability.getStatusToTargetEffectIterator();
 					while (appliedStatusEffects.hasNext()) {
 						targetUnit.addStatusEffect(new StatusEffect(appliedStatusEffects.next()));
 					}

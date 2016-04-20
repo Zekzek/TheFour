@@ -568,6 +568,10 @@ public class BattleQueue {
 			}
 		}
 	}
+
+	public static boolean isInBattle() {
+		return inBattle;
+	}
 	
 	public static Iterator<ReadiedAction> getActionQueueIterator() {
 		return actionQueue.iterator();

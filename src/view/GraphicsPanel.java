@@ -362,17 +362,12 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	    	horizontalPadding = 0;
 	    if (verticalPadding < 0)
 	    	verticalPadding = 0;
-	    
-		//TODO: adjust for borders
-		
 		hoverPosition = new GridPosition(screenPos.getX() + (int)((e.getX() - horizontalPadding) / scale / CELL_WIDTH), 
 				screenPos.getY() + (int)((e.getY() - verticalPadding) / scale / TERRAIN_CELL_HEIGHT));
 	}
 	
 	@Override
-	public void mouseDragged(MouseEvent e) {
-		//Do nothing
-	}
+	public void mouseDragged(MouseEvent e) {}
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
@@ -388,22 +383,14 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	}
 
 	@Override
-	public void mousePressed(MouseEvent e) {
-		//Do nothing
-	}
+	public void mousePressed(MouseEvent e) {}
 
 	@Override
-	public void mouseReleased(MouseEvent e) {
-		//Do nothing
-	}
+	public void mouseReleased(MouseEvent e) {}
 
 	@Override
-	public void mouseEntered(MouseEvent e) {
-		//Do nothing
-	}
+	public void mouseEntered(MouseEvent e) {}
 
 	@Override
-	public void mouseExited(MouseEvent e) {
-		//Do nothing
-	}
+	public void mouseExited(MouseEvent e) {}
 }

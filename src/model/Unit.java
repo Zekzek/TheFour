@@ -175,7 +175,7 @@ public class Unit extends TallObject {
 		int damageBonus = ability.getDamage();
 		int debuffBonus = 0;
 		if (target instanceof Unit) {
-		Iterator<StatusEffect> effects = ability.getStatusEffectIterator();
+		Iterator<StatusEffect> effects = ability.getStatusToTargetEffectIterator();
 			Unit targetUnit = (Unit)target;
 			while (effects.hasNext()) {
 				if (!targetUnit.statusEffects.contains(effects.next())) {

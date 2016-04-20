@@ -26,7 +26,7 @@ public class AbilityTest {
 			assertNotNull(ability.getStance());
 			assertNotNull(ability.getMoveDistance());
 			assertNotNull(ability.getDelayOpponent());
-			assertNotNull(ability.getStatusEffectIterator());
+			assertNotNull(ability.getStatusToTargetEffectIterator());
 		}
 	}
 }
