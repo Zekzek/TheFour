@@ -175,6 +175,9 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	    g2.setPaint(nearToFar);
 	    g2.fillRect(horizontalPadding, verticalPadding, drawnWidth, drawnHeight);
 	    
+	    //Draw quest arrow
+	    drawQuestArrow(g2, horizontalPadding, verticalPadding);
+	    
 	    //Draw fade to black
 	    g2.setPaint(fade);
 	    g2.fillRect(horizontalPadding, verticalPadding, drawnWidth, drawnHeight);
@@ -188,6 +191,43 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	    g2.fillRect(0, drawnHeight + verticalPadding, getWidth(), verticalPadding);
 	    g2.fillRect(0, 0, horizontalPadding, getHeight());
 	    g2.fillRect(drawnWidth + horizontalPadding, 0, horizontalPadding, getHeight());
+	}
+	
+	private void drawQuestArrow(Graphics2D g2, int horizontalPadding, int verticalPadding) {
+		int arrowWidth = 40;
+		int arrowHeight = 15;
+		
+		GridPosition targetPos = World.getQuestTargetPosition();
+		int currentPosX = screenPos.getX() + screenPos.getWidth()/2;
+		int currentPosY = screenPos.getY() + screenPos.getHeight()/2;
+		
+		int dx = targetPos.getX() - currentPosX;
+		int dy = targetPos.getY() - currentPosY;
+		int horizontalDistance = dx < 0 ? -dx : dx;
+		int verticalDistance = dy < 0 ? -dy : dy;
+		
+		g2.setColor(Color.RED);
+		
+		if (horizontalDistance > verticalDistance) {
+			if (dx < 0) { //Left
+				g2.fillPolygon(new int[]{horizontalPadding, horizontalPadding + arrowHeight, horizontalPadding + arrowHeight}, 
+						new int[] {getHeight()/2, getHeight()/2 - arrowWidth/2, getHeight()/2 + arrowWidth/2}, 3);
+			} else { //Right
+				g2.fillPolygon(new int[]{getWidth() - horizontalPadding, getWidth() - horizontalPadding - arrowHeight,
+						getWidth() - horizontalPadding - arrowHeight}, 
+						new int[] {getHeight()/2, getHeight()/2 - arrowWidth/2, getHeight()/2 + arrowWidth/2}, 3);
+			}
+		} else {
+			if (dy < 0) { //Top
+				g2.fillPolygon(new int[]{getWidth()/2, getWidth()/2 - arrowWidth/2, getWidth()/2 + arrowWidth/2}, 
+						new int[] {verticalPadding, verticalPadding + arrowHeight, verticalPadding + arrowHeight}, 3);
+			} else if (dy > 0) { //Bottom
+				g2.fillPolygon(new int[]{getWidth()/2, getWidth()/2 - arrowWidth/2, getWidth()/2 + arrowWidth/2}, 
+						new int[] {getHeight() - verticalPadding, getHeight() - verticalPadding - arrowHeight, 
+						getHeight() - verticalPadding - arrowHeight}, 3);
+			}
+		}
+		
 	}
 	
 	public static void drawCenteredText(Graphics2D g, String text, int x, int y, Font font, Color fontColor, Color outlineColor) {

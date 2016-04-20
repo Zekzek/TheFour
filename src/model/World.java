@@ -16,6 +16,8 @@ public class World {
 	
 	private static Map<GridPosition,TallObject> contents = new ConcurrentHashMap<GridPosition, TallObject>();
 	private static Set<Trigger> triggers = new HashSet<Trigger>();
+	private static ITargetable questTarget;
+	
 	private World() {
 	}
 	
@@ -170,5 +172,15 @@ public class World {
 
 	public static void addTrigger(Trigger trigger) {
 		triggers.add(trigger);
+	}
+	
+	public static void setQuestTarget(ITargetable target) {
+		questTarget = target;
+	}
+	
+	public static GridPosition getQuestTargetPosition() {
+		if (questTarget == null)
+			return null;
+		return questTarget.getPos();
 	}
 }

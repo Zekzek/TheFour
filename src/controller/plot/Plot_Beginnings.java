@@ -62,6 +62,7 @@ public class Plot_Beginnings extends Plot {
 				GraphicsPanel.moveScreenTo(defender, 0);
 				BattleQueue.addCombatant(defender);
 				
+				World.setQuestTarget(savior);
 				ProximityTrigger lovedOneTrigger = new ProximityTrigger(Trigger.ID.BEGINNINGS_TALK_LOVED_ONE_1, savior, 2, 
 						new Dialog[]{
 							new Dialog(savior, "Morning, little one. Something you want to tell me?"),
@@ -81,6 +82,7 @@ public class Plot_Beginnings extends Plot {
 							@Override
 							public void run() {
 								BattleQueue.nonCombatantQueueAction(Ability.get(Ability.ID.MOVE), savior, new GroundTarget(67, 28));
+								World.setQuestTarget(guardCaptain);
 							}
 						});
 				World.addTrigger(lovedOneTrigger);
@@ -94,7 +96,12 @@ public class Plot_Beginnings extends Plot {
 							new Dialog(guards[1], "Haha, ya, he must be a bit of a coward."),
 							new Dialog(guardCaptain, "Enough! For now, let's review the ability I showed you yesterday. "
 									+ "Show me what your Guard Attack can do to " + targetDummy.getName() + ", here.")
-						}, null);
+						}, new Runnable() {
+							@Override
+							public void run() {
+								World.setQuestTarget(targetDummy);
+							}
+						});
 				World.addTrigger(guardCaptainTrigger);
 				
 				BattleTrigger guardTrainingTrigger = new BattleTrigger(Trigger.ID.BEGINNINGS_GUARDS_2, Ability.ID.GUARD_ATTACK,
