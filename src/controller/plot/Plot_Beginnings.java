@@ -4,6 +4,7 @@ import model.Ability;
 import model.Dialog;
 import model.GroundTarget;
 import model.Structure;
+import model.TallObject;
 import model.TallObject.TEAM;
 import model.Unit;
 import model.World;
@@ -17,8 +18,8 @@ import controller.Trigger;
 
 public class Plot_Beginnings extends Plot {
 
-	private Unit defender, savior, guardCaptain;
-	private Unit[] guards;
+	private Unit defender, savior, guardCaptain, damsel, damselsBrother, sorceress;
+	private Unit[] guards, bandits;
 	private Structure targetDummy;
 	
 	@Override
@@ -48,6 +49,23 @@ public class Plot_Beginnings extends Plot {
 		targetDummy.setName("Old Stuffy");
 		targetDummy.setTeam(TEAM.ENEMY1);
 		World.addTallObject(targetDummy, 59, 17);
+		
+		damsel = Unit.get(Unit.ID.GIRL, TEAM.NONCOMBATANT, "Helpless Damsel");
+		damsel.setFacing(FACING.E);
+		World.addTallObject(damsel, 115, 19);
+		
+		damselsBrother = Unit.get(Unit.ID.BOY, TEAM.NONCOMBATANT, "Defensive Brother");
+		damselsBrother.setFacing(FACING.W);
+		World.addTallObject(damselsBrother, 116, 19);
+		
+		sorceress = Unit.get(Unit.ID.SORCERESS, TEAM.NONCOMBATANT);
+		sorceress.setFacing(FACING.W);
+		World.addTallObject(sorceress, 151, 26);
+		
+		bandits = new Unit[3];
+		for (int i = 0; i < bandits.length; i++) {
+			bandits[i] = Unit.get(Unit.ID.FEMALE_BANDIT, TEAM.ENEMY1, "Bandit #" + (i + 1));
+		}
 	}
 
 	@Override
@@ -131,10 +149,70 @@ public class Plot_Beginnings extends Plot {
 						public void run() {
 							guards[0].setTeam(TEAM.PLAYER);
 							BattleQueue.addCombatant(guards[0]);
+							World.setQuestTarget(damsel);
+							damselsBrother.damage(9999);
 						}
 				});
 				guardTrainingTrigger2.setMinAllowed(Trigger.ID.BEGINNINGS_GUARDS_2, 1);
 				World.addTrigger(guardTrainingTrigger2);
+				
+				Trigger damselInDistressTrigger = new ProximityTrigger(Trigger.ID.BEGINNINGS_DAMSEL_1, damsel, 3,
+					new Dialog[]{ 
+						new Dialog(guards[0], "Well, hello miss. What are you doing way out here?"),
+						new Dialog(damsel, "Oh, thank goodness you found me. It was terrible. They came out of nowhere. My brother... "
+								+ "He tried to stop them, but..."),
+						new Dialog(guards[0], "Its okay, miss. I'm here now. They won't hurt you anymore."),
+						new Dialog(guards[0], defender.getName() + ", I'll take care of things here. You go on ahead and complete "
+								+ "the mission. It's just a bit further down the path here."),
+						new Dialog(defender, "Understood.")
+					}, new Runnable(){
+						@Override
+						public void run() {
+							damsel.setFacing(FACING.W);
+							BattleQueue.removeCombatant(guards[0], Ability.get(Ability.ID.MOVE), 
+									new GroundTarget(damsel.getPos().getX() - 1, damsel.getPos().getY()));
+							guards[0].setTeam(TEAM.NONCOMBATANT);
+							World.setQuestTarget(sorceress);
+						}
+				});
+				damselInDistressTrigger.setMinAllowed(Trigger.ID.BEGINNINGS_GUARDS_3, 1);
+				World.addTrigger(damselInDistressTrigger);
+				
+				Trigger sorceressRequestTrigger = new ProximityTrigger(Trigger.ID.BEGINNINGS_SORCERESS_1, sorceress, 3,
+					new Dialog[] {
+						new Dialog(sorceress, defender.getName() + "?! I can't believe you're all the way out here. But I suppose "
+								+ "I shouldn't be all that surprised. You've always been there when I really need someone, ever "
+								+ "since we were kids."),
+						new Dialog(defender, "Of course. You're like a sister to me."),
+						new Dialog(sorceress, "A sister?..."),
+						new Dialog(sorceress, "Listen, there are bandits about and I need to get this artifact back to town? I'd "
+								+ "do it myself, but my magic hasn't been responding well. Can you hold onto it until I see you "
+								+ "again. Say, tonight at the banquet?"),
+						new Dialog(defender, "It won't leave my side."),
+						new Dialog(sorceress, "Aw, thanks! I gotta run now, but find me tonight, and I'll figure out some way to "
+								+ "repay you. Anything you want!")
+					}, new Runnable(){
+						@Override
+						public void run() {
+							BattleQueue.nonCombatantQueueAction(Ability.get(Ability.ID.MOVE), sorceress, new GroundTarget(153, 20));
+							World.setQuestTarget(guardCaptain);
+						}
+				});
+				sorceressRequestTrigger.setMinAllowed(Trigger.ID.BEGINNINGS_DAMSEL_1, 1);
+				World.addTrigger(sorceressRequestTrigger);
+				
+				Trigger banditAttackTrigger = new ProximityTrigger(Trigger.ID.BEGINNINGS_BANDIT_ATTACK_1, new GroundTarget(81, 21), 20,
+						null, 
+						new Runnable(){
+							@Override
+							public void run() {
+								addObjectOffscreen(bandits[0], -1, 0);
+								addObjectOffscreen(bandits[1], 1, 0);
+								addObjectOffscreen(bandits[2], 0, 1);
+							}
+					});
+					banditAttackTrigger.setMinAllowed(Trigger.ID.BEGINNINGS_SORCERESS_1, 1);
+					World.addTrigger(banditAttackTrigger);
 			}
 		});
 		
@@ -144,5 +222,9 @@ public class Plot_Beginnings extends Plot {
 	@Override
 	protected String getStartingScene() {
 		return "Morning Chat";
+	}
+	
+	private void addObjectOffscreen(TallObject object, int x, int y) {
+		//TODO add object just offscreen on a traversable square
 	}
 }

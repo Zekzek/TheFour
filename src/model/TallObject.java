@@ -50,16 +50,20 @@ public abstract class TallObject implements ITargetable {
 	public abstract BufferedImage getSprite();	
 	
 	public void damage(int damage) {
-		hp -= damage;
-		if (hp > maxHp) {
-			hp = maxHp;
+		if (isAlive()) {
+			hp -= damage;
+			if (hp > maxHp) {
+				hp = maxHp;
+			}
 		}
 	}
 	
 	public void heal(int amount) {
-		hp += amount;
-		if (hp > maxHp) {
-			hp = maxHp;
+		if (isAlive()) {
+			hp += amount;
+			if (hp > maxHp) {
+				hp = maxHp;
+			}
 		}
 	}
 	
