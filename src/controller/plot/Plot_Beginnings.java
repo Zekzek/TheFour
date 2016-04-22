@@ -202,19 +202,85 @@ public class Plot_Beginnings extends Plot {
 				World.addTrigger(sorceressRequestTrigger);
 				
 				Trigger banditAttackTrigger = new ProximityTrigger(Trigger.ID.BEGINNINGS_BANDIT_ATTACK_1, new GroundTarget(81, 21), 20,
+					null, 
+					new Runnable(){
+						@Override
+						public void run() {
+							addObjectOffscreen(bandits[0], -1, 0);
+							addObjectOffscreen(bandits[1], 1, 0);
+							addObjectOffscreen(bandits[2], 0, 1);
+							BattleQueue.addCombatant(bandits[0]);
+							BattleQueue.addCombatant(bandits[1]);
+							BattleQueue.addCombatant(bandits[2]);
+							BattleQueue.startCombat();
+						}
+				});
+				banditAttackTrigger.setMinAllowed(Trigger.ID.BEGINNINGS_SORCERESS_1, 1);
+				World.addTrigger(banditAttackTrigger);
+				
+				for (int i = 0; i < 3; i++) {
+					Trigger banditAttackTriggerSpeech = new ProximityTrigger(Trigger.ID.BEGINNINGS_BANDIT_ATTACK_2, bandits[i], 10,
+							new Dialog[] {
+							new Dialog(bandits[0], "Haha, we've got you surrounded now! Just give up that case and we might not gut you."),
+							new Dialog(defender, "I can't do that. There may be three of you, but a promise is a promise."),
+							new Dialog(bandits[0], "Pretty cocky, huh? Let's see how you feel with a few holes in you!"),
+						}, null
+					);
+					banditAttackTriggerSpeech.setMinAllowed(Trigger.ID.BEGINNINGS_BANDIT_ATTACK_1, 1);
+					banditAttackTriggerSpeech.setMaxAllowed(Trigger.ID.BEGINNINGS_BANDIT_ATTACK_2, 0);
+					World.addTrigger(banditAttackTriggerSpeech);
+					
+					Trigger banditDefeatTrigger = new BattleTrigger(Trigger.ID.BEGINNINGS_GUARDS_ASSIST_1, bandits[i],
 						null, 
 						new Runnable(){
 							@Override
 							public void run() {
-								addObjectOffscreen(bandits[0], -1, 0);
-								addObjectOffscreen(bandits[1], 1, 0);
-								addObjectOffscreen(bandits[2], 0, 1);
+								addObjectOffscreen(guardCaptain, -1, 0);
+								addObjectOffscreen(guards[1], 1, 0);
+								BattleQueue.addCombatant(guardCaptain);
+								BattleQueue.addCombatant(guards[1]);
 							}
-					});
-					banditAttackTrigger.setMinAllowed(Trigger.ID.BEGINNINGS_SORCERESS_1, 1);
-					World.addTrigger(banditAttackTrigger);
+						}
+					);
+					banditDefeatTrigger.setMinAllowed(Trigger.ID.BEGINNINGS_BANDIT_ATTACK_2, 1);
+					banditDefeatTrigger.setMaxAllowed(Trigger.ID.BEGINNINGS_GUARDS_ASSIST_1, 0);
+					World.addTrigger(banditDefeatTrigger);
+					
+					Trigger banditDefeatTrigger2 = new BattleTrigger(Trigger.ID.BEGINNINGS_GUARDS_ASSIST_1, bandits[i],
+						new Dialog[] {
+							new Dialog(bandits[i], "The situation's gotten a bit too hot guys. Let's get out of here!")
+						}, 
+						new Runnable(){
+							@Override
+							public void run() {
+								BattleQueue.removeCombatant(bandits[0], null, null);
+								BattleQueue.removeCombatant(bandits[1], null, null);
+								BattleQueue.removeCombatant(bandits[2], null, null);
+								BattleQueue.endCombat();
+								moveOffscreenAndRemove(bandits[0]);
+								moveOffscreenAndRemove(bandits[1]);
+								moveOffscreenAndRemove(bandits[2]);									
+							}
+						}
+					);
+					banditDefeatTrigger2.setMinAllowed(Trigger.ID.BEGINNINGS_BANDIT_ATTACK_1, 1);
+					banditDefeatTrigger2.setMaxAllowed(Trigger.ID.BEGINNINGS_GUARDS_ASSIST_1, 1);
+					World.addTrigger(banditDefeatTrigger2);
+				}
+				
+				Trigger banditDefeatTriggerSpeech = new ProximityTrigger(Trigger.ID.BEGINNINGS_GUARDS_ASSIST_2, guardCaptain, 10,
+						new Dialog[] {
+							new Dialog(guardCaptain, "Three on one! That's not very fair. Let's see how you fair when the numbers are even.")
+						}, null
+					);
+				banditDefeatTriggerSpeech.setMinAllowed(Trigger.ID.BEGINNINGS_GUARDS_ASSIST_1, 1);
+				World.addTrigger(banditDefeatTriggerSpeech);
+				
+				//TODO: Add trigger for debate with guards and them joining the party (on bandits leaving?)
 			}
 		});
+		
+		
 		
 		addSceneTransition(morningChat);
 	}
@@ -226,5 +292,10 @@ public class Plot_Beginnings extends Plot {
 	
 	private void addObjectOffscreen(TallObject object, int x, int y) {
 		//TODO add object just offscreen on a traversable square
+	}
+	
+	private void moveOffscreenAndRemove(Unit unit) {
+		// TODO Auto-generated method stub
+		
 	}
 }
