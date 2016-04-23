@@ -14,6 +14,7 @@ public class GameFrame extends JFrame {
 	private static final Dimension INITIAL_DIMENSIONS = new Dimension(1024, 600);
 	
 	private static GameFrame me;
+	private JLayeredPane layeredPane;
 	private GraphicsPanel graphicsPanel;
 	private PartyPanel partyPanel;
 	private AbilityDetailPanel abilityPanel;
@@ -21,7 +22,6 @@ public class GameFrame extends JFrame {
 	private UnitQueuePanel unitQueuePanel;
 	private DialogPanel dialogPanel;
 	private TitleScreenPanel titleScreenPanel;
-	private JLayeredPane layeredPane;
 	
 	public GameFrame() {
 		me = this;
@@ -97,7 +97,8 @@ public class GameFrame extends JFrame {
 	public static void returnToTitleScreen() {
 		BattleQueue.endCombat();
 		BattleQueue.clearBattleListeners();
-		World.reset();
+		BattleQueue.reset();
+//		World.reset();
 		if (me != null) {
 			me.layeredPane.remove(me.menuPanel);
 			me.menuPanel = new AbilitySelectionPanel(me.abilityPanel);

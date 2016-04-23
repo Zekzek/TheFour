@@ -11,7 +11,7 @@ import controller.plot.Plot;
 
 public class StatusEffect {
 	public static enum ID {
-		SLOW(0), BIND(1), HASTE(2), KNOCKDOWN(3), BURNING(4), MURDEROUS_INTENT(5), DAMAGE_DOWN(6), REGEN(7);
+		SLOW(0), BIND(1), HASTE(2), KNOCKDOWN(3), BURNING(4), MURDEROUS_INTENT(5), DAMAGE_DOWN(6), REGEN(7), FLEE(2);
 		private final int index; //used by spriteSheet to select an icon
 		ID(int index) {
 			this.index = index;
@@ -175,6 +175,12 @@ public class StatusEffect {
 		
 		baseEffects.put(ID.REGEN, new BaseEffect(ID.REGEN, "Regenerating Health", new Modifier(
 				FLAT_BONUS.HP_HEALED_PER_SECOND, 8)));
+		
+		baseEffects.put(ID.FLEE, new BaseEffect(ID.FLEE, "Drop everything to run away", new Modifier(
+				FRACTIONAL_BONUS.SPEED_MODIFIER_MOVE, 2.0,
+				FRACTIONAL_BONUS.CHANCE_TO_SUCCEED_SHOT, 0.0,
+				FRACTIONAL_BONUS.CHANCE_TO_SUCCEED_SPELL, 0.0,
+				FRACTIONAL_BONUS.CHANCE_TO_SUCCEED_STRIKE, 0.0)));
 	}
 
 	private class BaseEffect {

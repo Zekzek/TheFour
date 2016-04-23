@@ -28,7 +28,7 @@ public class Ability {
 		SHIELD_BASH, BARRAGE, SWEEPING_STRIKE, THROW,
 		VIGOR,
 		CHALLENGE, SNARE,
-		DELAY, WATCH, MOVE, DEATH     
+		DELAY, WATCH, MOVE, DEATH, FLEE
 	};
 	
 	private ID id;
@@ -305,6 +305,10 @@ public class Ability {
 					5000, 0, 16, 0, "Watch", ANIMATION.WALK));
 			abilities.put(ID.DEATH, new Ability(ID.DEATH, "PASS OUT", CATEGORY.SKILL, TARGET_TYPE.DEAD, EFFECT.MOVE, 
 					1000, 0, "Lose the will to fight on", ANIMATION.DEATH));
+			Ability flee = new Ability(ID.FLEE, "Flee", CATEGORY.SKILL, TARGET_TYPE.SELF, EFFECT.MOVE, 
+					300, 0, "Run away to fight another day.", ANIMATION.CAST);
+			flee.statusEffectsToTarget.add(new StatusEffect(StatusEffect.ID.FLEE, 60000));
+			abilities.put(ID.FLEE, flee);
 		}
 		
 		public static Ability getAbility(ID id) {

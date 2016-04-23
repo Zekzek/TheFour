@@ -3,6 +3,7 @@ package controller.plot;
 import model.Ability;
 import model.Dialog;
 import model.GroundTarget;
+import model.StatusEffect;
 import model.Structure;
 import model.TallObject;
 import model.TallObject.TEAM;
@@ -25,20 +26,20 @@ public class Plot_Beginnings extends Plot {
 	@Override
 	protected void initUnits() {
 		defender = Unit.get(Unit.ID.DEFENDER, TEAM.PLAYER);
-		World.addTallObject(defender, 73, 28);
+		BattleQueue.addCombatant(defender, 73, 28);
 		
 		savior = Unit.get(Unit.ID.BOY, TEAM.NONCOMBATANT, "Uncle Xalvador");
 		savior.setFacing(FACING.N);
-		World.addTallObject(savior, 69, 23);
+		BattleQueue.addCombatant(savior, 69, 23);
 		
 		guardCaptain = Unit.get(Unit.ID.GUARD, TEAM.NONCOMBATANT, "Guard Captain");
 		guardCaptain.setFacing(FACING.N);
-		World.addTallObject(guardCaptain, 61, 17);
+		BattleQueue.addCombatant(guardCaptain, 61, 17);
 		
 		guards = new Unit[6];
 		for (int i = 0; i < guards.length; i++) {
 			guards[i] = Unit.get(Unit.ID.GUARD, TEAM.NONCOMBATANT, "Guard #" + (i + 1));
-			World.addTallObject(guards[i], 58 + i, 14);
+			BattleQueue.addCombatant(guards[i], 58 + i, 14);
 		}
 		guards[0].setName("Guard Gerrart");
 		guards[1].setName("Guard Amelyn");
@@ -48,19 +49,19 @@ public class Plot_Beginnings extends Plot {
 		targetDummy = Structure.get(Structure.ID.TARGET_DUMMY, null);
 		targetDummy.setName("Old Stuffy");
 		targetDummy.setTeam(TEAM.ENEMY1);
-		World.addTallObject(targetDummy, 59, 17);
+		BattleQueue.addCombatant(targetDummy, 59, 17);
 		
 		damsel = Unit.get(Unit.ID.GIRL, TEAM.NONCOMBATANT, "Helpless Damsel");
 		damsel.setFacing(FACING.E);
-		World.addTallObject(damsel, 115, 19);
+		BattleQueue.addCombatant(damsel, 115, 19);
 		
 		damselsBrother = Unit.get(Unit.ID.BOY, TEAM.NONCOMBATANT, "Defensive Brother");
 		damselsBrother.setFacing(FACING.W);
-		World.addTallObject(damselsBrother, 116, 19);
+		BattleQueue.addCombatant(damselsBrother, 116, 19);
 		
 		sorceress = Unit.get(Unit.ID.SORCERESS, TEAM.NONCOMBATANT);
 		sorceress.setFacing(FACING.W);
-		World.addTallObject(sorceress, 151, 26);
+		BattleQueue.addCombatant(sorceress, 151, 26);
 		
 		bandits = new Unit[3];
 		for (int i = 0; i < bandits.length; i++) {
@@ -78,7 +79,6 @@ public class Plot_Beginnings extends Plot {
 			@Override
 			public void run() {
 				GraphicsPanel.moveScreenTo(defender, 0);
-				BattleQueue.addCombatant(defender);
 				
 				World.setQuestTarget(savior);
 				ProximityTrigger lovedOneTrigger = new ProximityTrigger(Trigger.ID.BEGINNINGS_TALK_LOVED_ONE_1, savior, 2, 
@@ -99,7 +99,7 @@ public class Plot_Beginnings extends Plot {
 						}, new Runnable(){
 							@Override
 							public void run() {
-								BattleQueue.nonCombatantQueueAction(Ability.get(Ability.ID.MOVE), savior, new GroundTarget(67, 28));
+								BattleQueue.queueAction(Ability.get(Ability.ID.MOVE), savior, new GroundTarget(67, 28));
 								World.setQuestTarget(guardCaptain);
 							}
 						});
@@ -148,7 +148,6 @@ public class Plot_Beginnings extends Plot {
 						@Override
 						public void run() {
 							guards[0].setTeam(TEAM.PLAYER);
-							BattleQueue.addCombatant(guards[0]);
 							World.setQuestTarget(damsel);
 							damselsBrother.damage(9999);
 						}
@@ -194,7 +193,7 @@ public class Plot_Beginnings extends Plot {
 					}, new Runnable(){
 						@Override
 						public void run() {
-							BattleQueue.nonCombatantQueueAction(Ability.get(Ability.ID.MOVE), sorceress, new GroundTarget(153, 20));
+							BattleQueue.queueAction(Ability.get(Ability.ID.MOVE), sorceress, new GroundTarget(153, 20));
 							World.setQuestTarget(guardCaptain);
 						}
 				});
@@ -209,9 +208,6 @@ public class Plot_Beginnings extends Plot {
 							addObjectOffscreen(bandits[0], -1, 0);
 							addObjectOffscreen(bandits[1], 1, 0);
 							addObjectOffscreen(bandits[2], 0, 1);
-							BattleQueue.addCombatant(bandits[0]);
-							BattleQueue.addCombatant(bandits[1]);
-							BattleQueue.addCombatant(bandits[2]);
 							BattleQueue.startCombat();
 						}
 				});
@@ -219,6 +215,7 @@ public class Plot_Beginnings extends Plot {
 				World.addTrigger(banditAttackTrigger);
 				
 				for (int i = 0; i < 3; i++) {
+					final int banditNum = i;
 					Trigger banditAttackTriggerSpeech = new ProximityTrigger(Trigger.ID.BEGINNINGS_BANDIT_ATTACK_2, bandits[i], 10,
 							new Dialog[] {
 							new Dialog(bandits[0], "Haha, we've got you surrounded now! Just give up that case and we might not gut you."),
@@ -237,8 +234,6 @@ public class Plot_Beginnings extends Plot {
 							public void run() {
 								addObjectOffscreen(guardCaptain, -1, 0);
 								addObjectOffscreen(guards[1], 1, 0);
-								BattleQueue.addCombatant(guardCaptain);
-								BattleQueue.addCombatant(guards[1]);
 							}
 						}
 					);
@@ -253,9 +248,6 @@ public class Plot_Beginnings extends Plot {
 						new Runnable(){
 							@Override
 							public void run() {
-								BattleQueue.removeCombatant(bandits[0], null, null);
-								BattleQueue.removeCombatant(bandits[1], null, null);
-								BattleQueue.removeCombatant(bandits[2], null, null);
 								BattleQueue.endCombat();
 								moveOffscreenAndRemove(bandits[0]);
 								moveOffscreenAndRemove(bandits[1]);
@@ -266,6 +258,45 @@ public class Plot_Beginnings extends Plot {
 					banditDefeatTrigger2.setMinAllowed(Trigger.ID.BEGINNINGS_BANDIT_ATTACK_1, 1);
 					banditDefeatTrigger2.setMaxAllowed(Trigger.ID.BEGINNINGS_GUARDS_ASSIST_1, 1);
 					World.addTrigger(banditDefeatTrigger2);
+					
+					Trigger banditsEscapeTriggerCount = new ProximityTrigger(Trigger.ID.BEGINNINGS_BANDIT_ESCAPE_1, bandits[banditNum], 10, true,
+							null, 
+							new Runnable() {
+								@Override
+								public void run() {
+									BattleQueue.removeCombatant(bandits[banditNum], exitAbility, target);
+								}}
+						);
+					banditsEscapeTriggerCount.setMinAllowed(Trigger.ID.BEGINNINGS_BANDIT_ATTACK_1, 2);
+					World.addTrigger(banditsEscapeTriggerCount);
+					
+					Trigger banditsEscapeTrigger = new ProximityTrigger(Trigger.ID.BEGINNINGS_BANDIT_ESCAPE_2, bandits[banditNum], 14, true,
+						new Dialog[] {
+							//TODO: tweak dialog to make sense
+							new Dialog(guards[1], "Well, they've been getting more brazen.\n\n Thank you for your assistance citizen. Now, let's "
+									+ "have that case, and we'll see it safely to the academy."),
+							new Dialog(defender, "My apologies, but I can't give it to you. I gave my word that it wouldn't leave my side "
+									+ "until I returned it to SORCERESS presonally."),
+							new Dialog(guards[1], "What? I don't care. That's city property and I'll be taking it now. If you resist, we'll "
+									+ "take it by force and you'll be looking at a night in the stockades."),
+							new Dialog(defender, "I understand your position, but I can't let you take it. Do as you must."),
+							new Dialog(guards[1], "..."),
+							new Dialog(guardCaptain, "Now, hold on a minute. We can't just let you walk away with that case, but I think we can "
+									+ "settle this without a fight. You said SORCERESS. She's Professor TEACHER's aide, right? That will do "
+									+ "just fine, but we will need to provide an escort back to town. Is that acceptible to everyone?"),
+							new Dialog(defender, "Thank you for the offer. I welcome your company. There are still bandits out there after all"),
+							new Dialog(guards[1], "Then let's be off. We haven't got all day to chat in the forest"),
+						}, 
+							new Runnable() {
+								@Override
+								public void run() {
+									guardCaptain.setTeam(TEAM.PLAYER);
+									guards[1].setTeam(TEAM.PLAYER);
+								}}
+						);
+					banditsEscapeTrigger.setMinAllowed(Trigger.ID.BEGINNINGS_BANDIT_ESCAPE_1, 2);
+					banditsEscapeTrigger.setMaxAllowed(Trigger.ID.BEGINNINGS_BANDIT_ESCAPE_1, 0);
+					World.addTrigger(banditsEscapeTrigger);
 				}
 				
 				Trigger banditDefeatTriggerSpeech = new ProximityTrigger(Trigger.ID.BEGINNINGS_GUARDS_ASSIST_2, guardCaptain, 10,
@@ -275,12 +306,8 @@ public class Plot_Beginnings extends Plot {
 					);
 				banditDefeatTriggerSpeech.setMinAllowed(Trigger.ID.BEGINNINGS_GUARDS_ASSIST_1, 1);
 				World.addTrigger(banditDefeatTriggerSpeech);
-				
-				//TODO: Add trigger for debate with guards and them joining the party (on bandits leaving?)
 			}
 		});
-		
-		
 		
 		addSceneTransition(morningChat);
 	}
@@ -291,11 +318,14 @@ public class Plot_Beginnings extends Plot {
 	}
 	
 	private void addObjectOffscreen(TallObject object, int x, int y) {
+		int posX = GraphicsPanel.getScreenRectangle().getX();
+		int posY = GraphicsPanel.getScreenRectangle().getY();
+		BattleQueue.addCombatant(object, posX, posY);
 		//TODO add object just offscreen on a traversable square
 	}
 	
 	private void moveOffscreenAndRemove(Unit unit) {
-		// TODO Auto-generated method stub
-		
+		unit.addStatusEffect(new StatusEffect(StatusEffect.ID.FLEE, 60000));
+		BattleQueue.removeCombatant(unit, Ability.get(Ability.ID.FLEE), unit);
 	}
 }

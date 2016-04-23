@@ -1,11 +1,10 @@
 package model;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 
-import controller.BattleQueue;
 import model.Modifier.FLAT_BONUS;
+import controller.BattleQueue;
 
 public class ReadiedAction {
 	private static final Random RAND = new Random();
@@ -34,9 +33,9 @@ public class ReadiedAction {
 	};
 	private Runnable doAtMid;
 	private Runnable doAtEnd;
-	private int startTime;
+	private long startTime;
 	
-	public ReadiedAction(Ability ability, Unit source, ITargetable target, int startTime) {
+	public ReadiedAction(Ability ability, Unit source, ITargetable target, long startTime) {
 		super();
 		this.ability = ability;
 		this.source = source;
@@ -48,12 +47,13 @@ public class ReadiedAction {
 		startTime += delay;
 	}
 	
-	public void activate() {
+	public void activate(World world) {
 		System.out.println(source + " uses " + ability + " on " + target);
 		if (!BattleQueue.isInBattle()) {
 			source.heal(source.getMaxHp() / 10 * ability.getDelay() / 1000);		
 		}
 		activateAtStart();
+		source.animate(ability, world);
 		SCHEDULE_ACTIVATE_AT_MID.start();
 		SCHEDULE_ACTIVATE_AT_END.start();
 	}
@@ -62,27 +62,26 @@ public class ReadiedAction {
 		BattleQueue.delay(source, ability.calcAdditionalDelay(source.getModifier()));
 		source.tickStatusEffects(ability.getDelay());
 		source.face(target);
-		source.animate(ability);
 		source.damage(source.getStatusEffectModifier(FLAT_BONUS.HP_DAMAGE_PER_SECOND, target) * ability.getDelay() / 1000);
 		source.heal(source.getStatusEffectModifier(FLAT_BONUS.HP_HEALED_PER_SECOND, target) * ability.getDelay() / 1000);
 	}
 	
 	private void activateAtMid() {
 		//TODO: use calcSuccessChance
-		if (ability.getAreaOfEffectDistance() > 0) {
-			int distance = ability.getAreaOfEffectDistance();
-			GridPosition pos = target.getPos();
-			GridRectangle rect = new GridRectangle(pos.getX() - distance, pos.getY() - distance, 
-					2 * distance + 1, 2 * distance + 1);
-			ArrayList<Unit> targets = World.getSortedContentsWithin(rect, Unit.class);
-			for (Unit unit : targets) {
-				if (affectsTarget(unit)) {
-					effectTargetWith(source, unit, ability);
-				}
-			}
-		} else {
+//		if (ability.getAreaOfEffectDistance() > 0) {
+//			int distance = ability.getAreaOfEffectDistance();
+//			GridPosition pos = target.getPos();
+//			GridRectangle rect = new GridRectangle(pos.getX() - distance, pos.getY() - distance, 
+//					2 * distance + 1, 2 * distance + 1);
+//			ArrayList<Unit> targets = World.getSortedContentsWithin(rect, Unit.class);
+//			for (Unit unit : targets) {
+//				if (affectsTarget(unit)) {
+//					effectTargetWith(source, unit, ability);
+//				}
+//			}
+//		} else {
 			effectTargetWith(source, target, ability);
-		}
+//		}
 		if (doAtMid != null) doAtMid.run();
 	}
 	
@@ -138,7 +137,7 @@ public class ReadiedAction {
 		return target;
 	}
 	
-	public int getStartTime() {
+	public long getStartTime() {
 		return startTime;
 	}
 

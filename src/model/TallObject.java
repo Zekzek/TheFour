@@ -59,12 +59,7 @@ public abstract class TallObject implements ITargetable {
 	}
 	
 	public void heal(int amount) {
-		if (isAlive()) {
-			hp += amount;
-			if (hp > maxHp) {
-				hp = maxHp;
-			}
-		}
+		damage(-amount);
 	}
 	
 	public boolean isAlive() {
@@ -133,13 +128,13 @@ public abstract class TallObject implements ITargetable {
 	protected void paintDecorations(Graphics2D g2) {
 	}
 
-	public void updateWorldPos(int x, int y) {
+	public void updateWorldPos(World world, int x, int y) {
 		GridPosition updatedPos = new GridPosition(x, y);
-		if (this.equals(World.getTallObject(updatedPos))) {
+		if (this.equals(world.getTallObject(updatedPos))) {
 			pos.setX(x);
 			pos.setY(y);
 		} else {
-			World.moveObject(this, x, y);
+			world.moveObject(this, x, y);
 		}
 	}
 	

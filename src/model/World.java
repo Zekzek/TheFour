@@ -3,10 +3,12 @@ package model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import model.TallObject.TEAM;
 import view.SpriteSheet.TERRAIN;
 import controller.MapBuilder;
 import controller.ProximityTrigger;
@@ -18,32 +20,24 @@ public class World {
 	private static Set<Trigger> triggers = new HashSet<Trigger>();
 	private static ITargetable questTarget;
 	
-	private World() {
+	public World() {
 	}
 	
-	public static void addTallObject(TallObject tallObject, int x, int y) {
+	public void addTallObject(TallObject tallObject, int x, int y) {
 		GridPosition pos = new GridPosition(x, y);
 		while (contents.get(pos) != null) {
 			pos.setY(pos.getY() + 1);
 		}
 		contents.put(pos, tallObject);
-		tallObject.updateWorldPos(pos.getX(), pos.getY());
+		tallObject.updateWorldPos(this, pos.getX(), pos.getY());
 	}
 	
-	public static void remove(int x, int y) {
-		contents.remove(new GridPosition(x, y));
-	}
-	
-	public static void remove(TallObject tallObject) {
-		contents.remove(tallObject.getPos());
-	}
-	
-	public static boolean moveObject(TallObject tallObject, int x, int y) {
+	public boolean moveObject(TallObject tallObject, int x, int y) {
 		GridPosition pos = new GridPosition(x, y);
 		if (contents.get(pos) == null) {
 			contents.put(pos, tallObject);
 			contents.remove(tallObject.getPos());
-			tallObject.updateWorldPos(x, y);
+			tallObject.updateWorldPos(this, x, y);
 			for (Trigger trigger : triggers) {
 				if (trigger instanceof ProximityTrigger) {
 					((ProximityTrigger)trigger).checkTrigger(pos);
@@ -54,9 +48,27 @@ public class World {
 			return false;
 		}
 	}
+
+//	public static void remove(int x, int y) {
+//		contents.remove(new GridPosition(x, y));
+//	}
+	
+	public void remove(TallObject tallObject) {
+		contents.remove(tallObject.getPos());
+	}
+	
+	public Iterator<Unit> getTeamUnits(TEAM team) {
+		ArrayList<Unit> teamUnits = new ArrayList<Unit>();
+		for (TallObject object : contents.values()) {
+			if (object instanceof Unit && object.getTeam() == team) {
+				teamUnits.add((Unit) object);
+			}
+		}
+		return teamUnits.iterator();
+	}
 	
 	@SuppressWarnings("unchecked")
-	public static <T> ArrayList<T> getSortedContentsWithin(GridRectangle pos, Class<T> theClass) {
+	public <T> ArrayList<T> getSortedContentsWithin(GridRectangle pos, Class<T> theClass) {
 		ArrayList<T> subset = new ArrayList<T>();
 		for (int y = pos.getY(); y < pos.getY() + pos.getHeight(); y++) {
 			for (int x = pos.getX(); x < pos.getX() + pos.getWidth(); x++) {
@@ -69,7 +81,7 @@ public class World {
 		return subset;
 	}
 	
-	public static ArrayList<ITargetable> getTargets(Unit source, Ability ability, GridRectangle rect) {
+	public ArrayList<ITargetable> getTargets(Unit source, Ability ability, GridRectangle rect) {
 		Ability.TARGET_TYPE outcome = ability.getSelectionTargetType();
 		ArrayList<ITargetable> targets = new ArrayList<ITargetable>();
 		
@@ -115,7 +127,7 @@ public class World {
 		
 		ArrayList<TallObject> objects = getSortedContentsWithin(rect, TallObject.class);
 		for (TallObject object : objects){
-			if (targetTeams.contains(object.getTeam())) {
+			if (targetTeams.contains(object.getTeam()) && object.isAlive()) {
 				targets.add(object);
 			}
 		}
@@ -123,16 +135,15 @@ public class World {
 		return targets;
 	}
 
-	public static void reset() {
+	public void reset() {
 		contents.clear();
 	}
 
-	public static TallObject getTallObject(GridPosition pos) {
+	public TallObject getTallObject(GridPosition pos) {
 		return contents.get(pos);
 	}
 
-
-	private static Collection<GridPosition> getTraversableCells(GridRectangle rect) {
+	private Collection<GridPosition> getTraversableCells(GridRectangle rect) {
 		Set<GridPosition> openCells = new HashSet<GridPosition>();
 		for (int x = 0; x < rect.getWidth(); x++) {
 			for (int y = 0; y < rect.getHeight(); y++) {
@@ -145,7 +156,7 @@ public class World {
 		return openCells;
 	}
 	
-	public static Collection<GridPosition> getTraversableNeighbors(GridPosition pos) {
+	public Collection<GridPosition> getTraversableNeighbors(GridPosition pos) {
 		Set<GridPosition> openNeighbors = new HashSet<GridPosition>();
 		GridPosition above = new GridPosition(pos.getX(), pos.getY() - 1);
 		GridPosition below = new GridPosition(pos.getX(), pos.getY() + 1);
@@ -166,7 +177,7 @@ public class World {
 		return openNeighbors;
 	}
 	
-	private static boolean isTraversable(GridPosition pos) {
+	private boolean isTraversable(GridPosition pos) {
 		return getTallObject(pos) == null && MapBuilder.getTerrainType(pos) != TERRAIN.WATER;
 	}
 
@@ -178,7 +189,7 @@ public class World {
 		questTarget = target;
 	}
 	
-	public static GridPosition getQuestTargetPosition() {
+	public GridPosition getQuestTargetPosition() {
 		if (questTarget == null)
 			return null;
 		return questTarget.getPos();

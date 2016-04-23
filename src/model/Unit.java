@@ -46,6 +46,7 @@ public class Unit extends TallObject {
 	
 	private Unit(String name, int hp, URL sheetPath) {
 		super(name, hp);
+		learnAction(Ability.get(Ability.ID.MOVE));
 		if (sheetPath !=null) {
 			sheet = SpriteSheet.getSpriteSheet(sheetPath);
 			mini = new BufferedImage(SpriteSheet.SPRITE_WIDTH, MINI_SIZE, BufferedImage.TYPE_INT_RGB);
@@ -145,13 +146,13 @@ public class Unit extends TallObject {
 		label.setText(name);
 	}
 
-	public ReadiedAction aiGetAction(int time) {
+	public ReadiedAction aiGetAction(long time, World world) {
 		//TODO: more sophisticated AI with variety (prefer closest, prefer weakest, etc)
 		double bestScore = Double.NEGATIVE_INFINITY;
 		Ability bestAbility = null;
 		ITargetable bestTarget = null;
 		for (Ability ability : learnedActions) {
-			for (ITargetable target : World.getTargets(this, ability, GraphicsPanel.getScreenRectangle())) {
+			for (ITargetable target : world.getTargets(this, ability, GraphicsPanel.getScreenRectangle())) {
 				double score = getScore(ability, target);
 				System.out.println("(" + score + ")  " + ability + " -> " + target);
 				if (score > bestScore) {
@@ -226,7 +227,7 @@ public class Unit extends TallObject {
 		}
 	}
 
-	public void animate(Ability ability) {
+	public void animate(Ability ability, World world) {
 		ANIMATION stance = ability.getStance();//TODO: get stance from weapon and ability, then pick one 
 		int duration = ability.calcDelay(getModifier());
 		int moveDistance = ability.getMoveDistance();
@@ -243,7 +244,7 @@ public class Unit extends TallObject {
 			yOffset = (facing == FACING.N ? moveDistance : facing == FACING.S ? -moveDistance : 0); 
 			drawXOffset = xOffset;
 			drawYOffset = yOffset;
-			this.updateWorldPos(pos.getX() - xOffset, pos.getY() - yOffset);
+			this.updateWorldPos(world, pos.getX() - xOffset, pos.getY() - yOffset);
 		} else {
 			xOffset = yOffset = 0;
 		}
@@ -350,7 +351,6 @@ public class Unit extends TallObject {
 		private static void initUnits() {
 			unitsInitialized = true;
 			Unit defender = new Unit("Steele", 250, Plot.class.getResource("/resource/img/spriteSheet/defender.png"));
-			defender.learnAction(Ability.get(Ability.ID.MOVE));
 			defender.learnAction(Ability.get(Ability.ID.GUARD_ATTACK));
 			defender.learnAction(Ability.get(Ability.ID.SHIELD_BASH));
 			defender.learnAction(Ability.get(Ability.ID.CHALLENGE));
