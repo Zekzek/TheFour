@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import model.Dialog;
 import model.GridRectangle;
 import model.Structure;
-import model.TallObject;
-import model.TallObject.TEAM;
+import model.GameObject;
+import model.GameObject.TEAM;
 import model.Unit;
 import model.Unit.ID;
 import model.World;
@@ -63,10 +63,10 @@ public class Plot_SpeedTest extends Plot{
 		Long endTime = System.currentTimeMillis();
 		String addObjectTest = "Added 10,000 objects (5,000 units and 5,000 structures) in " + (endTime - startTime) + "ms";
 		
-		ArrayList<TallObject> objects = null;
+		ArrayList<GameObject> objects = null;
 		startTime = System.currentTimeMillis();
 		for (int i = 0; i < 10000; i++) {
-			objects = World.getSortedContentsWithin(searchScreen, TallObject.class);
+			objects = World.getSortedContentsWithin(searchScreen, GameObject.class);
 		}
 		endTime = System.currentTimeMillis();
 		String displayObjectTest = "Searched for a screen of objects 10,000 times in " + (endTime - startTime) 

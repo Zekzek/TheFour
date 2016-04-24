@@ -7,7 +7,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import model.StatusEffect;
 import model.StatusEffect.ID;
-import model.TallObject.TEAM;
+import model.GameObject.TEAM;
 import model.Unit;
 
 import org.junit.Test;

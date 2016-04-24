@@ -25,7 +25,7 @@ import view.SpriteSheet.FACING;
 import controller.BattleQueue;
 import controller.plot.Plot;
 
-public class Unit extends TallObject {
+public class Unit extends GameObject {
 	public static enum ID { DEFENDER, BERSERKER, SORCERESS, ARCHER, GUARD, FEMALE_BANDIT, MALE_BANDIT, ANNOUNCER, 
 		FEMALE_GOBLIN, MALE_GOBLIN, GOBLIN_CHIEF, GIRL, BOY }
 	private static final int MINI_SIZE = 32;
@@ -98,9 +98,6 @@ public class Unit extends TallObject {
 			damage = damageHpShield(damage);
 		}
 		super.damage(damage);
-		if (hp <= 0) {
-			BattleQueue.removeCombatant(this, Ability.get(Ability.ID.DEATH), this);
-		}
 	}
 	
 	private int damageHpShield(int damage) {
@@ -152,7 +149,7 @@ public class Unit extends TallObject {
 		Ability bestAbility = null;
 		ITargetable bestTarget = null;
 		for (Ability ability : learnedActions) {
-			for (ITargetable target : world.getTargets(this, ability, GraphicsPanel.getScreenRectangle())) {
+			for (ITargetable target : world.getTargets(this, ability)) {
 				double score = getScore(ability, target);
 				System.out.println("(" + score + ")  " + ability + " -> " + target);
 				if (score > bestScore) {

@@ -34,9 +34,13 @@ public class AbilitySelectionPanel extends JPanel implements IGridClickedListene
 	private ArrayList<ITargetable> validTargets;
 	private Unit activeUnit;
 	private Ability activeAbility;
+	private World world;
+	private BattleQueue battleQueue;
 	
-	public AbilitySelectionPanel(AbilityDetailPanel abilityDetailPanel) {
+	public AbilitySelectionPanel(AbilityDetailPanel abilityDetailPanel, World world, BattleQueue battleQueue) {
 		this.abilityDetailPanel = abilityDetailPanel;
+		this.world = world;
+		this.battleQueue = battleQueue;
 		BattleQueue.addPlayerListener(this);
 		setLayout(new GridLayout(1,1));
 		abilityList = makeMenuList();
@@ -72,10 +76,10 @@ public class AbilitySelectionPanel extends JPanel implements IGridClickedListene
 	}
 	
 	private void queueSelectedAbilityAtTarget(ITargetable target) {
-		BattleQueue.queueAction(activeAbility, activeUnit, target);
+		battleQueue.queueAction(activeAbility, activeUnit, target);
 		abilityDetailPanel.setVisible(false);
 		abilityList.clearSelection();
-		BattleQueue.finishPlanningAction(activeUnit);
+		battleQueue.finishPlanningAction(activeUnit);
 		clearTargets();
 	}
 	
@@ -97,7 +101,7 @@ public class AbilitySelectionPanel extends JPanel implements IGridClickedListene
 	
 	private void updateTargets() {
 		clearTargets();
-		validTargets = World.getTargets(activeUnit, activeAbility, GraphicsPanel.getScreenRectangle());
+		validTargets = world.getTargets(activeUnit, activeAbility);
 		for (ITargetable target : validTargets) {
 			target.setInTargetList(true);
 			if (target instanceof GroundTarget) {
@@ -115,7 +119,7 @@ public class AbilitySelectionPanel extends JPanel implements IGridClickedListene
 	@Override
 	public void reportGridClicked(GridPosition pos) {
 		if (activeAbility != null && activeUnit != null) {
-			ArrayList<ITargetable> targets = World.getTargets(activeUnit, activeAbility, GraphicsPanel.getScreenRectangle());
+			ArrayList<ITargetable> targets = world.getTargets(activeUnit, activeAbility);
 			for (ITargetable target : targets) {
 				if (target.getPos().equals(pos)) {
 					queueSelectedAbilityAtTarget(target);
@@ -136,7 +140,6 @@ public class AbilitySelectionPanel extends JPanel implements IGridClickedListene
 		}
 		revalidate();
 		repaint();
-		GraphicsPanel.moveScreenTo(activeUnit, 1000);
 	}
 	
 	@Override

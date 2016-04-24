@@ -1,26 +1,23 @@
 package controller.plot;
 
-import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
 import model.Dialog;
-import model.Structure;
-import model.TallObject.TEAM;
+import model.GameObject.TEAM;
 import model.Unit;
 import model.World;
 import view.DialogPanel;
-import view.GraphicsPanel;
+import view.GameFrame;
 import view.SceneTransition;
 import controller.BattleQueue;
 import controller.IBattleListener;
-import controller.MapBuilder;
-import controller.TemplateReader;
 
 public abstract class Plot implements IBattleListener{
-	private static boolean initialized = false;
 	protected static final int SECOND = 1000;
 	private final Map<String, SceneTransition> sceneTransitions = new HashMap<String, SceneTransition>();
+	protected BattleQueue battleQueue;
+	protected World world;
 	private String sceneName;
 	protected Runnable theEnd = new Runnable() {
 		@Override
@@ -28,54 +25,30 @@ public abstract class Plot implements IBattleListener{
 			end();
 		}
 	};
+	protected static GameFrame gameFrame;
 	
-	public Plot() {
-		BattleQueue.addBattleListener(this);
-		if (!initialized) {
-			initialized = true;
-			initialize();
-		}
-	}
-	
-	private void initialize() {
-		TemplateReader objectTemplate = new TemplateReader("/resource/img/templates/objects.png");
-		for (int x = 0; x < objectTemplate.getWidth(); x++) {
-			for (int y = 0; y < objectTemplate.getHeight(); y++) {
-				Color color = objectTemplate.getColorAt(x, y);
-				boolean reddish = color.getRed() > 125;
-				boolean greenish = color.getGreen() > 125;
-				boolean blueish = color.getBlue() > 125;
-				boolean visible = color.getAlpha() > 125;
-				
-				if (visible) {
-					if (greenish) {
-						if (!reddish && !blueish) {//green
-							World.addTallObject(Structure.get(Structure.ID.TREE, MapBuilder.getClimateType(x, y)), x, y);
-						}
-					} else if (!reddish && !blueish) {//black
-						World.addTallObject(Structure.get(Structure.ID.WALL, MapBuilder.getClimateType(x, y)), x, y);
-					}
-				}
-			}
-		}
+	public Plot(BattleQueue battleQueue, World world) {
+		this.battleQueue = battleQueue;
+		this.world = world;
+		battleQueue.addBattleListener(this);
 	}
 	
 	public void start() {
 		initUnits();
 		initSceneTransitions();
 		changeScene(getStartingScene());
-		BattleQueue.setPause(false);
-		BattleQueue.startPlayingActions();
+		battleQueue.setPause(false);
+		battleQueue.startPlayingActions();
 	}
 	
 	protected void end() {
-		BattleQueue.endCombat();
-		BattleQueue.stopPlayingActions();
+		battleQueue.endCombat();
+		battleQueue.stopPlayingActions();
 		Dialog[] theEnd = new Dialog[] {
 			new Dialog(getNarrator(), "The End")
 		};
 		DialogPanel.setGoToTitleOnConclusion(true);
-		DialogPanel.showDialog(theEnd, null);
+		gameFrame.showDialog(theEnd, null);
 	}
 	
 	protected abstract void initUnits();
@@ -95,7 +68,7 @@ public abstract class Plot implements IBattleListener{
 		if (transition == null) {
 			System.err.println("Scene '" + sceneName + "' not found!");
 		}
-		GraphicsPanel.changeScene(transition);
+		gameFrame.changeScene(transition);
 		this.sceneName = transition.getName();
 	}
 	
@@ -114,4 +87,8 @@ public abstract class Plot implements IBattleListener{
 
 	@Override
 	public void onUnitRemoved(Unit unit) {}
+	
+	public static void setGameFrame(GameFrame aGameFrame) {
+		gameFrame = aGameFrame;
+	}
 }

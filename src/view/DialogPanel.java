@@ -4,7 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -20,14 +22,14 @@ import controller.BattleQueue;
 public class DialogPanel extends JPanel{
 	private static final long serialVersionUID = 1582923222552495250L;
 
-	private static final Action dismissDialogAction = new AbstractAction(){
+	private final Action dismissDialogAction = new AbstractAction(){
 		private static final long serialVersionUID = -7716284876977116939L;
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			dismissDialog();
 		}
 	};
-	private static final Action showNextDialogAction = new AbstractAction(){
+	private final Action showNextDialogAction = new AbstractAction(){
 		private static final long serialVersionUID = -1957062937323496697L;
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -42,8 +44,13 @@ public class DialogPanel extends JPanel{
 	private static List<Dialog> conversation = new ArrayList<Dialog>();
 	private static boolean goToTitleOnConclusion = false;
 	private static Runnable actionOnConclusion;
+	private BattleQueue battleQueue;
+	private Set<IMenuListener> menuListeners;
 	
-	public DialogPanel() {
+	public DialogPanel(BattleQueue battleQueue) {
+		this.battleQueue = battleQueue;
+		menuListeners = new HashSet<IMenuListener>();
+		
 		this.setLayout(new BorderLayout());
 		nameLabel = new JLabel("", SwingConstants.CENTER);
 		nameLabel.setOpaque(true);
@@ -61,11 +68,12 @@ public class DialogPanel extends JPanel{
 		me = this;
 	}
 	
+	//TODO: stop using static calls
 	/**
 	 * Add the speech to the dialog queue and display the next entry
 	 * @param speech
 	 */
-	public static void showDialog(Dialog[] speech, Runnable actionOnConclusion) {
+	public void showDialog(Dialog[] speech, Runnable actionOnConclusion) {
 		DialogPanel.actionOnConclusion = actionOnConclusion;
 		GameFrame.disableMenu();
 		addDialog(speech);
@@ -85,8 +93,8 @@ public class DialogPanel extends JPanel{
 	/**
 	 * display the next entry
 	 */
-	public static void showNextDialog() {
-		BattleQueue.setPause(true);
+	public void showNextDialog() {
+		battleQueue.setPause(true);
 		me.setVisible(true);
 		
 		Dialog dialog = conversation.remove(0);
@@ -102,14 +110,16 @@ public class DialogPanel extends JPanel{
 		}
 	}
 	
-	private static void dismissDialog() {
-		me.setVisible(false);
+	private void dismissDialog() {
+		setVisible(false);
 		if (goToTitleOnConclusion) {
 			goToTitleOnConclusion = false;
-			GameFrame.returnToTitleScreen();
+			for (IMenuListener listener : menuListeners) {
+				listener.onSceneComplete();
+			}
 		} else {
 			GameFrame.enableMenu();
-			BattleQueue.setPause(false);
+			battleQueue.setPause(false);
 			if (actionOnConclusion != null) {
 				actionOnConclusion.run();
 			}
@@ -122,5 +132,9 @@ public class DialogPanel extends JPanel{
 	
 	public static void setActionOnConclusion(Runnable action) {
 		actionOnConclusion = action;
+	}
+
+	public void addMenuListener(IMenuListener listener) {
+		menuListeners.add(listener);
 	}
 }

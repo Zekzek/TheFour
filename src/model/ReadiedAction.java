@@ -47,26 +47,26 @@ public class ReadiedAction {
 		startTime += delay;
 	}
 	
-	public void activate(World world) {
+	public void activate(World world, BattleQueue battleQueue) {
 		System.out.println(source + " uses " + ability + " on " + target);
-		if (!BattleQueue.isInBattle()) {
+		if (!battleQueue.isInBattle()) {
 			source.heal(source.getMaxHp() / 10 * ability.getDelay() / 1000);		
 		}
-		activateAtStart();
+		activateAtStart(battleQueue);
 		source.animate(ability, world);
 		SCHEDULE_ACTIVATE_AT_MID.start();
 		SCHEDULE_ACTIVATE_AT_END.start();
 	}
 	
-	private void activateAtStart() {
-		BattleQueue.delay(source, ability.calcAdditionalDelay(source.getModifier()));
+	private void activateAtStart(BattleQueue battleQueue) {
+		battleQueue.delay(source, ability.calcAdditionalDelay(source.getModifier()));
 		source.tickStatusEffects(ability.getDelay());
 		source.face(target);
 		source.damage(source.getStatusEffectModifier(FLAT_BONUS.HP_DAMAGE_PER_SECOND, target) * ability.getDelay() / 1000);
 		source.heal(source.getStatusEffectModifier(FLAT_BONUS.HP_HEALED_PER_SECOND, target) * ability.getDelay() / 1000);
 	}
 	
-	private void activateAtMid() {
+	private void activateAtMid(BattleQueue battleQueue) {
 		//TODO: use calcSuccessChance
 //		if (ability.getAreaOfEffectDistance() > 0) {
 //			int distance = ability.getAreaOfEffectDistance();
@@ -80,7 +80,7 @@ public class ReadiedAction {
 //				}
 //			}
 //		} else {
-			effectTargetWith(source, target, ability);
+			effectTargetWith(source, target, ability, battleQueue);
 //		}
 		if (doAtMid != null) doAtMid.run();
 	}
@@ -104,9 +104,9 @@ public class ReadiedAction {
 		}
 	}
 	
-	private void effectTargetWith(Unit source, ITargetable target, Ability ability) {
-		if (target instanceof TallObject) {
-			TallObject targetObject = (TallObject) target;
+	private void effectTargetWith(Unit source, ITargetable target, Ability ability, BattleQueue battleQueue) {
+		if (target instanceof GameObject) {
+			GameObject targetObject = (GameObject) target;
 			if (RAND.nextDouble() <= ability.calcChanceToHit(source.getModifier(), targetObject.getModifier())) {
 				targetObject.damage(ability.calcDamage(source.getModifier(), targetObject.getModifier()));
 				if (targetObject.isAlive() && targetObject instanceof Unit) {
@@ -115,7 +115,7 @@ public class ReadiedAction {
 					while (appliedStatusEffects.hasNext()) {
 						targetUnit.addStatusEffect(new StatusEffect(appliedStatusEffects.next()));
 					}
-					BattleQueue.delay(targetUnit, ability.getDelayOpponent());
+					battleQueue.delay(targetUnit, ability.getDelayOpponent());
 				}
 			}	
 		}

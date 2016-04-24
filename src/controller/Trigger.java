@@ -5,6 +5,7 @@ import java.util.Map;
 
 import model.Dialog;
 import view.DialogPanel;
+import view.GameFrame;
 
 public abstract class Trigger {
 	public static enum ID {
@@ -15,6 +16,8 @@ public abstract class Trigger {
 	}
 	
 	private static final Map<ID, Integer> TRIGGER_COUNT = new HashMap<ID, Integer>();
+
+	private static GameFrame gameFrame;
 	
 	private final ID id;
 	private final Dialog[] dialog;
@@ -65,7 +68,7 @@ public abstract class Trigger {
 			}
 		}
 		else {
-			DialogPanel.showDialog(dialog, effect);
+			gameFrame.showDialog(dialog, effect);
 		}
 		triggered = true;
 		TRIGGER_COUNT.put(id, getCount(id) + 1);
@@ -88,5 +91,9 @@ public abstract class Trigger {
 
 	public ID getId() {
 		return id;
+	}
+	
+	public static void setGameFrame(GameFrame aGameFrame) {
+		gameFrame = aGameFrame;
 	}
 }

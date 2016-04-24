@@ -1,5 +1,6 @@
 package model;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -8,22 +9,49 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import model.TallObject.TEAM;
+import model.GameObject.TEAM;
 import view.SpriteSheet.TERRAIN;
 import controller.MapBuilder;
 import controller.ProximityTrigger;
+import controller.TemplateReader;
 import controller.Trigger;
 
 public class World {
-	
-	private static Map<GridPosition,TallObject> contents = new ConcurrentHashMap<GridPosition, TallObject>();
+	private static int TARGETABLE_WIDTH = 24;
+	private static int TARGETABLE_HEIGHT = 24;
+	private Map<GridPosition,GameObject> contents = new ConcurrentHashMap<GridPosition, GameObject>();
 	private static Set<Trigger> triggers = new HashSet<Trigger>();
-	private static ITargetable questTarget;
+	private ITargetable focusTarget;
+	private ITargetable questTarget;
 	
 	public World() {
+		initializeStructures();
 	}
 	
-	public void addTallObject(TallObject tallObject, int x, int y) {
+	private void initializeStructures() {
+		TemplateReader objectTemplate = new TemplateReader("/resource/img/templates/objects.png");
+		for (int x = 0; x < objectTemplate.getWidth(); x++) {
+			for (int y = 0; y < objectTemplate.getHeight(); y++) {
+				Color color = objectTemplate.getColorAt(x, y);
+				boolean reddish = color.getRed() > 125;
+				boolean greenish = color.getGreen() > 125;
+				boolean blueish = color.getBlue() > 125;
+				boolean visible = color.getAlpha() > 125;
+				
+				if (visible) {
+					if (greenish) {
+						if (!reddish && !blueish) {//green
+							addTallObject(Structure.get(Structure.ID.TREE, MapBuilder.getClimateType(x, y)), x, y);
+						}
+					} else if (!reddish && !blueish) {//black
+						addTallObject(Structure.get(Structure.ID.WALL, MapBuilder.getClimateType(x, y)), x, y);
+					}
+				}
+			}
+		}
+	}
+	
+	public void addTallObject(GameObject tallObject, int x, int y) {
 		GridPosition pos = new GridPosition(x, y);
 		while (contents.get(pos) != null) {
 			pos.setY(pos.getY() + 1);
@@ -32,7 +60,7 @@ public class World {
 		tallObject.updateWorldPos(this, pos.getX(), pos.getY());
 	}
 	
-	public boolean moveObject(TallObject tallObject, int x, int y) {
+	public boolean moveObject(GameObject tallObject, int x, int y) {
 		GridPosition pos = new GridPosition(x, y);
 		if (contents.get(pos) == null) {
 			contents.put(pos, tallObject);
@@ -49,17 +77,13 @@ public class World {
 		}
 	}
 
-//	public static void remove(int x, int y) {
-//		contents.remove(new GridPosition(x, y));
-//	}
-	
-	public void remove(TallObject tallObject) {
+	public void remove(GameObject tallObject) {
 		contents.remove(tallObject.getPos());
 	}
 	
 	public Iterator<Unit> getTeamUnits(TEAM team) {
 		ArrayList<Unit> teamUnits = new ArrayList<Unit>();
-		for (TallObject object : contents.values()) {
+		for (GameObject object : contents.values()) {
 			if (object instanceof Unit && object.getTeam() == team) {
 				teamUnits.add((Unit) object);
 			}
@@ -72,7 +96,7 @@ public class World {
 		ArrayList<T> subset = new ArrayList<T>();
 		for (int y = pos.getY(); y < pos.getY() + pos.getHeight(); y++) {
 			for (int x = pos.getX(); x < pos.getX() + pos.getWidth(); x++) {
-				TallObject tallObject = contents.get(new GridPosition(x, y));
+				GameObject tallObject = contents.get(new GridPosition(x, y));
 				if (tallObject != null && theClass.isAssignableFrom(tallObject.getClass())) {
 					subset.add((T)tallObject);
 				}
@@ -81,7 +105,8 @@ public class World {
 		return subset;
 	}
 	
-	public ArrayList<ITargetable> getTargets(Unit source, Ability ability, GridRectangle rect) {
+	public ArrayList<ITargetable> getTargets(Unit source, Ability ability) {
+		GridRectangle rect = new GridRectangle(focusTarget.getPos(), TARGETABLE_WIDTH, TARGETABLE_HEIGHT);
 		Ability.TARGET_TYPE outcome = ability.getSelectionTargetType();
 		ArrayList<ITargetable> targets = new ArrayList<ITargetable>();
 		
@@ -125,8 +150,8 @@ public class World {
 			}
 		}
 		
-		ArrayList<TallObject> objects = getSortedContentsWithin(rect, TallObject.class);
-		for (TallObject object : objects){
+		ArrayList<GameObject> objects = getSortedContentsWithin(rect, GameObject.class);
+		for (GameObject object : objects){
 			if (targetTeams.contains(object.getTeam()) && object.isAlive()) {
 				targets.add(object);
 			}
@@ -139,7 +164,7 @@ public class World {
 		contents.clear();
 	}
 
-	public TallObject getTallObject(GridPosition pos) {
+	public GameObject getTallObject(GridPosition pos) {
 		return contents.get(pos);
 	}
 
@@ -185,13 +210,26 @@ public class World {
 		triggers.add(trigger);
 	}
 	
-	public static void setQuestTarget(ITargetable target) {
-		questTarget = target;
+	public ITargetable getFocusTarget() {
+		return focusTarget;
 	}
-	
+
+	public void setFocusTarget(ITargetable focusTarget) {
+		this.focusTarget = focusTarget;
+	}
+
 	public GridPosition getQuestTargetPosition() {
 		if (questTarget == null)
 			return null;
 		return questTarget.getPos();
 	}
+
+	public void setQuestTarget(ITargetable questTarget) {
+		this.questTarget = questTarget;
+	}
+
+	public GridRectangle getTargetableRectangle() {
+		return new GridRectangle(focusTarget.getPos(), TARGETABLE_WIDTH, TARGETABLE_HEIGHT);
+	}
+	
 }

@@ -8,7 +8,7 @@ import view.SpriteSheet;
 import view.SpriteSheet.CLIMATE;
 import controller.plot.Plot;
 
-public class Structure extends TallObject{
+public class Structure extends GameObject{
 
 	private static final SpriteSheet STRUCTURE_SHEET = 
 			SpriteSheet.getSpriteSheet(Plot.class.getResource("/resource/img/spriteSheet/objects.png"));

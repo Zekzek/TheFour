@@ -41,10 +41,9 @@ public class GroundTarget implements ITargetable {
 		this.inTargetList = inTargetList;
 	}
 
-	public void paint(Graphics2D g2) {
+	public void paint(Graphics2D g2, GridRectangle screenRectangle) {
 		if (isInTargetList()) {
 			AffineTransform savedTransorm = g2.getTransform();
-			GridRectangle screenRectangle = GraphicsPanel.getScreenRectangle();
 
 			g2.translate(GraphicsPanel.CELL_WIDTH * (pos.getX()-screenRectangle.getX()), 
 					GraphicsPanel.TERRAIN_CELL_HEIGHT * (pos.getY()-screenRectangle.getY()));

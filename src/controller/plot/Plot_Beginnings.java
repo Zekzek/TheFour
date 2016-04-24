@@ -2,14 +2,14 @@ package controller.plot;
 
 import model.Ability;
 import model.Dialog;
+import model.GridPosition;
+import model.GridRectangle;
 import model.GroundTarget;
 import model.StatusEffect;
 import model.Structure;
-import model.TallObject;
-import model.TallObject.TEAM;
+import model.GameObject.TEAM;
 import model.Unit;
 import model.World;
-import view.GraphicsPanel;
 import view.SceneTransition;
 import view.SpriteSheet.FACING;
 import controller.BattleQueue;
@@ -19,6 +19,11 @@ import controller.Trigger;
 
 public class Plot_Beginnings extends Plot {
 
+	public Plot_Beginnings(BattleQueue battleQueue, World world) {
+		super(battleQueue, world);
+		// TODO Auto-generated constructor stub
+	}
+
 	private Unit defender, savior, guardCaptain, damsel, damselsBrother, sorceress;
 	private Unit[] guards, bandits;
 	private Structure targetDummy;
@@ -26,20 +31,20 @@ public class Plot_Beginnings extends Plot {
 	@Override
 	protected void initUnits() {
 		defender = Unit.get(Unit.ID.DEFENDER, TEAM.PLAYER);
-		BattleQueue.addCombatant(defender, 73, 28);
+		battleQueue.addGameObject(defender, 73, 28);
 		
 		savior = Unit.get(Unit.ID.BOY, TEAM.NONCOMBATANT, "Uncle Xalvador");
 		savior.setFacing(FACING.N);
-		BattleQueue.addCombatant(savior, 69, 23);
+		battleQueue.addGameObject(savior, 69, 23);
 		
 		guardCaptain = Unit.get(Unit.ID.GUARD, TEAM.NONCOMBATANT, "Guard Captain");
 		guardCaptain.setFacing(FACING.N);
-		BattleQueue.addCombatant(guardCaptain, 61, 17);
+		battleQueue.addGameObject(guardCaptain, 61, 17);
 		
 		guards = new Unit[6];
 		for (int i = 0; i < guards.length; i++) {
 			guards[i] = Unit.get(Unit.ID.GUARD, TEAM.NONCOMBATANT, "Guard #" + (i + 1));
-			BattleQueue.addCombatant(guards[i], 58 + i, 14);
+			battleQueue.addGameObject(guards[i], 58 + i, 14);
 		}
 		guards[0].setName("Guard Gerrart");
 		guards[1].setName("Guard Amelyn");
@@ -49,19 +54,19 @@ public class Plot_Beginnings extends Plot {
 		targetDummy = Structure.get(Structure.ID.TARGET_DUMMY, null);
 		targetDummy.setName("Old Stuffy");
 		targetDummy.setTeam(TEAM.ENEMY1);
-		BattleQueue.addCombatant(targetDummy, 59, 17);
+		battleQueue.addGameObject(targetDummy, 59, 17);
 		
 		damsel = Unit.get(Unit.ID.GIRL, TEAM.NONCOMBATANT, "Helpless Damsel");
 		damsel.setFacing(FACING.E);
-		BattleQueue.addCombatant(damsel, 115, 19);
+		battleQueue.addGameObject(damsel, 115, 19);
 		
 		damselsBrother = Unit.get(Unit.ID.BOY, TEAM.NONCOMBATANT, "Defensive Brother");
 		damselsBrother.setFacing(FACING.W);
-		BattleQueue.addCombatant(damselsBrother, 116, 19);
+		battleQueue.addGameObject(damselsBrother, 116, 19);
 		
 		sorceress = Unit.get(Unit.ID.SORCERESS, TEAM.NONCOMBATANT);
 		sorceress.setFacing(FACING.W);
-		BattleQueue.addCombatant(sorceress, 151, 26);
+		battleQueue.addGameObject(sorceress, 151, 26);
 		
 		bandits = new Unit[3];
 		for (int i = 0; i < bandits.length; i++) {
@@ -78,9 +83,8 @@ public class Plot_Beginnings extends Plot {
 		morningChat.setSetupRunnable(new Runnable() {
 			@Override
 			public void run() {
-				GraphicsPanel.moveScreenTo(defender, 0);
-				
-				World.setQuestTarget(savior);
+				world.setFocusTarget(defender);
+				world.setQuestTarget(savior);
 				ProximityTrigger lovedOneTrigger = new ProximityTrigger(Trigger.ID.BEGINNINGS_TALK_LOVED_ONE_1, savior, 2, 
 						new Dialog[]{
 							new Dialog(savior, "Morning, little one. Something you want to tell me?"),
@@ -99,11 +103,11 @@ public class Plot_Beginnings extends Plot {
 						}, new Runnable(){
 							@Override
 							public void run() {
-								BattleQueue.queueAction(Ability.get(Ability.ID.MOVE), savior, new GroundTarget(67, 28));
-								World.setQuestTarget(guardCaptain);
+								battleQueue.queueAction(Ability.get(Ability.ID.MOVE), savior, new GroundTarget(67, 28));
+								world.setQuestTarget(guardCaptain);
 							}
 						});
-				World.addTrigger(lovedOneTrigger);
+				world.addTrigger(lovedOneTrigger);
 				
 				ProximityTrigger guardCaptainTrigger = new ProximityTrigger(Trigger.ID.BEGINNINGS_GUARDS_1, guardCaptain, 3,
 						new Dialog[]{
@@ -117,10 +121,10 @@ public class Plot_Beginnings extends Plot {
 						}, new Runnable() {
 							@Override
 							public void run() {
-								World.setQuestTarget(targetDummy);
+								world.setQuestTarget(targetDummy);
 							}
 						});
-				World.addTrigger(guardCaptainTrigger);
+				world.addTrigger(guardCaptainTrigger);
 				
 				BattleTrigger guardTrainingTrigger = new BattleTrigger(Trigger.ID.BEGINNINGS_GUARDS_2, Ability.ID.GUARD_ATTACK,
 						new Dialog[]{ 
@@ -130,7 +134,7 @@ public class Plot_Beginnings extends Plot {
 									+ "you can do with it. Show me your Shield Bash.")
 					}, null);
 				guardTrainingTrigger.setMinAllowed(Trigger.ID.BEGINNINGS_GUARDS_1, 1);
-				World.addTrigger(guardTrainingTrigger);
+				world.addTrigger(guardTrainingTrigger);
 				
 				BattleTrigger guardTrainingTrigger2 = new BattleTrigger(Trigger.ID.BEGINNINGS_GUARDS_3, Ability.ID.SHIELD_BASH,
 						new Dialog[]{ 
@@ -148,12 +152,12 @@ public class Plot_Beginnings extends Plot {
 						@Override
 						public void run() {
 							guards[0].setTeam(TEAM.PLAYER);
-							World.setQuestTarget(damsel);
+							world.setQuestTarget(damsel);
 							damselsBrother.damage(9999);
 						}
 				});
 				guardTrainingTrigger2.setMinAllowed(Trigger.ID.BEGINNINGS_GUARDS_2, 1);
-				World.addTrigger(guardTrainingTrigger2);
+				world.addTrigger(guardTrainingTrigger2);
 				
 				Trigger damselInDistressTrigger = new ProximityTrigger(Trigger.ID.BEGINNINGS_DAMSEL_1, damsel, 3,
 					new Dialog[]{ 
@@ -168,14 +172,14 @@ public class Plot_Beginnings extends Plot {
 						@Override
 						public void run() {
 							damsel.setFacing(FACING.W);
-							BattleQueue.removeCombatant(guards[0], Ability.get(Ability.ID.MOVE), 
+							battleQueue.removeCombatant(guards[0], Ability.get(Ability.ID.MOVE), 
 									new GroundTarget(damsel.getPos().getX() - 1, damsel.getPos().getY()));
 							guards[0].setTeam(TEAM.NONCOMBATANT);
-							World.setQuestTarget(sorceress);
+							world.setQuestTarget(sorceress);
 						}
 				});
 				damselInDistressTrigger.setMinAllowed(Trigger.ID.BEGINNINGS_GUARDS_3, 1);
-				World.addTrigger(damselInDistressTrigger);
+				world.addTrigger(damselInDistressTrigger);
 				
 				Trigger sorceressRequestTrigger = new ProximityTrigger(Trigger.ID.BEGINNINGS_SORCERESS_1, sorceress, 3,
 					new Dialog[] {
@@ -193,12 +197,12 @@ public class Plot_Beginnings extends Plot {
 					}, new Runnable(){
 						@Override
 						public void run() {
-							BattleQueue.queueAction(Ability.get(Ability.ID.MOVE), sorceress, new GroundTarget(153, 20));
-							World.setQuestTarget(guardCaptain);
+							battleQueue.queueAction(Ability.get(Ability.ID.MOVE), sorceress, new GroundTarget(153, 20));
+							world.setQuestTarget(guardCaptain);
 						}
 				});
 				sorceressRequestTrigger.setMinAllowed(Trigger.ID.BEGINNINGS_DAMSEL_1, 1);
-				World.addTrigger(sorceressRequestTrigger);
+				world.addTrigger(sorceressRequestTrigger);
 				
 				Trigger banditAttackTrigger = new ProximityTrigger(Trigger.ID.BEGINNINGS_BANDIT_ATTACK_1, new GroundTarget(81, 21), 20,
 					null, 
@@ -208,11 +212,11 @@ public class Plot_Beginnings extends Plot {
 							addObjectOffscreen(bandits[0], -1, 0);
 							addObjectOffscreen(bandits[1], 1, 0);
 							addObjectOffscreen(bandits[2], 0, 1);
-							BattleQueue.startCombat();
+							battleQueue.startCombat();
 						}
 				});
 				banditAttackTrigger.setMinAllowed(Trigger.ID.BEGINNINGS_SORCERESS_1, 1);
-				World.addTrigger(banditAttackTrigger);
+				world.addTrigger(banditAttackTrigger);
 				
 				for (int i = 0; i < 3; i++) {
 					final int banditNum = i;
@@ -225,7 +229,7 @@ public class Plot_Beginnings extends Plot {
 					);
 					banditAttackTriggerSpeech.setMinAllowed(Trigger.ID.BEGINNINGS_BANDIT_ATTACK_1, 1);
 					banditAttackTriggerSpeech.setMaxAllowed(Trigger.ID.BEGINNINGS_BANDIT_ATTACK_2, 0);
-					World.addTrigger(banditAttackTriggerSpeech);
+					world.addTrigger(banditAttackTriggerSpeech);
 					
 					Trigger banditDefeatTrigger = new BattleTrigger(Trigger.ID.BEGINNINGS_GUARDS_ASSIST_1, bandits[i],
 						null, 
@@ -239,7 +243,7 @@ public class Plot_Beginnings extends Plot {
 					);
 					banditDefeatTrigger.setMinAllowed(Trigger.ID.BEGINNINGS_BANDIT_ATTACK_2, 1);
 					banditDefeatTrigger.setMaxAllowed(Trigger.ID.BEGINNINGS_GUARDS_ASSIST_1, 0);
-					World.addTrigger(banditDefeatTrigger);
+					world.addTrigger(banditDefeatTrigger);
 					
 					Trigger banditDefeatTrigger2 = new BattleTrigger(Trigger.ID.BEGINNINGS_GUARDS_ASSIST_1, bandits[i],
 						new Dialog[] {
@@ -248,7 +252,7 @@ public class Plot_Beginnings extends Plot {
 						new Runnable(){
 							@Override
 							public void run() {
-								BattleQueue.endCombat();
+								battleQueue.endCombat();
 								moveOffscreenAndRemove(bandits[0]);
 								moveOffscreenAndRemove(bandits[1]);
 								moveOffscreenAndRemove(bandits[2]);									
@@ -257,18 +261,18 @@ public class Plot_Beginnings extends Plot {
 					);
 					banditDefeatTrigger2.setMinAllowed(Trigger.ID.BEGINNINGS_BANDIT_ATTACK_1, 1);
 					banditDefeatTrigger2.setMaxAllowed(Trigger.ID.BEGINNINGS_GUARDS_ASSIST_1, 1);
-					World.addTrigger(banditDefeatTrigger2);
+					world.addTrigger(banditDefeatTrigger2);
 					
 					Trigger banditsEscapeTriggerCount = new ProximityTrigger(Trigger.ID.BEGINNINGS_BANDIT_ESCAPE_1, bandits[banditNum], 10, true,
 							null, 
 							new Runnable() {
 								@Override
 								public void run() {
-									BattleQueue.removeCombatant(bandits[banditNum], exitAbility, target);
+									battleQueue.removeCombatant(bandits[banditNum], null, null);
 								}}
 						);
 					banditsEscapeTriggerCount.setMinAllowed(Trigger.ID.BEGINNINGS_BANDIT_ATTACK_1, 2);
-					World.addTrigger(banditsEscapeTriggerCount);
+					world.addTrigger(banditsEscapeTriggerCount);
 					
 					Trigger banditsEscapeTrigger = new ProximityTrigger(Trigger.ID.BEGINNINGS_BANDIT_ESCAPE_2, bandits[banditNum], 14, true,
 						new Dialog[] {
@@ -296,7 +300,7 @@ public class Plot_Beginnings extends Plot {
 						);
 					banditsEscapeTrigger.setMinAllowed(Trigger.ID.BEGINNINGS_BANDIT_ESCAPE_1, 2);
 					banditsEscapeTrigger.setMaxAllowed(Trigger.ID.BEGINNINGS_BANDIT_ESCAPE_1, 0);
-					World.addTrigger(banditsEscapeTrigger);
+					world.addTrigger(banditsEscapeTrigger);
 				}
 				
 				Trigger banditDefeatTriggerSpeech = new ProximityTrigger(Trigger.ID.BEGINNINGS_GUARDS_ASSIST_2, guardCaptain, 10,
@@ -305,7 +309,7 @@ public class Plot_Beginnings extends Plot {
 						}, null
 					);
 				banditDefeatTriggerSpeech.setMinAllowed(Trigger.ID.BEGINNINGS_GUARDS_ASSIST_1, 1);
-				World.addTrigger(banditDefeatTriggerSpeech);
+				world.addTrigger(banditDefeatTriggerSpeech);
 			}
 		});
 		
@@ -317,15 +321,14 @@ public class Plot_Beginnings extends Plot {
 		return "Morning Chat";
 	}
 	
-	private void addObjectOffscreen(TallObject object, int x, int y) {
-		int posX = GraphicsPanel.getScreenRectangle().getX();
-		int posY = GraphicsPanel.getScreenRectangle().getY();
-		BattleQueue.addCombatant(object, posX, posY);
+	private void addObjectOffscreen(Unit unit, int x, int y) {
+		GridRectangle pos = world.getFocusTarget().getPos().getSumFromCenter(new GridPosition(x, y));
+		battleQueue.addGameObject(unit, pos.getX(), pos.getY());
 		//TODO add object just offscreen on a traversable square
 	}
 	
 	private void moveOffscreenAndRemove(Unit unit) {
 		unit.addStatusEffect(new StatusEffect(StatusEffect.ID.FLEE, 60000));
-		BattleQueue.removeCombatant(unit, Ability.get(Ability.ID.FLEE), unit);
+		battleQueue.removeCombatant(unit, Ability.get(Ability.ID.FLEE), unit);
 	}
 }

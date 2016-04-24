@@ -2,7 +2,7 @@ package controller.plot;
 
 import model.Ability;
 import model.Dialog;
-import model.TallObject.TEAM;
+import model.GameObject.TEAM;
 import model.Unit;
 import model.Unit.ID;
 import model.World;

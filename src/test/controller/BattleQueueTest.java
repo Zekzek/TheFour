@@ -4,15 +4,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 
 import model.Ability;
 import model.ReadiedAction;
-import model.TallObject.TEAM;
+import model.GameObject.TEAM;
 import model.Unit;
 import model.Unit.ID;
+import model.World;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -25,9 +24,12 @@ public class BattleQueueTest {
 	private static Unit berserker;
 	private static Ability ability1;
 	private static Ability ability2;
+	private static BattleQueue battleQueue;
 	
 	@BeforeClass
 	public static void setupUnits() {
+		World world = new World();
+		battleQueue = new BattleQueue(world);
 		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER, "Defender");
 		berserker = Unit.get(ID.BERSERKER, TEAM.ENEMY1, "Berserker");
 		ability1 = Ability.get(Ability.ID.DELAY);
@@ -36,129 +38,127 @@ public class BattleQueueTest {
 	
 	@After
 	public void reset() {
-		BattleQueue.endCombat();
+		battleQueue.endCombat();
 	}
 	
 	@Test
 	public void testAddCombatants() {
-		Set<Unit> units = new HashSet<Unit>();
-		units.add(defender);
-		units.add(berserker);
-		BattleQueue.addCombatants(units.iterator());
-		assertEquals(BattleQueue.getLastScheduledTime(defender), 0);
-		assertEquals(BattleQueue.getCompletionTime(defender), 0);
-		assertEquals(BattleQueue.getLastScheduledTime(berserker), 0);
-		assertEquals(BattleQueue.getCompletionTime(berserker), 0);
-		assertFalse(BattleQueue.getActionQueueIterator().hasNext());		
+		battleQueue.addGameObject(defender, 1, 1);
+		battleQueue.addGameObject(berserker, 1, 2);
+		assertEquals(battleQueue.getLastScheduledTime(defender), 0);
+		assertEquals(battleQueue.getCompletionTime(defender), 0);
+		assertEquals(battleQueue.getLastScheduledTime(berserker), 0);
+		assertEquals(battleQueue.getCompletionTime(berserker), 0);
+		assertFalse(battleQueue.getActionQueueIterator().hasNext());		
 	}
 
 	@Test
 	public void testAddCombatant() {
-		BattleQueue.addCombatant(defender);
-		assertEquals(BattleQueue.getLastScheduledTime(defender), 0);
-		assertEquals(BattleQueue.getCompletionTime(defender), 0);
-		assertEquals(BattleQueue.getLastScheduledTime(berserker), -1);
-		assertEquals(BattleQueue.getCompletionTime(berserker), -1);
-		assertFalse(BattleQueue.getActionQueueIterator().hasNext());
+		battleQueue.addGameObject(defender, 1, 1);
+		assertEquals(battleQueue.getLastScheduledTime(defender), 0);
+		assertEquals(battleQueue.getCompletionTime(defender), 0);
+		assertEquals(battleQueue.getLastScheduledTime(berserker), -1);
+		assertEquals(battleQueue.getCompletionTime(berserker), -1);
+		assertFalse(battleQueue.getActionQueueIterator().hasNext());
 	}
 
 	@Test
 	public void testRemoveCombatant() {
-		BattleQueue.addCombatant(defender);
-		BattleQueue.addCombatant(berserker);
-		assertEquals(BattleQueue.getLastScheduledTime(defender), 0);
-		assertEquals(BattleQueue.getCompletionTime(defender), 0);
-		assertEquals(BattleQueue.getLastScheduledTime(berserker), 0);
-		assertEquals(BattleQueue.getCompletionTime(berserker), 0);
-		assertFalse(BattleQueue.getActionQueueIterator().hasNext());
+		battleQueue.addGameObject(defender, 1, 1);
+		battleQueue.addGameObject(berserker, 1, 2);
+		assertEquals(battleQueue.getLastScheduledTime(defender), 0);
+		assertEquals(battleQueue.getCompletionTime(defender), 0);
+		assertEquals(battleQueue.getLastScheduledTime(berserker), 0);
+		assertEquals(battleQueue.getCompletionTime(berserker), 0);
+		assertFalse(battleQueue.getActionQueueIterator().hasNext());
 		
-		BattleQueue.queueAction(ability1, defender, defender);
-		assertEquals(BattleQueue.getLastScheduledTime(defender), 0);
-		assertEquals(BattleQueue.getCompletionTime(defender), ability1.getDelay());
-		assertEquals(BattleQueue.getLastScheduledTime(berserker), 0);
-		assertEquals(BattleQueue.getCompletionTime(berserker), 0);
-		assertTrue(BattleQueue.getActionQueueIterator().hasNext());
+		battleQueue.queueAction(ability1, defender, defender);
+		assertEquals(battleQueue.getLastScheduledTime(defender), 0);
+		assertEquals(battleQueue.getCompletionTime(defender), ability1.getDelay());
+		assertEquals(battleQueue.getLastScheduledTime(berserker), 0);
+		assertEquals(battleQueue.getCompletionTime(berserker), 0);
+		assertTrue(battleQueue.getActionQueueIterator().hasNext());
 		
-		BattleQueue.removeCombatant(defender, null, null);
-		assertEquals(BattleQueue.getLastScheduledTime(defender), -1);
-		assertEquals(BattleQueue.getCompletionTime(defender), -1);
-		assertEquals(BattleQueue.getLastScheduledTime(berserker), 0);
-		assertEquals(BattleQueue.getCompletionTime(berserker), 0);
-		assertFalse(BattleQueue.getActionQueueIterator().hasNext());
+		battleQueue.removeCombatant(defender, null, null);
+		assertEquals(battleQueue.getLastScheduledTime(defender), -1);
+		assertEquals(battleQueue.getCompletionTime(defender), -1);
+		assertEquals(battleQueue.getLastScheduledTime(berserker), 0);
+		assertEquals(battleQueue.getCompletionTime(berserker), 0);
+		assertFalse(battleQueue.getActionQueueIterator().hasNext());
 	}
 
 	@Test
 	public void testAddRandomCombatDelays() {
-		BattleQueue.addCombatant(defender);
-		BattleQueue.addCombatant(berserker);
-		assertEquals(BattleQueue.getLastScheduledTime(defender), 0);
-		assertEquals(BattleQueue.getCompletionTime(defender), 0);
-		assertEquals(BattleQueue.getLastScheduledTime(berserker), 0);
-		assertEquals(BattleQueue.getCompletionTime(berserker), 0);
-		assertFalse(BattleQueue.getActionQueueIterator().hasNext());
+		battleQueue.addGameObject(defender, 1, 1);
+		battleQueue.addGameObject(berserker, 1, 2);
+		assertEquals(battleQueue.getLastScheduledTime(defender), 0);
+		assertEquals(battleQueue.getCompletionTime(defender), 0);
+		assertEquals(battleQueue.getLastScheduledTime(berserker), 0);
+		assertEquals(battleQueue.getCompletionTime(berserker), 0);
+		assertFalse(battleQueue.getActionQueueIterator().hasNext());
 
-		BattleQueue.queueAction(ability1, defender, defender);
-		BattleQueue.addRandomCombatDelays();
-		BattleQueue.queueAction(ability1, berserker, berserker);
-		assertTrue(BattleQueue.getLastScheduledTime(defender) > 0);
-		assertTrue(BattleQueue.getCompletionTime(defender) > 0);
-		assertTrue(BattleQueue.getLastScheduledTime(berserker) > 0);
-		assertTrue(BattleQueue.getCompletionTime(berserker) > 0);
-		Iterator<ReadiedAction> actions = BattleQueue.getActionQueueIterator();
+		battleQueue.queueAction(ability1, defender, defender);
+		battleQueue.addRandomCombatDelays();
+		battleQueue.queueAction(ability1, berserker, berserker);
+		assertTrue(battleQueue.getLastScheduledTime(defender) > 0);
+		assertTrue(battleQueue.getCompletionTime(defender) > 0);
+		assertTrue(battleQueue.getLastScheduledTime(berserker) > 0);
+		assertTrue(battleQueue.getCompletionTime(berserker) > 0);
+		Iterator<ReadiedAction> actions = battleQueue.getActionQueueIterator();
 		while (actions.hasNext()) {
 			ReadiedAction action = actions.next();
-			assertEquals(BattleQueue.getLastScheduledTime(action.getSource()), action.getStartTime());
+			assertEquals(battleQueue.getLastScheduledTime(action.getSource()), action.getStartTime());
 		}
 	}
 
 	@Test
 	public void testEndCombat() {
-		BattleQueue.addCombatant(defender);
-		BattleQueue.addCombatant(berserker);
-		BattleQueue.queueAction(ability1, defender, defender);
-		BattleQueue.queueAction(ability1, berserker, berserker);
-		BattleQueue.addRandomCombatDelays();
-		assertTrue(BattleQueue.getLastScheduledTime(defender) > 0);
-		assertTrue(BattleQueue.getCompletionTime(defender) > 0);
-		assertTrue(BattleQueue.getLastScheduledTime(berserker) > 0);
-		assertTrue(BattleQueue.getCompletionTime(berserker) > 0);
-		assertTrue(BattleQueue.getActionQueueIterator().hasNext());
+		battleQueue.addGameObject(defender, 1, 1);
+		battleQueue.addGameObject(berserker, 1, 2);
+		battleQueue.queueAction(ability1, defender, defender);
+		battleQueue.queueAction(ability1, berserker, berserker);
+		battleQueue.addRandomCombatDelays();
+		assertTrue(battleQueue.getLastScheduledTime(defender) > 0);
+		assertTrue(battleQueue.getCompletionTime(defender) > 0);
+		assertTrue(battleQueue.getLastScheduledTime(berserker) > 0);
+		assertTrue(battleQueue.getCompletionTime(berserker) > 0);
+		assertTrue(battleQueue.getActionQueueIterator().hasNext());
 
-		BattleQueue.endCombat();
-		assertEquals(BattleQueue.getLastScheduledTime(defender), -1);
-		assertEquals(BattleQueue.getCompletionTime(defender), -1);
-		assertEquals(BattleQueue.getLastScheduledTime(berserker), -1);
-		assertEquals(BattleQueue.getCompletionTime(berserker), -1);
-		assertFalse(BattleQueue.getActionQueueIterator().hasNext());
+		battleQueue.endCombat();
+		assertEquals(battleQueue.getLastScheduledTime(defender), -1);
+		assertEquals(battleQueue.getCompletionTime(defender), -1);
+		assertEquals(battleQueue.getLastScheduledTime(berserker), -1);
+		assertEquals(battleQueue.getCompletionTime(berserker), -1);
+		assertFalse(battleQueue.getActionQueueIterator().hasNext());
 	}
 
 	@Test
 	public void testQueueAction() {
-		BattleQueue.addCombatant(defender);
-		BattleQueue.queueAction(ability1, defender, defender);
-		assertEquals(BattleQueue.getLastScheduledTime(defender), 0);
-		assertTrue(BattleQueue.getCompletionTime(defender) > 0);
-		assertTrue(BattleQueue.getActionQueueIterator().hasNext());
-		Iterator<ReadiedAction> actions = BattleQueue.getActionQueueIterator();
+		battleQueue.addGameObject(defender, 1, 1);
+		battleQueue.queueAction(ability1, defender, defender);
+		assertEquals(battleQueue.getLastScheduledTime(defender), 0);
+		assertTrue(battleQueue.getCompletionTime(defender) > 0);
+		assertTrue(battleQueue.getActionQueueIterator().hasNext());
+		Iterator<ReadiedAction> actions = battleQueue.getActionQueueIterator();
 		while (actions.hasNext()) {
 			ReadiedAction action = actions.next();
 			assertEquals(ability1, action.getAbility());
-			assertEquals(BattleQueue.getLastScheduledTime(action.getSource()), action.getStartTime());
+			assertEquals(battleQueue.getLastScheduledTime(action.getSource()), action.getStartTime());
 		}
 	}
 
 	@Test
 	public void testInsertFirstActionAbilityUnitITargetable() {
-		BattleQueue.addCombatant(defender);
-		BattleQueue.queueAction(ability1, defender, defender);
-		assertEquals(BattleQueue.getLastScheduledTime(defender), 0);
-		assertTrue(BattleQueue.getCompletionTime(defender) > 0);
+		battleQueue.addGameObject(defender, 1, 1);
+		battleQueue.queueAction(ability1, defender, defender);
+		assertEquals(battleQueue.getLastScheduledTime(defender), 0);
+		assertTrue(battleQueue.getCompletionTime(defender) > 0);
 		
-		BattleQueue.insertFirstAction(ability2, defender, defender);
-		assertTrue(BattleQueue.getLastScheduledTime(defender) > 0);
-		assertEquals(BattleQueue.getCompletionTime(defender), ability1.getDelay() + ability2.getDelay());
+		battleQueue.insertFirstAction(ability2, defender, defender);
+		assertTrue(battleQueue.getLastScheduledTime(defender) > 0);
+		assertEquals(battleQueue.getCompletionTime(defender), ability1.getDelay() + ability2.getDelay());
 		
-		Iterator<ReadiedAction> actions = BattleQueue.getActionQueueIterator();
+		Iterator<ReadiedAction> actions = battleQueue.getActionQueueIterator();
 		ReadiedAction firstAction = actions.next();
 		assertEquals(ability2, firstAction.getAbility());
 		assertEquals(0, firstAction.getStartTime());
@@ -169,12 +169,12 @@ public class BattleQueueTest {
 
 	@Test
 	public void testInsertFirstActionAbilityUnitITargetableRunnableRunnable() {
-		BattleQueue.addCombatant(defender);
-		BattleQueue.queueAction(ability1, defender, defender);
-		assertEquals(BattleQueue.getLastScheduledTime(defender), 0);
-		assertTrue(BattleQueue.getCompletionTime(defender) > 0);
+		battleQueue.addGameObject(defender, 1, 1);
+		battleQueue.queueAction(ability1, defender, defender);
+		assertEquals(battleQueue.getLastScheduledTime(defender), 0);
+		assertTrue(battleQueue.getCompletionTime(defender) > 0);
 		
-		BattleQueue.insertFirstAction(ability2, defender, defender, new Runnable(){
+		battleQueue.insertFirstAction(ability2, defender, defender, new Runnable(){
 			@Override
 			public void run() {
 				// do nothing for this test
@@ -183,10 +183,10 @@ public class BattleQueueTest {
 			public void run() {
 				// do nothing for this test
 			}});
-		assertTrue(BattleQueue.getLastScheduledTime(defender) > 0);
-		assertEquals(BattleQueue.getCompletionTime(defender), ability1.getDelay() + ability2.getDelay());
+		assertTrue(battleQueue.getLastScheduledTime(defender) > 0);
+		assertEquals(battleQueue.getCompletionTime(defender), ability1.getDelay() + ability2.getDelay());
 		
-		Iterator<ReadiedAction> actions = BattleQueue.getActionQueueIterator();
+		Iterator<ReadiedAction> actions = battleQueue.getActionQueueIterator();
 		ReadiedAction firstAction = actions.next();
 		assertEquals(ability2, firstAction.getAbility());
 		assertEquals(0, firstAction.getStartTime());
@@ -197,15 +197,15 @@ public class BattleQueueTest {
 
 	@Test
 	public void testDequeueAction() {
-		BattleQueue.addCombatant(defender);
-		BattleQueue.queueAction(ability1, defender, defender);
-		BattleQueue.queueAction(ability2, defender, defender);
+		battleQueue.addGameObject(defender, 1, 1);
+		battleQueue.queueAction(ability1, defender, defender);
+		battleQueue.queueAction(ability2, defender, defender);
 		
-		BattleQueue.dequeueAction(BattleQueue.getActionQueueIterator().next());
-		assertEquals(BattleQueue.getLastScheduledTime(defender), 0);
-		assertEquals(BattleQueue.getCompletionTime(defender), ability2.getDelay());
+		battleQueue.dequeueAction(battleQueue.getActionQueueIterator().next());
+		assertEquals(battleQueue.getLastScheduledTime(defender), 0);
+		assertEquals(battleQueue.getCompletionTime(defender), ability2.getDelay());
 		
-		Iterator<ReadiedAction> actions = BattleQueue.getActionQueueIterator();
+		Iterator<ReadiedAction> actions = battleQueue.getActionQueueIterator();
 		ReadiedAction firstAction = actions.next();
 		assertEquals(ability2, firstAction.getAbility());
 		assertEquals(0, firstAction.getStartTime());
@@ -214,29 +214,29 @@ public class BattleQueueTest {
 
 	@Test
 	public void testGetMostReadyCombatant() {
-		BattleQueue.addCombatant(defender);
-		BattleQueue.addCombatant(berserker);
-		BattleQueue.queueAction(ability1, defender, defender);
-		assertEquals(berserker, BattleQueue.getMostReadyPlayer());
+		battleQueue.addGameObject(defender, 1, 1);
+		battleQueue.addGameObject(berserker, 1, 2);
+		battleQueue.queueAction(ability1, defender, defender);
+		assertEquals(berserker, battleQueue.getMostReadyPlayer());
 	}
 
 	@Test
 	public void testDelay() {
-		BattleQueue.addCombatant(defender);
-		BattleQueue.addCombatant(berserker);
-		BattleQueue.queueAction(ability1, defender, defender);
-		BattleQueue.queueAction(ability1, berserker, berserker);
-		assertEquals(BattleQueue.getLastScheduledTime(defender), 0);
-		assertTrue(BattleQueue.getCompletionTime(defender) > 0);
+		battleQueue.addGameObject(defender, 1, 1);
+		battleQueue.addGameObject(berserker, 1, 2);
+		battleQueue.queueAction(ability1, defender, defender);
+		battleQueue.queueAction(ability1, berserker, berserker);
+		assertEquals(battleQueue.getLastScheduledTime(defender), 0);
+		assertTrue(battleQueue.getCompletionTime(defender) > 0);
 		
 		int delayAmount = 5100;
-		BattleQueue.delay(defender, delayAmount);
-		assertEquals(BattleQueue.getLastScheduledTime(defender), delayAmount);
-		assertEquals(BattleQueue.getCompletionTime(defender), ability1.getDelay() + delayAmount);
-		assertEquals(BattleQueue.getLastScheduledTime(berserker), 0);
-		assertEquals(BattleQueue.getCompletionTime(berserker), ability1.getDelay());
+		battleQueue.delay(defender, delayAmount);
+		assertEquals(battleQueue.getLastScheduledTime(defender), delayAmount);
+		assertEquals(battleQueue.getCompletionTime(defender), ability1.getDelay() + delayAmount);
+		assertEquals(battleQueue.getLastScheduledTime(berserker), 0);
+		assertEquals(battleQueue.getCompletionTime(berserker), ability1.getDelay());
 		
-		Iterator<ReadiedAction> actions = BattleQueue.getActionQueueIterator();
+		Iterator<ReadiedAction> actions = battleQueue.getActionQueueIterator();
 		ReadiedAction firstAction = actions.next();
 		assertEquals(berserker, firstAction.getSource());
 		assertEquals(0, firstAction.getStartTime());
@@ -244,25 +244,4 @@ public class BattleQueueTest {
 		assertEquals(defender, secondAction.getSource());
 		assertEquals(delayAmount, secondAction.getStartTime());
 	}
-
-//	@Test
-//	public void testAddBattleListener() {
-//		fail("Not yet implemented");
-//	}
-//	@Test
-//	public void testClearBattleListeners() {
-//		fail("Not yet implemented");
-//	}
-//	@Test
-//	public void testStartPlayingActions() {
-//		fail("Not yet implemented");
-//	}
-//	@Test
-//	public void testPerformNextAction() {
-//		fail("Not yet implemented");
-//	}
-//	@Test
-//	public void testSetActionComplete() {
-//		fail("Not yet implemented");
-//	}
 }

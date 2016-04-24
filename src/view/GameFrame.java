@@ -5,10 +5,13 @@ import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 
+import model.Dialog;
 import model.World;
 import controller.BattleQueue;
+import controller.Trigger;
+import controller.plot.Plot;
 
-public class GameFrame extends JFrame {
+public class GameFrame extends JFrame implements IMenuListener{
 	
 	private static final long serialVersionUID = 118154690873028536L;
 	private static final Dimension INITIAL_DIMENSIONS = new Dimension(1024, 600);
@@ -22,9 +25,15 @@ public class GameFrame extends JFrame {
 	private UnitQueuePanel unitQueuePanel;
 	private DialogPanel dialogPanel;
 	private TitleScreenPanel titleScreenPanel;
+	private World world;
+	private BattleQueue battleQueue;
 	
-	public GameFrame() {
+	public GameFrame(World world, BattleQueue battleQueue) {
 		me = this;
+		this.world = world;
+		this.battleQueue = battleQueue;
+		Plot.setGameFrame(this);
+		Trigger.setGameFrame(this);
 		setPreferredSize(INITIAL_DIMENSIONS);
 		setBounds(0, 0, INITIAL_DIMENSIONS.width, INITIAL_DIMENSIONS.height);
         setLocationRelativeTo(null);
@@ -32,25 +41,26 @@ public class GameFrame extends JFrame {
         
         layeredPane = new GameLayeredPane();
 		
-        graphicsPanel = new GraphicsPanel();
+        graphicsPanel = new GraphicsPanel(world, battleQueue);
 		layeredPane.add(graphicsPanel, JLayeredPane.DEFAULT_LAYER);
 		
-		partyPanel = new PartyPanel();
+		partyPanel = new PartyPanel(battleQueue);
 		layeredPane.add(partyPanel, JLayeredPane.PALETTE_LAYER);
 		
 		abilityPanel = new AbilityDetailPanel();
 		layeredPane.add(abilityPanel, JLayeredPane.PALETTE_LAYER);
 		
-		menuPanel = new AbilitySelectionPanel(abilityPanel);
+		menuPanel = new AbilitySelectionPanel(abilityPanel, world, battleQueue);
 		layeredPane.add(menuPanel, JLayeredPane.PALETTE_LAYER);
 		
 		unitQueuePanel = new UnitQueuePanel();
 		layeredPane.add(unitQueuePanel, JLayeredPane.PALETTE_LAYER);
 		
-		dialogPanel = new DialogPanel();
+		dialogPanel = new DialogPanel(battleQueue);
+		dialogPanel.addMenuListener(this);
 		layeredPane.add(dialogPanel, JLayeredPane.MODAL_LAYER);
 		
-		titleScreenPanel = new TitleScreenPanel();
+		titleScreenPanel = new TitleScreenPanel(battleQueue, world);
 		layeredPane.add(titleScreenPanel, JLayeredPane.POPUP_LAYER);
 		
 		getContentPane().add(layeredPane);
@@ -94,22 +104,32 @@ public class GameFrame extends JFrame {
 		}
 	}
 	
-	public static void returnToTitleScreen() {
-		BattleQueue.endCombat();
-		BattleQueue.clearBattleListeners();
-		BattleQueue.reset();
-//		World.reset();
-		if (me != null) {
-			me.layeredPane.remove(me.menuPanel);
-			me.menuPanel = new AbilitySelectionPanel(me.abilityPanel);
-			me.layeredPane.add(me.menuPanel, JLayeredPane.PALETTE_LAYER);
-			me.titleScreenPanel.setVisible(true);
-		}
+	public void returnToTitleScreen() {
+		battleQueue.endCombat();
+		battleQueue.clearBattleListeners();
+		battleQueue.reset();
+		layeredPane.remove(menuPanel);
+		menuPanel = new AbilitySelectionPanel(abilityPanel, world, battleQueue);
+		layeredPane.add(menuPanel, JLayeredPane.PALETTE_LAYER);
+		titleScreenPanel.setVisible(true);
 	}
 
 	public static void repaintAll() {
 		if (me != null) {
 			me.repaint();
 		}
+	}
+
+	public void changeScene(SceneTransition transition) {
+		graphicsPanel.changeScene(transition);
+	}
+
+	public void showDialog(Dialog[] speech, Runnable actionOnConclusion) {
+		dialogPanel.showDialog(speech, actionOnConclusion);
+	}
+
+	@Override
+	public void onSceneComplete() {
+		returnToTitleScreen();
 	}
 }

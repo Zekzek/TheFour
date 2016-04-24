@@ -5,7 +5,7 @@ import java.util.Iterator;
 import model.Ability;
 import model.Dialog;
 import model.ReadiedAction;
-import model.TallObject.TEAM;
+import model.GameObject.TEAM;
 import model.Unit;
 
 public class BattleTrigger extends Trigger implements IBattleListener, IPlayerListener{

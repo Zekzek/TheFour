@@ -1,6 +1,6 @@
 package controller;
 
-import model.TallObject.TEAM;
+import model.GameObject.TEAM;
 import model.Unit;
 
 public interface IBattleListener {

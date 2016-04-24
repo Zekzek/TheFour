@@ -3,6 +3,7 @@ package view;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,7 +15,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import model.World;
 import view.GraphicsPanel.AMBIENT_LIGHT;
+import controller.BattleQueue;
 import controller.plot.Plot;
 import controller.plot.Plot_Beginnings;
 import controller.plot.Plot_SpeedTest;
@@ -28,8 +31,13 @@ public class TitleScreenPanel extends JPanel{
 	private static TitleScreenPanel me;
 	private static Map<String, Class<? extends Plot>> plotOptions;
 	private static String selectedPlotString;
+	private static Class[] plotParameters = new Class[]{BattleQueue.class, World.class};
+	private BattleQueue battleQueue;
+	private World world;
 	
-	public TitleScreenPanel() {
+	public TitleScreenPanel(BattleQueue battleQueue, World world) {
+		this.battleQueue = battleQueue;
+		this.world = world;
 		plotOptions = new HashMap<String, Class<? extends Plot>>();
 		plotOptions.put("Beginnings", Plot_Beginnings.class);
 		plotOptions.put("Beginnings: Magic Case", Plot_Tutorial_Defend_Sorc_Item.class);
@@ -91,10 +99,19 @@ public class TitleScreenPanel extends JPanel{
 			public void actionPerformed(ActionEvent e) {
 				try {
 					Class<? extends Plot> plotClass = plotOptions.get(selectedPlotString);
-					Plot selectedPlot = (Plot) plotClass.newInstance();
+					Plot selectedPlot = (Plot) plotClass.getDeclaredConstructor(plotParameters)
+							.newInstance(battleQueue, world);
 					selectedPlot.start();
 					me.setVisible(false);
 				} catch (InstantiationException | IllegalAccessException e1) {
+					e1.printStackTrace();
+				} catch (IllegalArgumentException e1) {
+					e1.printStackTrace();
+				} catch (InvocationTargetException e1) {
+					e1.printStackTrace();
+				} catch (NoSuchMethodException e1) {
+					e1.printStackTrace();
+				} catch (SecurityException e1) {
 					e1.printStackTrace();
 				}
 			}

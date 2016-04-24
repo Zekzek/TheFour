@@ -32,7 +32,8 @@ import javax.swing.JPanel;
 import model.GridPosition;
 import model.GridRectangle;
 import model.GroundTarget;
-import model.TallObject;
+import model.ITargetable;
+import model.GameObject;
 import model.Unit;
 import model.World;
 import controller.BattleQueue;
@@ -48,6 +49,7 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	public static final double TALL_OBJECT_CELL_HEIGHT_MULTIPLIER = 2.0;
 	public static final int TALL_OBJECT_CELL_HEIGHT = (int) (TERRAIN_CELL_HEIGHT * TALL_OBJECT_CELL_HEIGHT_MULTIPLIER);
 	public static final int REFRESH_RATE = 50;
+	public static final int GLIDE_DURATION = 1000;
 	
 	private static final Color CLOSE_COLOR = new Color(255,255,245,0);
 	private static final Color FAR_COLOR = new Color(0,0,10,110);
@@ -69,18 +71,23 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 		}
 	};
 
-	private static Unit focusUnit = null;
+	private World world;
+	private BattleQueue battleQueue;
+	private ITargetable focusTarget = null;
+	private GridPosition glideStartPos = null;
+	private float glideToCompletion = 1.0f;
+	
+	private GridRectangle screenPos = new GridRectangle(0, 0, 24, 22);
+	
 	private static Color fade = new Color(0,0,0,0);
 	private static String fadeScreenText;
-	private static GridRectangle screenPos = new GridRectangle(0, 0, 24, 22);
 	private static AMBIENT_LIGHT ambientLight = AMBIENT_LIGHT.DAY;
 	private static GridPosition hoverPosition;
-	private static boolean initialized;
-	private static GridPosition moveScreenStartPosition;
-	private static volatile double moveCompletePercentage;
 	
-	private void initialize() {
-		initialized = true;
+	public GraphicsPanel(World world, BattleQueue battleQueue) {
+		this.world = world;
+		this.battleQueue = battleQueue;
+		
 		LIGHT_COLORS.put(AMBIENT_LIGHT.DAY, new Color(255,255,250,10));
 		LIGHT_COLORS.put(AMBIENT_LIGHT.DUSK, new Color(80,80,75,80));
 		LIGHT_COLORS.put(AMBIENT_LIGHT.NIGHT, new Color(20,20,20,140));
@@ -89,9 +96,6 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	}
 	
 	public void startPainting() {
-		if (!initialized) 
-			initialize();
-
 		if (!repaint.isAlive()) {
 			repaint.setDaemon(true);
 			repaint.start();
@@ -117,27 +121,25 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	    g2.translate(horizontalPadding, verticalPadding);
 	    g2.scale(scale, scale);
 		
-		if (focusUnit != null) {
-			if (moveScreenStartPosition != null) {
-				int startX = moveScreenStartPosition.getX();
-				int startY = moveScreenStartPosition.getY();
-				int endX = focusUnit.getPos().getX() - screenPos.getWidth()/2;
-				int endY = focusUnit.getPos().getY() - screenPos.getHeight()/2;
-				double posX = startX + moveCompletePercentage * (endX - startX);
-				double posY = startY + moveCompletePercentage * (endY - startY);
-				screenPos.setX((int) posX);
-				screenPos.setY((int) posY);
-				g2.translate(((int)posX - posX) * GraphicsPanel.CELL_WIDTH,
-						((int)posY - posY) * GraphicsPanel.TERRAIN_CELL_HEIGHT);
-			}
-			else {
-				GridPosition focusPos = focusUnit.getPos();
-				screenPos.setX(focusPos.getX() - screenPos.getWidth()/2);
-				screenPos.setY(focusPos.getY() - screenPos.getHeight()/2);
-				g2.translate(-focusUnit.getDrawXOffset() * GraphicsPanel.CELL_WIDTH,
-						-focusUnit.getDrawYOffset() * GraphicsPanel.TERRAIN_CELL_HEIGHT);
-			}
-		}
+	    ITargetable updatedFocusTarget = world.getFocusTarget();
+	    if (updatedFocusTarget != null) {
+	    	if (updatedFocusTarget.equals(focusTarget)) {
+	    		screenPos.setCenter(focusTarget.getPos());
+	    	}
+	    	else {
+		    	glideStartPos = screenPos.getCenter();
+		    	focusTarget = updatedFocusTarget;
+		    	glideToCompletion = 0;
+	    	}
+	    }
+	    if (glideToCompletion < 1) {
+	    	glideToCompletion += REFRESH_RATE / GLIDE_DURATION;
+	    	screenPos = GridRectangle.getGlidePositionFromCenter(screenPos, focusTarget.getPos(), glideToCompletion);
+	    }
+	    
+		g2.translate(screenPos.getxOffset() * GraphicsPanel.CELL_WIDTH,
+				screenPos.getyOffset() * GraphicsPanel.TERRAIN_CELL_HEIGHT);
+	
 		
 		// Draw terrain
 		BufferedImage[][] terrainTiles = MapBuilder.getTiles(screenPos, 1);
@@ -149,16 +151,16 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 		
 		// Draw active ground targets
 		for (GroundTarget target : groundTargets) {
-			target.paint(g2);
+			target.paint(g2, screenPos);
 		}
 		
 		// Draw the objects
 		GridRectangle visibleScreen = new GridRectangle(screenPos.getX(), screenPos.getY(), screenPos.getWidth(), screenPos.getHeight() + 1);
-		ArrayList<TallObject> contents = World.getSortedContentsWithin(visibleScreen, TallObject.class);
+		ArrayList<GameObject> contents = world.getSortedContentsWithin(visibleScreen, GameObject.class);
 		Area darkArea = new Area(new Rectangle(0, 0, screenPos.getWidth() * CELL_WIDTH, 
 	    		screenPos.getHeight() * TERRAIN_CELL_HEIGHT));
-	    for (TallObject tallObject : contents) {
-			tallObject.paint(g2);
+	    for (GameObject tallObject : contents) {
+			tallObject.paint(g2, screenPos);
 			if (tallObject instanceof Unit) {
 				darkArea.subtract(new Area(new Ellipse2D.Double(
 						(tallObject.getPos().getX() + tallObject.getDrawXOffset() - screenPos.getX() - 1) * CELL_WIDTH, 
@@ -197,7 +199,7 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 		int arrowWidth = 40;
 		int arrowHeight = 15;
 		
-		GridPosition targetPos = World.getQuestTargetPosition();
+		GridPosition targetPos = world.getQuestTargetPosition();
 		int currentPosX = screenPos.getX() + screenPos.getWidth()/2;
 		int currentPosY = screenPos.getY() + screenPos.getHeight()/2;
 		
@@ -245,18 +247,18 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	    }
 	}
 	
-	public static void changeScene(SceneTransition transition) {
+	public void changeScene(SceneTransition transition) {
 		changeScene(transition.getFadeInDuration(), 
 				transition.getFadedText(), transition.getFadedDuration(), transition.getSetupRunnable(), 
 				transition.getFadeOutDuration(), transition.getStartRunnable());
 	}
 	
-	public static void changeScene(int fadeOutDuration, String display, int displayDuration, Runnable runnable, 
+	public void changeScene(int fadeOutDuration, String display, int displayDuration, Runnable runnable, 
 			int fadeInDuration, Runnable startScene) {
 		Thread prettyLoadScene = new Thread() {
 			@Override public void run() {
 				// pause
-				BattleQueue.setPause(true);
+				battleQueue.setPause(true);
 				GameFrame.disableMenu();
 				
 				// fade to black
@@ -296,7 +298,7 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 				
 				// resume
 				GameFrame.enableMenu();
-				BattleQueue.setPause(false);
+				battleQueue.setPause(false);
 				
 				if (startScene != null)
 					startScene.run();
@@ -324,39 +326,39 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 		return img;
 	}
 	
-	public static void moveScreenTo(int x, int y) {
-		focusUnit = null;
-		moveScreenStartPosition = null;
-		screenPos.setX(x);
-		screenPos.setY(y);
-	}
+//	public static void moveScreenTo(int x, int y) {
+//		focusUnit = null;
+//		moveScreenStartPosition = null;
+//		screenPos.setX(x);
+//		screenPos.setY(y);
+//	}
+//	
+//	public static void moveScreenTo(Unit unit, int duration) {
+//		if (focusUnit == null || !focusUnit.equals(unit)) {
+//			focusUnit = unit;
+//			moveScreenStartPosition = new GridPosition(screenPos.getX(), screenPos.getY());
+//			Thread moveCameraThread = new Thread() {
+//				@Override
+//				public void run() {
+//					moveCompletePercentage = 0.0;
+//					for (int i = REFRESH_RATE; i < duration; i += REFRESH_RATE) {
+//						try {
+//							Thread.sleep(REFRESH_RATE);
+//						} catch (InterruptedException e) {
+//							e.printStackTrace();
+//						}
+//						moveCompletePercentage = i / (double)duration;
+//					}
+//					moveScreenStartPosition = null;
+//				}
+//			};
+//			moveCameraThread.start();
+//		}
+//	}
 	
-	public static void moveScreenTo(Unit unit, int duration) {
-		if (focusUnit == null || !focusUnit.equals(unit)) {
-			focusUnit = unit;
-			moveScreenStartPosition = new GridPosition(screenPos.getX(), screenPos.getY());
-			Thread moveCameraThread = new Thread() {
-				@Override
-				public void run() {
-					moveCompletePercentage = 0.0;
-					for (int i = REFRESH_RATE; i < duration; i += REFRESH_RATE) {
-						try {
-							Thread.sleep(REFRESH_RATE);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-						moveCompletePercentage = i / (double)duration;
-					}
-					moveScreenStartPosition = null;
-				}
-			};
-			moveCameraThread.start();
-		}
-	}
-	
-	public static GridRectangle getScreenRectangle() {
-		return screenPos;
-	}
+//	public static GridRectangle getScreenRectangle() {
+//		return screenPos;
+//	}
 	
 	public static AMBIENT_LIGHT getAmbientLight() {
 		return ambientLight;

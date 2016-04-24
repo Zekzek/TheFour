@@ -14,7 +14,7 @@ import javax.swing.JPanel;
 
 import model.ReadiedAction;
 import model.StatusEffect;
-import model.TallObject.TEAM;
+import model.GameObject.TEAM;
 import model.Unit;
 import controller.BattleQueue;
 import controller.IBattleListener;
@@ -29,8 +29,10 @@ public class PartyPanel extends JPanel implements IBattleListener, IPlayerListen
 	
 	private List<Unit> units = new ArrayList<Unit>();
 	private Unit activePlayer;
+	private BattleQueue battleQueue;
 	
-	public PartyPanel() {
+	public PartyPanel(BattleQueue battleQueue) {
+		this.battleQueue = battleQueue;
 		addMouseListener(this);
 		BattleQueue.addBattleListener(this);
 		BattleQueue.addPlayerListener(this);
@@ -80,7 +82,7 @@ public class PartyPanel extends JPanel implements IBattleListener, IPlayerListen
 	public void mousePressed(MouseEvent e) {
 		int clickedIndex = e.getY() / HEIGHT;
 		Unit clickedUnit = units.get(clickedIndex);
-		BattleQueue.setActivePlayer(clickedUnit);
+		battleQueue.setActivePlayer(clickedUnit);
 	}
 
 	@Override
