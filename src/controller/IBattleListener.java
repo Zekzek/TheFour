@@ -8,4 +8,5 @@ public interface IBattleListener {
 	public void onUnitRemoved(Unit unit);
 	public void onUnitDefeated(Unit unit);
 	public void onTeamDefeated(TEAM team);
+	public void onUnitChangedTeam(Unit unit);
 }

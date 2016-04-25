@@ -9,9 +9,11 @@ import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JPanel;
 
+import model.GameObject;
 import model.ReadiedAction;
 import model.StatusEffect;
 import model.GameObject.TEAM;
@@ -27,15 +29,15 @@ public class PartyPanel extends JPanel implements IBattleListener, IPlayerListen
 	private static final Color SELECTED_UNIT_COLOR = new Color(100, 100, 0);
 	private static final Color SELECTION_ARROW_COLOR = new Color(255, 255, 0);
 	
-	private List<Unit> units = new ArrayList<Unit>();
+	private List<Unit> playerUnits = new ArrayList<Unit>();
 	private Unit activePlayer;
 	private BattleQueue battleQueue;
 	
 	public PartyPanel(BattleQueue battleQueue) {
 		this.battleQueue = battleQueue;
 		addMouseListener(this);
-		BattleQueue.addBattleListener(this);
-		BattleQueue.addPlayerListener(this);
+		battleQueue.addBattleListener(this);
+		battleQueue.addPlayerListener(this);
 	}
 	
 	@Override
@@ -43,7 +45,7 @@ public class PartyPanel extends JPanel implements IBattleListener, IPlayerListen
 		Graphics2D g2 = (Graphics2D)g;
 		AffineTransform transform = AffineTransform.getScaleInstance(ICON_SCALE, ICON_SCALE);
 		int count = 0;
-		for (Unit unit : units) {
+		for (Unit unit : playerUnits) {
 			int baseHeight = count * HEIGHT;
 			if (unit.equals(activePlayer)) {
 				g2.setColor(SELECTION_ARROW_COLOR);
@@ -81,7 +83,7 @@ public class PartyPanel extends JPanel implements IBattleListener, IPlayerListen
 	@Override
 	public void mousePressed(MouseEvent e) {
 		int clickedIndex = e.getY() / HEIGHT;
-		Unit clickedUnit = units.get(clickedIndex);
+		Unit clickedUnit = playerUnits.get(clickedIndex);
 		battleQueue.setActivePlayer(clickedUnit);
 	}
 
@@ -99,14 +101,14 @@ public class PartyPanel extends JPanel implements IBattleListener, IPlayerListen
 
 	@Override
 	public void onUnitAdded(Unit unit) {
-		if (unit.getTeam() == TEAM.PLAYER && !units.contains(unit)) {
-			units.add(unit);
+		if (unit.getTeam() == TEAM.PLAYER && !playerUnits.contains(unit)) {
+			playerUnits.add(unit);
 		}
 	}
 
 	@Override
 	public void onUnitRemoved(Unit unit) {
-		units.remove(unit);
+		playerUnits.remove(unit);
 	}
 
 	@Override
@@ -115,6 +117,15 @@ public class PartyPanel extends JPanel implements IBattleListener, IPlayerListen
 	@Override
 	public void onTeamDefeated(TEAM team) {}
 
+	@Override
+	public void onUnitChangedTeam(Unit unit) {
+		if (unit.getTeam() == TEAM.PLAYER && !playerUnits.contains(unit)) {
+			playerUnits.add(unit);
+		} else if (unit.getTeam() != TEAM.PLAYER && playerUnits.contains(unit)) {
+			playerUnits.remove(unit);
+		}
+	}
+	
 	@Override
 	public void onChangedActivePlayer(Unit unit) {
 		activePlayer = unit;
@@ -125,4 +136,18 @@ public class PartyPanel extends JPanel implements IBattleListener, IPlayerListen
 
 	@Override
 	public void onPlayerUsedAbility(ReadiedAction action) {}
+
+	@Override
+	public void onChangedPlayerTeam(Set<GameObject> playerObjects) {
+		for (GameObject playerObject : playerObjects) {
+			if (playerObject instanceof Unit && !playerUnits.contains(playerObject)) {
+				playerUnits.add((Unit) playerObject);
+			}
+		}
+		for (Unit unit : playerUnits) {
+			if (!playerObjects.contains(unit)) {
+				playerUnits.remove(unit);
+			}
+		}
+	}
 }

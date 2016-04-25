@@ -22,7 +22,6 @@ import view.GraphicsPanel;
 import view.SpriteSheet;
 import view.SpriteSheet.ANIMATION;
 import view.SpriteSheet.FACING;
-import controller.BattleQueue;
 import controller.plot.Plot;
 
 public class Unit extends GameObject {
@@ -161,8 +160,7 @@ public class Unit extends GameObject {
 		}
 		if (bestAbility != null && bestTarget != null) {
 			System.out.println("Choosing (" + bestScore + ")  " + bestAbility + " -> " + bestTarget);
-			ReadiedAction action = new ReadiedAction(bestAbility, this, bestTarget, time);
-			return BattleQueue.getFirstStepToUseAction(action);
+			return new ReadiedAction(bestAbility, this, bestTarget, time);
 		} else {
 			return new ReadiedAction(Ability.get(Ability.ID.DELAY), this, this, time);
 		}		
@@ -189,7 +187,7 @@ public class Unit extends GameObject {
 			rangeBonus = 1.0;
 		} else {
 			double range = ability.getRange();
-			double distance = pos.getDistanceTo(target.getPos());
+			double distance = pos.getDistanceFromCenterTo(target.getPos());
 			if (range >= distance) {
 				rangeBonus = 4.0;
 			} else {
@@ -239,8 +237,8 @@ public class Unit extends GameObject {
 		if (moveDistance != 0) {
 			xOffset = (facing == FACING.W ? moveDistance : facing == FACING.E ? -moveDistance : 0); 
 			yOffset = (facing == FACING.N ? moveDistance : facing == FACING.S ? -moveDistance : 0); 
-			drawXOffset = xOffset;
-			drawYOffset = yOffset;
+			pos.setxOffset(xOffset);
+			pos.setyOffset(yOffset);
 			this.updateWorldPos(world, pos.getX() - xOffset, pos.getY() - yOffset);
 		} else {
 			xOffset = yOffset = 0;
@@ -249,8 +247,8 @@ public class Unit extends GameObject {
 			@Override
 			public void run() {
 				for (int i = 0; i < ANIMATION_LENGTH; i++) {
-					drawXOffset = (ANIMATION_LENGTH - 1.0 - i) * xOffset / ANIMATION_LENGTH;
-					drawYOffset = (ANIMATION_LENGTH - 1.0 - i) * yOffset / ANIMATION_LENGTH;
+					pos.setxOffset((ANIMATION_LENGTH - 1f - i) * xOffset / ANIMATION_LENGTH);
+					pos.setyOffset((ANIMATION_LENGTH - 1f - i) * yOffset / ANIMATION_LENGTH);
 					animationSequence = i;
 					if (stance != null) {
 						unit.stance = stance;

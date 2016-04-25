@@ -79,7 +79,7 @@ public class BattleQueueTest {
 		assertEquals(battleQueue.getCompletionTime(berserker), 0);
 		assertTrue(battleQueue.getActionQueueIterator().hasNext());
 		
-		battleQueue.removeCombatant(defender, null, null);
+		battleQueue.defeatGameObject(defender);
 		assertEquals(battleQueue.getLastScheduledTime(defender), -1);
 		assertEquals(battleQueue.getCompletionTime(defender), -1);
 		assertEquals(battleQueue.getLastScheduledTime(berserker), 0);

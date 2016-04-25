@@ -74,7 +74,7 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	private World world;
 	private BattleQueue battleQueue;
 	private ITargetable focusTarget = null;
-	private GridPosition glideStartPos = null;
+	private GridRectangle glideStartRect = null;
 	private float glideToCompletion = 1.0f;
 	
 	private GridRectangle screenPos = new GridRectangle(0, 0, 24, 22);
@@ -127,18 +127,18 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	    		screenPos.setCenter(focusTarget.getPos());
 	    	}
 	    	else {
-		    	glideStartPos = screenPos.getCenter();
+		    	glideStartRect = screenPos;
 		    	focusTarget = updatedFocusTarget;
 		    	glideToCompletion = 0;
 	    	}
 	    }
 	    if (glideToCompletion < 1) {
-	    	glideToCompletion += REFRESH_RATE / GLIDE_DURATION;
-	    	screenPos = GridRectangle.getGlidePositionFromCenter(screenPos, focusTarget.getPos(), glideToCompletion);
+	    	glideToCompletion += (float)REFRESH_RATE / GLIDE_DURATION;
+	    	screenPos = glideStartRect.getGlidePositionFromCenter(focusTarget.getPos(), glideToCompletion);
 	    }
 	    
-		g2.translate(screenPos.getxOffset() * GraphicsPanel.CELL_WIDTH,
-				screenPos.getyOffset() * GraphicsPanel.TERRAIN_CELL_HEIGHT);
+		g2.translate(-screenPos.getxOffset() * GraphicsPanel.CELL_WIDTH,
+				-screenPos.getyOffset() * GraphicsPanel.TERRAIN_CELL_HEIGHT);
 	
 		
 		// Draw terrain
@@ -155,7 +155,8 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 		}
 		
 		// Draw the objects
-		GridRectangle visibleScreen = new GridRectangle(screenPos.getX(), screenPos.getY(), screenPos.getWidth(), screenPos.getHeight() + 1);
+		GridRectangle visibleScreen = new GridRectangle(screenPos.getX() - 1, screenPos.getY() - 1, 
+				screenPos.getWidth() + 2, screenPos.getHeight() + 3);
 		ArrayList<GameObject> contents = world.getSortedContentsWithin(visibleScreen, GameObject.class);
 		Area darkArea = new Area(new Rectangle(0, 0, screenPos.getWidth() * CELL_WIDTH, 
 	    		screenPos.getHeight() * TERRAIN_CELL_HEIGHT));
@@ -163,8 +164,8 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 			tallObject.paint(g2, screenPos);
 			if (tallObject instanceof Unit) {
 				darkArea.subtract(new Area(new Ellipse2D.Double(
-						(tallObject.getPos().getX() + tallObject.getDrawXOffset() - screenPos.getX() - 1) * CELL_WIDTH, 
-						(tallObject.getPos().getY() + tallObject.getDrawYOffset() - screenPos.getY() - 1) * TERRAIN_CELL_HEIGHT, 
+						(tallObject.getPos().getX() + tallObject.getPos().getxOffset() - screenPos.getX() - 1) * CELL_WIDTH, 
+						(tallObject.getPos().getY() + tallObject.getPos().getyOffset() - screenPos.getY() - 1) * TERRAIN_CELL_HEIGHT, 
 						CELL_WIDTH * 3, TERRAIN_CELL_HEIGHT * 3)));
 			}
 		}

@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Set;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
@@ -16,6 +17,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import model.Ability;
+import model.GameObject;
 import model.GridPosition;
 import model.GroundTarget;
 import model.ITargetable;
@@ -41,7 +43,7 @@ public class AbilitySelectionPanel extends JPanel implements IGridClickedListene
 		this.abilityDetailPanel = abilityDetailPanel;
 		this.world = world;
 		this.battleQueue = battleQueue;
-		BattleQueue.addPlayerListener(this);
+		battleQueue.addPlayerListener(this);
 		setLayout(new GridLayout(1,1));
 		abilityList = makeMenuList();
 		abilityList.addListSelectionListener(new ListSelectionListener() {
@@ -147,4 +149,10 @@ public class AbilitySelectionPanel extends JPanel implements IGridClickedListene
 
 	@Override
 	public void onPlayerUsedAbility(ReadiedAction action) {}
+
+	@Override
+	public void onChangedPlayerTeam(Set<GameObject> playerObjects) {
+		// TODO Auto-generated method stub
+		
+	}
 }

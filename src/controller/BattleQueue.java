@@ -7,17 +7,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 
 import model.Ability;
+import model.GameObject;
+import model.GameObject.TEAM;
 import model.GridPosition;
 import model.GroundTarget;
 import model.ITargetable;
 import model.ReadiedAction;
-import model.Structure;
-import model.GameObject;
-import model.GameObject.TEAM;
 import model.Unit;
 import model.World;
 
@@ -34,28 +32,27 @@ public class BattleQueue implements IGameObjectListener{
 			return pos1.getCostEstimate() - pos2.getCostEstimate();
 		}
 	};
-	private static final Random RAND = new Random();
+//	private static final Random RAND = new Random();
 	private static final int PERFORM_ACTION_CHECK_DELAY = 100;
 	private static final LinkedList<ReadiedAction> actionQueue = new LinkedList<ReadiedAction>();
-//	private static final Map<Unit,Long> lastScheduledTimes = new HashMap<Unit, Long>();
-//	private static final Map<Unit,Long> completionTimes = new HashMap<Unit, Long>();
 
-	private static BattleQueue me;
 	private World world;
-	private static Thread playNextAction;
-	private static boolean playingActions = false;
-	private static long battleDuration = 0;
-	private static boolean inBattle = false;
-	private static boolean pause = true;
-	private static boolean performingAction = false;
-	private static Set<Unit.TEAM> activeTeams = new HashSet<Unit.TEAM>();
-	private static Unit activePlayer = null;
-	private static Set<IBattleListener> battleListeners = new HashSet<IBattleListener>();
-	private static Set<IPlayerListener> playerListeners = new HashSet<IPlayerListener>();
+	private Thread playNextAction;
+	private boolean playingActions = false;
+	private long battleDuration = 0;
+	private boolean inBattle = false;
+	private boolean pause = true;
+	private boolean performingAction = false;
+	private Set<Unit.TEAM> activeTeams;
+	private Unit activePlayer = null;
+	private Set<IBattleListener> battleListeners;
+	private Set<IPlayerListener> playerListeners;
 	
 	public BattleQueue(World world) {
 		this.world = world;
-		me = this;
+		activeTeams = new HashSet<Unit.TEAM>();
+		battleListeners = new HashSet<IBattleListener>();
+		playerListeners = new HashSet<IPlayerListener>();
 	}
 
 	public void startPlayingActions() {
@@ -74,7 +71,7 @@ public class BattleQueue implements IGameObjectListener{
 						if (readyUnit == null) {
 							continue;
 						}
-						synchronized(me) {
+						synchronized(this) {
 							if (activePlayer == null) {
 								setActivePlayer(readyUnit);
 							}
@@ -113,50 +110,44 @@ public class BattleQueue implements IGameObjectListener{
 	}
 	
 	public void setPause(boolean pause) {
-		BattleQueue.pause = pause;
+		this.pause = pause;
 	}
 	
 	public void addGameObject(GameObject gameObject, int x, int y) {
 		System.out.print("addGameObject(" + gameObject + ")");
-		me.world.addTallObject(gameObject, x, y);
+		world.addTallObject(gameObject, x, y);
 		gameObject.addGameObjectListener(this);
 		if (gameObject instanceof Unit) {
 			Unit unit = (Unit) gameObject;
 			activeTeams.add(unit.getTeam());
-			if (unit.getTeam() != TEAM.PLAYER) {
-				queueAction(Ability.get(Ability.ID.AI_TURN), unit, unit);
-			}
 			unitAdded(unit);
 		}
 	}
 	
+	public void defeatGameObject(Unit unit) {
+		clearUnitActions(unit);
+		queueAction(Ability.get(Ability.ID.DEATH), unit, unit);
+		reportDefeat(unit);
+	}
 	
-	public void removeCombatant(Unit unit, Ability exitAbility, ITargetable target) {
-		synchronized(me) {
+	public void removeGameObject(GameObject gameObject) {
+		System.out.print("removeGameObject(" + gameObject + ")");
+		world.remove(gameObject);
+		if (gameObject instanceof Unit) {
+			Unit unit = (Unit) gameObject;	
+			clearUnitActions(unit);
+			unitRemoved(unit);
+		}
+	}
+	
+	public void clearUnitActions(Unit unit) {
+		synchronized(this) {
 			Iterator<ReadiedAction> actions = actionQueue.iterator();
 			while (actions.hasNext()) {
 				if (unit.equals(actions.next().getSource())) {
 					actions.remove();
 				}
 			}
-			if (activePlayer != null && activePlayer.equals(unit)) {
-				activePlayer = null;
-			}
-		}
-		if (exitAbility != null) {
-			if (target == null) 
-				target = unit;
-			insertFirstAction(exitAbility, unit, target, null, new Runnable() {
-				@Override
-				public void run() {
-					reportDefeat(unit);
-					me.world.remove(unit);
-				}
-			});
-		}
-		else {
-			reportDefeat(unit);
-			me.world.remove(unit);
 		}
 	}
 	
@@ -166,7 +157,7 @@ public class BattleQueue implements IGameObjectListener{
 		// Determine if the team was defeated
 		Unit.TEAM team = unit.getTeam();
 		boolean teamDefeat = true;
-		synchronized(me) {
+		synchronized(this) {
 			//TODO: report team defeat
 //			Iterator<Unit> combatants = lastScheduledTimes.keySet().iterator();
 //			while (teamDefeat && combatants.hasNext()) {
@@ -183,7 +174,7 @@ public class BattleQueue implements IGameObjectListener{
 	 * Delay all active combatants a random amount between 0 and 1000 ms
 	 */
 	public void addRandomCombatDelays() {
-		synchronized(me) {
+		synchronized(this) {
 			//TODO: add combat delays
 //			Iterator<Unit> combatants = lastScheduledTimes.keySet().iterator();
 //			while (combatants.hasNext()) {
@@ -203,14 +194,9 @@ public class BattleQueue implements IGameObjectListener{
 		inBattle = false;
 	}
 	
-//	public static void nonCombatantQueueAction(Ability ability, Unit source, ITargetable target) {
-//		addCombatant(source);
-//		removeCombatant(source, ability, target);
-//	}
-	
 	public void queueAction(Ability ability, Unit source, ITargetable target) {
 		System.out.print("\t" + source + " has prepared " + ability + " for " + target);
-		synchronized(me) {
+		synchronized(this) {
 			ReadiedAction action = new ReadiedAction(ability, source, target, getCompletionTime(source));
 			actionQueue.add(action);
 			Collections.sort(actionQueue, SOONEST_READIED_ACTION);
@@ -240,12 +226,12 @@ public class BattleQueue implements IGameObjectListener{
 	 * @param doAtMid action to perform part way through the ability
 	 * @param doAtEnd action to perform after the ability completes
 	 */
-	public static void insertFirstAction(Ability ability, Unit source, ITargetable target, Runnable doAtMid, Runnable doAtEnd) {
+	public void insertFirstAction(Ability ability, Unit source, ITargetable target, Runnable doAtMid, Runnable doAtEnd) {
 		delay(source, ability.getDelay());
 		ReadiedAction action = new ReadiedAction(ability, source, target, battleDuration);
 		action.addDoAtMid(doAtMid);
 		action.addDoAtEnd(doAtEnd);
-		synchronized(me) {
+		synchronized(this) {
 			System.out.println("\t" + source + " has immediately prepared " + ability + " for " + action.getTarget());
 			actionQueue.add(action);
 			Collections.sort(actionQueue, SOONEST_READIED_ACTION);
@@ -255,7 +241,7 @@ public class BattleQueue implements IGameObjectListener{
 	public void dequeueAction(ReadiedAction action) {
 		Ability ability = action.getAbility();
 		Unit source = action.getSource();
-		synchronized(me) {
+		synchronized(this) {
 			for (int i = actionQueue.size() - 1; i >= 0; i--) {
 				ReadiedAction otherAction = actionQueue.get(i);
 				if (otherAction.equals(action)) {
@@ -282,14 +268,16 @@ public class BattleQueue implements IGameObjectListener{
 	public Unit getMostReadyPlayer() {
 		Unit mostReadyPlayer = null;
 		long unitBusyness = Long.MAX_VALUE;
-		synchronized(me) {
-			Iterator<Unit> combatants = me.world.getTeamUnits(TEAM.PLAYER);
-			while (combatants.hasNext()) {
-				Unit combatant = combatants.next();
-				long busyness = getCompletionTime(combatant);
-				if (combatant.getTeam() == TEAM.PLAYER && busyness < unitBusyness) {
-					mostReadyPlayer = combatant;
-					unitBusyness = busyness;
+		synchronized(this) {
+			Set<GameObject> playerObjects = world.getContentsOnTeam(TEAM.PLAYER);
+			for (GameObject playerObject : playerObjects) {
+				if (playerObject instanceof Unit) {
+					Unit combatant = (Unit) playerObject;
+					long busyness = getCompletionTime(combatant);
+					if (combatant.getTeam() == TEAM.PLAYER && busyness < unitBusyness) {
+						mostReadyPlayer = combatant;
+						unitBusyness = busyness;
+					}
 				}
 			}
 		}
@@ -301,7 +289,7 @@ public class BattleQueue implements IGameObjectListener{
 	 */
 	public void performNextAction() {
 		performingAction = true;
-		synchronized(me) {
+		synchronized(this) {
 			ReadiedAction nextAction = actionQueue.peek();
 			if (inBattle)
 				battleDuration = nextAction.getStartTime();
@@ -314,9 +302,9 @@ public class BattleQueue implements IGameObjectListener{
 			}
 			
 			if (nextAction.getAbility().getId() == Ability.ID.AI_TURN) {
-				nextAction = source.aiGetAction(nextAction.getStartTime(), me.world);				
+				nextAction = getFirstStepToUseAction(source.aiGetAction(nextAction.getStartTime(), world));				
 				delay(source, nextAction.getAbility().getDelay());
-				nextAction.activate(me.world, me);
+				nextAction.activate(world, this);
 			} else if (!targetReachable(nextAction)) {
 				ReadiedAction firstAction = getFirstStepToUseAction(nextAction);
 				if (firstAction != null) {
@@ -337,7 +325,7 @@ public class BattleQueue implements IGameObjectListener{
 						}
 					});
 				}
-				nextAction.activate(me.world, me);
+				nextAction.activate(world, this);
 				actionQueue.poll(); //remove from the queue
 				if (source.equals(activePlayer))
 					activePlayerAbilityQueuedChanged();
@@ -361,7 +349,7 @@ public class BattleQueue implements IGameObjectListener{
 	private boolean targetReachable(ReadiedAction action, GridPosition sourcePos) {
 		GridPosition targetPos = action.getTarget().getPos();
 		int range = action.getAbility().getRange();
-		return sourcePos.getDistanceTo(targetPos) <= range;
+		return sourcePos.getDistanceFromCenterTo(targetPos) <= range;
 	}
 	
 	public ReadiedAction getFirstStepToUseAction(ReadiedAction action) {
@@ -388,7 +376,7 @@ public class BattleQueue implements IGameObjectListener{
 	private PathingGridPosition getPathToUseAction(ReadiedAction action) {
 		Unit source = action.getSource();
 		GridPosition targetPos = action.getTarget().getPos();
-		PathingGridPosition node = me.new PathingGridPosition(source.getPos(), null, targetPos);
+		PathingGridPosition node = new PathingGridPosition(source.getPos(), null, targetPos);
 		LinkedList<PathingGridPosition> frontier = new LinkedList<PathingGridPosition>();
 		frontier.add(node);
 		LinkedList<PathingGridPosition> explored = new LinkedList<PathingGridPosition>();
@@ -402,8 +390,8 @@ public class BattleQueue implements IGameObjectListener{
 				return node;
 			}
 			explored.add(node);
-			for(GridPosition n : me.world.getTraversableNeighbors(node)) {
-				PathingGridPosition neighbor = me.new PathingGridPosition(n, node, targetPos);
+			for(GridPosition n : world.getTraversableNeighbors(node)) {
+				PathingGridPosition neighbor = new PathingGridPosition(n, node, targetPos);
 				if (!explored.contains(neighbor)) {
 					if (!frontier.contains(neighbor)) {
 						frontier.add(neighbor);
@@ -419,7 +407,7 @@ public class BattleQueue implements IGameObjectListener{
 	}
 	
 	private PathingGridPosition getPathToScreenEdge(Unit source) {
-		PathingGridPosition node = me.new PathingGridPosition(source.getPos(), null, null);
+		PathingGridPosition node = new PathingGridPosition(source.getPos(), null, null);
 		LinkedList<PathingGridPosition> frontier = new LinkedList<PathingGridPosition>();
 		frontier.add(node);
 		LinkedList<PathingGridPosition> explored = new LinkedList<PathingGridPosition>();
@@ -429,12 +417,12 @@ public class BattleQueue implements IGameObjectListener{
 			}
 			Collections.sort(frontier, LOWEST_COST);
 			node = frontier.poll();
-			if (!me.world.getTargetableRectangle().intersects(node)) {
+			if (!world.getMainScreenRectangle().intersects(node)) {
 				return node;
 			}
 			explored.add(node);
-			for(GridPosition n : me.world.getTraversableNeighbors(node)) {
-				PathingGridPosition neighbor = me.new PathingGridPosition(n, node, null);
+			for(GridPosition n : world.getTraversableNeighbors(node)) {
+				PathingGridPosition neighbor = new PathingGridPosition(n, node, null);
 				if (!explored.contains(neighbor)) {
 					if (!frontier.contains(neighbor)) {
 						frontier.add(neighbor);
@@ -450,7 +438,7 @@ public class BattleQueue implements IGameObjectListener{
 	}
 	
 	public void delay(Unit unit, int delay) {
-		synchronized(me) {
+		synchronized(this) {
 			for (ReadiedAction action : actionQueue) {
 				if (action.getSource().equals(unit)) {
 					action.delay(delay);
@@ -460,52 +448,52 @@ public class BattleQueue implements IGameObjectListener{
 		}
 	}
 	
-	public static void setActionComplete() {
+	public void setActionComplete() {
 		performingAction = false;
 	}
 
 	//INFORM LISTENERS
-	public static void addBattleListener(IBattleListener listener) {
+	public void addBattleListener(IBattleListener listener) {
 		battleListeners.add(listener);
 	}
 	
-	public static void clearBattleListeners() {
+	public void clearBattleListeners() {
 		battleListeners.clear();
 	}
 	
-	public static void addPlayerListener(IPlayerListener listener) {
+	public void addPlayerListener(IPlayerListener listener) {
 		playerListeners.add(listener);
 	}
 	
-	public static void clearPlayerListeners() {
+	public void clearPlayerListeners() {
 		playerListeners.clear();
 	}
 	
-	private static void unitAdded(Unit unit) {
+	private void unitAdded(Unit unit) {
 		for (IBattleListener listener : battleListeners) {
 			listener.onUnitAdded(unit);
 		}
 	}
 	
-	private static void unitRemoved(Unit unit) {
+	private void unitRemoved(Unit unit) {
 		for (IBattleListener listener : battleListeners) {
 			listener.onUnitRemoved(unit);
 		}
 	}
 	
-	private static void unitDefeated(Unit unit) {
+	private void unitDefeated(Unit unit) {
 		for (IBattleListener listener : battleListeners) {
 			listener.onUnitDefeated(unit);
 		}
 	}
 	
-	private static void teamDefeated(Unit.TEAM team) {
+	private void teamDefeated(Unit.TEAM team) {
 		for (IBattleListener listener : battleListeners) {
 			listener.onTeamDefeated(team);
 		}
 	}
 	
-	private static void activePlayerAbilityQueuedChanged() {
+	private void activePlayerAbilityQueuedChanged() {
 		List<ReadiedAction> actions = new ArrayList<ReadiedAction>();
 		for (ReadiedAction action : actionQueue) {
 			if (action.getSource().equals(activePlayer)) {
@@ -517,14 +505,14 @@ public class BattleQueue implements IGameObjectListener{
 		}
 	}
 	
-	private static void changedActivePlayer(Unit unit) {
+	private void changedActivePlayer(Unit unit) {
 		for (IPlayerListener listener : playerListeners) {
 			listener.onChangedActivePlayer(unit);
 		}
 		activePlayerAbilityQueuedChanged();
 	}
 	
-	private static void playerUsedAbility(ReadiedAction action) {
+	private void playerUsedAbility(ReadiedAction action) {
 		for (IPlayerListener listener : playerListeners) {
 			listener.onPlayerUsedAbility(action);
 		}
@@ -581,7 +569,7 @@ public class BattleQueue implements IGameObjectListener{
 	
 	public long getLastScheduledTime(Unit unit) {
 		Long time = battleDuration;
-		synchronized(me) {
+		synchronized(this) {
 			Iterator<ReadiedAction> iterator = actionQueue.iterator();
 			while (iterator.hasNext()) {
 				ReadiedAction action = iterator.next();
@@ -595,7 +583,7 @@ public class BattleQueue implements IGameObjectListener{
 	
 	public long getCompletionTime(Unit unit) {
 		Long time = battleDuration;
-		synchronized(me) {
+		synchronized(this) {
 			Iterator<ReadiedAction> iterator = actionQueue.iterator();
 			while (iterator.hasNext()) {
 				ReadiedAction action = iterator.next();
@@ -608,8 +596,8 @@ public class BattleQueue implements IGameObjectListener{
 	}
 	
 	public boolean isQueued(Unit source, Ability ability, ITargetable target) {
-		synchronized(me) {
-			for (ReadiedAction action :actionQueue) {
+		synchronized(this) {
+			for (ReadiedAction action : actionQueue) {
 				if (action.getSource().equals(source) && action.getAbility().equals(ability) && action.getTarget().equals(target)) {
 					return true;
 				}
@@ -619,7 +607,7 @@ public class BattleQueue implements IGameObjectListener{
 	}
 
 	public void finishPlanningAction(Unit unit) {
-		synchronized(me) {
+		synchronized(this) {
 			if (activePlayer != null && activePlayer.equals(unit)) {
 				activePlayer = null;
 			}
@@ -639,14 +627,22 @@ public class BattleQueue implements IGameObjectListener{
 		clearBattleListeners();
 		clearPlayerListeners();
 		actionQueue.clear();
-		me.world.reset();
+		world.reset();
 	}
 
 	@Override
 	public void onObjectDeath(GameObject object) {
 		if (object instanceof Unit) {
 			Unit unit = (Unit) object;
-			removeCombatant(unit, Ability.get(Ability.ID.DEATH), unit);
+			defeatGameObject(unit);
+		}
+	}
+
+	@Override
+	public void onObjectTeamChange(GameObject object) {
+		Set<GameObject> playerObjects = world.getContentsOnTeam(TEAM.PLAYER);
+		for (IPlayerListener listener : playerListeners) {
+			listener.onChangedPlayerTeam(playerObjects);
 		}
 	}
 }

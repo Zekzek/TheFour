@@ -24,8 +24,6 @@ public abstract class GameObject implements ITargetable {
 	protected GridPosition pos = new GridPosition(0, 0);
 	protected int maxHp;
 	protected int hp;
-	protected double drawXOffset = 0.0;
-	protected double drawYOffset = 0.0;
 	protected Modifier baseModifier;
 	private boolean inTargetList;
 	private Set<IGameObjectListener> gameObjectListeners;
@@ -49,6 +47,10 @@ public abstract class GameObject implements ITargetable {
 		this.maxHp = otherObject.maxHp;
 		this.hp = otherObject.hp;
 		this.baseModifier = new Modifier(otherObject.baseModifier);
+		this.gameObjectListeners = new HashSet<IGameObjectListener>();
+		for (IGameObjectListener listener : otherObject.gameObjectListeners) {
+			this.gameObjectListeners.add(listener);
+		}
 		//Since pos should always be unique, don't set it in the copy constructor
 	}
 
@@ -59,8 +61,8 @@ public abstract class GameObject implements ITargetable {
 			hp -= damage;
 			if (hp > maxHp) {
 				hp = maxHp;
-			} 
-			else if (isAlive()){
+			}
+			else if (!isAlive()){
 				for (IGameObjectListener listener : gameObjectListeners) {
 					listener.onObjectDeath(this);
 				}
@@ -108,7 +110,7 @@ public abstract class GameObject implements ITargetable {
 				GraphicsPanel.TERRAIN_CELL_HEIGHT * 
 				((pos.getY()-screenRectangle.getY()) - GraphicsPanel.TALL_OBJECT_CELL_HEIGHT_MULTIPLIER + 1)
 				- GraphicsPanel.TERRAIN_CELL_HEIGHT / 4);
-		g2.translate(drawXOffset * GraphicsPanel.CELL_WIDTH, drawYOffset * GraphicsPanel.TERRAIN_CELL_HEIGHT);
+		g2.translate(pos.getxOffset() * GraphicsPanel.CELL_WIDTH, pos.getyOffset() * GraphicsPanel.TERRAIN_CELL_HEIGHT);
 		BufferedImage sprite = getSprite();
 		if (sprite != null) {
 			AffineTransform preImageTransorm = g2.getTransform();
@@ -207,16 +209,11 @@ public abstract class GameObject implements ITargetable {
 		return hp;
 	}
 
-	public double getDrawYOffset() {
-		return drawYOffset;
-	}
-
-	public double getDrawXOffset() {
-		return drawXOffset;
-	}
-
 	public void setTeam(TEAM team) {
 		this.team = team;
+		for (IGameObjectListener listener : gameObjectListeners) {
+			listener.onObjectTeamChange(this);
+		}
 	}
 	
 	@Override

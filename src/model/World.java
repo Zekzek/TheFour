@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,10 +16,10 @@ import controller.TemplateReader;
 import controller.Trigger;
 
 public class World {
-	private static int TARGETABLE_WIDTH = 24;
-	private static int TARGETABLE_HEIGHT = 24;
+	private static final GridRectangle MAIN_SCREEN_RECTANGLE = new GridRectangle(0, 0, 24, 22);
 	private Map<GridPosition,GameObject> contents = new ConcurrentHashMap<GridPosition, GameObject>();
-	private static Set<Trigger> triggers = new HashSet<Trigger>();
+	
+	private Set<Trigger> triggers = new HashSet<Trigger>();
 	private ITargetable focusTarget;
 	private ITargetable questTarget;
 	
@@ -81,16 +80,6 @@ public class World {
 		contents.remove(tallObject.getPos());
 	}
 	
-	public Iterator<Unit> getTeamUnits(TEAM team) {
-		ArrayList<Unit> teamUnits = new ArrayList<Unit>();
-		for (GameObject object : contents.values()) {
-			if (object instanceof Unit && object.getTeam() == team) {
-				teamUnits.add((Unit) object);
-			}
-		}
-		return teamUnits.iterator();
-	}
-	
 	@SuppressWarnings("unchecked")
 	public <T> ArrayList<T> getSortedContentsWithin(GridRectangle pos, Class<T> theClass) {
 		ArrayList<T> subset = new ArrayList<T>();
@@ -106,12 +95,12 @@ public class World {
 	}
 	
 	public ArrayList<ITargetable> getTargets(Unit source, Ability ability) {
-		GridRectangle rect = new GridRectangle(focusTarget.getPos(), TARGETABLE_WIDTH, TARGETABLE_HEIGHT);
+		MAIN_SCREEN_RECTANGLE.setCenter(focusTarget.getPos());
 		Ability.TARGET_TYPE outcome = ability.getSelectionTargetType();
 		ArrayList<ITargetable> targets = new ArrayList<ITargetable>();
 		
 		if (ability.getId() == Ability.ID.MOVE) {
-			for (GridPosition pos : getTraversableCells(rect)) {
+			for (GridPosition pos : getTraversableCells(MAIN_SCREEN_RECTANGLE)) {
 				targets.add(new GroundTarget(pos));
 			}
 			return targets;
@@ -121,7 +110,7 @@ public class World {
 			return targets;
 		}
 		if (outcome == Ability.TARGET_TYPE.ALL) {
-			return getSortedContentsWithin(rect, ITargetable.class);
+			return getSortedContentsWithin(MAIN_SCREEN_RECTANGLE, ITargetable.class);
 		}
 		
 		Unit.TEAM team = source.getTeam();
@@ -150,7 +139,7 @@ public class World {
 			}
 		}
 		
-		ArrayList<GameObject> objects = getSortedContentsWithin(rect, GameObject.class);
+		ArrayList<GameObject> objects = getSortedContentsWithin(MAIN_SCREEN_RECTANGLE, GameObject.class);
 		for (GameObject object : objects){
 			if (targetTeams.contains(object.getTeam()) && object.isAlive()) {
 				targets.add(object);
@@ -206,7 +195,7 @@ public class World {
 		return getTallObject(pos) == null && MapBuilder.getTerrainType(pos) != TERRAIN.WATER;
 	}
 
-	public static void addTrigger(Trigger trigger) {
+	public void addTrigger(Trigger trigger) {
 		triggers.add(trigger);
 	}
 	
@@ -227,9 +216,19 @@ public class World {
 	public void setQuestTarget(ITargetable questTarget) {
 		this.questTarget = questTarget;
 	}
-
-	public GridRectangle getTargetableRectangle() {
-		return new GridRectangle(focusTarget.getPos(), TARGETABLE_WIDTH, TARGETABLE_HEIGHT);
-	}
 	
+	public Set<GameObject> getContentsOnTeam(TEAM team) {
+		Set<GameObject> teamObjects = new HashSet<GameObject>();
+		for (GameObject object : contents.values()) {
+			if (object.getTeam() == team) {
+				teamObjects.add(object);
+			}
+		}
+		return teamObjects;
+	}
+
+	public GridRectangle getMainScreenRectangle() {
+		MAIN_SCREEN_RECTANGLE.setCenter(focusTarget.getPos());
+		return MAIN_SCREEN_RECTANGLE;
+	}
 }

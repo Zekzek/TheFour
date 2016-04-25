@@ -11,9 +11,11 @@ import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JPanel;
 
+import model.GameObject;
 import model.ITargetable;
 import model.ReadiedAction;
 import model.Unit;
@@ -29,9 +31,9 @@ public class UnitQueuePanel extends JPanel implements MouseListener, IPlayerList
 
 	private static List<ReadiedAction> unitActions = new ArrayList<ReadiedAction>();
 	
-	public UnitQueuePanel() {
+	public UnitQueuePanel(BattleQueue battleQueue) {
 		addMouseListener(this);
-		BattleQueue.addPlayerListener(this);
+		battleQueue.addPlayerListener(this);
 	}
 	
 	@Override
@@ -92,4 +94,7 @@ public class UnitQueuePanel extends JPanel implements MouseListener, IPlayerList
 
 	@Override
 	public void onPlayerUsedAbility(ReadiedAction action) {}
+
+	@Override
+	public void onChangedPlayerTeam(Set<GameObject> playerObjects) {}
 }

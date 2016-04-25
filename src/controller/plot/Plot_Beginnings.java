@@ -2,12 +2,12 @@ package controller.plot;
 
 import model.Ability;
 import model.Dialog;
+import model.GameObject.TEAM;
 import model.GridPosition;
 import model.GridRectangle;
 import model.GroundTarget;
 import model.StatusEffect;
 import model.Structure;
-import model.GameObject.TEAM;
 import model.Unit;
 import model.World;
 import view.SceneTransition;
@@ -79,7 +79,7 @@ public class Plot_Beginnings extends Plot {
 		SceneTransition morningChat = new SceneTransition("Morning Chat");
 		morningChat.setFadeInDuration(0);
 		morningChat.setFadedText("Your first day as a town guard, unbeknownst to your Uncle Xalvador");
-		morningChat.setFadedDuration(7000);
+		morningChat.setFadedDuration(7 * SECOND);
 		morningChat.setSetupRunnable(new Runnable() {
 			@Override
 			public void run() {
@@ -132,7 +132,7 @@ public class Plot_Beginnings extends Plot {
 									+ "for a few moments... Don't look at me like that. It's much more effective against living "
 									+ "opponents. Now, if you're going to carry that ridiculous shield around, let's see what "
 									+ "you can do with it. Show me your Shield Bash.")
-					}, null);
+					}, null, battleQueue);
 				guardTrainingTrigger.setMinAllowed(Trigger.ID.BEGINNINGS_GUARDS_1, 1);
 				world.addTrigger(guardTrainingTrigger);
 				
@@ -155,7 +155,7 @@ public class Plot_Beginnings extends Plot {
 							world.setQuestTarget(damsel);
 							damselsBrother.damage(9999);
 						}
-				});
+				}, battleQueue);
 				guardTrainingTrigger2.setMinAllowed(Trigger.ID.BEGINNINGS_GUARDS_2, 1);
 				world.addTrigger(guardTrainingTrigger2);
 				
@@ -172,9 +172,10 @@ public class Plot_Beginnings extends Plot {
 						@Override
 						public void run() {
 							damsel.setFacing(FACING.W);
-							battleQueue.removeCombatant(guards[0], Ability.get(Ability.ID.MOVE), 
-									new GroundTarget(damsel.getPos().getX() - 1, damsel.getPos().getY()));
 							guards[0].setTeam(TEAM.NONCOMBATANT);
+							battleQueue.clearUnitActions(guards[0]);
+							battleQueue.queueAction(Ability.get(Ability.ID.MOVE), guards[0], 
+									new GroundTarget(damsel.getPos().getX() - 1, damsel.getPos().getY()));
 							world.setQuestTarget(sorceress);
 						}
 				});
@@ -239,7 +240,7 @@ public class Plot_Beginnings extends Plot {
 								addObjectOffscreen(guardCaptain, -1, 0);
 								addObjectOffscreen(guards[1], 1, 0);
 							}
-						}
+						}, battleQueue
 					);
 					banditDefeatTrigger.setMinAllowed(Trigger.ID.BEGINNINGS_BANDIT_ATTACK_2, 1);
 					banditDefeatTrigger.setMaxAllowed(Trigger.ID.BEGINNINGS_GUARDS_ASSIST_1, 0);
@@ -257,7 +258,7 @@ public class Plot_Beginnings extends Plot {
 								moveOffscreenAndRemove(bandits[1]);
 								moveOffscreenAndRemove(bandits[2]);									
 							}
-						}
+						}, battleQueue
 					);
 					banditDefeatTrigger2.setMinAllowed(Trigger.ID.BEGINNINGS_BANDIT_ATTACK_1, 1);
 					banditDefeatTrigger2.setMaxAllowed(Trigger.ID.BEGINNINGS_GUARDS_ASSIST_1, 1);
@@ -268,7 +269,7 @@ public class Plot_Beginnings extends Plot {
 							new Runnable() {
 								@Override
 								public void run() {
-									battleQueue.removeCombatant(bandits[banditNum], null, null);
+									battleQueue.clearUnitActions(bandits[banditNum]);
 								}}
 						);
 					banditsEscapeTriggerCount.setMinAllowed(Trigger.ID.BEGINNINGS_BANDIT_ATTACK_1, 2);
@@ -322,13 +323,14 @@ public class Plot_Beginnings extends Plot {
 	}
 	
 	private void addObjectOffscreen(Unit unit, int x, int y) {
-		GridRectangle pos = world.getFocusTarget().getPos().getSumFromCenter(new GridPosition(x, y));
+		GridRectangle pos = world.getFocusTarget().getPos().getPosSum(new GridPosition(x, y));
 		battleQueue.addGameObject(unit, pos.getX(), pos.getY());
 		//TODO add object just offscreen on a traversable square
 	}
 	
 	private void moveOffscreenAndRemove(Unit unit) {
 		unit.addStatusEffect(new StatusEffect(StatusEffect.ID.FLEE, 60000));
-		battleQueue.removeCombatant(unit, Ability.get(Ability.ID.FLEE), unit);
+		battleQueue.clearUnitActions(unit);
+		battleQueue.queueAction(Ability.get(Ability.ID.FLEE), unit, unit);
 	}
 }

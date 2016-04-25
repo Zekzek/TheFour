@@ -29,6 +29,8 @@ public class GridRectangle {
 		this.y = pos.getY();
 		this.width = width;
 		this.height = height;
+		this.xOffset = pos.getxOffset();
+		this.yOffset = pos.getyOffset();
 	}
 
 	public boolean intersects(GridRectangle otherPosition) {
@@ -38,9 +40,12 @@ public class GridRectangle {
 				y < otherPosition.y + otherPosition.height;
 	}
 	
-	public int getDistanceTo(GridRectangle otherPosition) {
-		int dx = x - otherPosition.getX();
-		int dy = y - otherPosition.getY();
+	public int getDistanceFromCenterTo(GridRectangle other) {
+		GridPosition center = getCenter();
+		GridPosition otherCenter = other.getCenter();
+		
+		int dx = center.getX() - otherCenter.getX();
+		int dy = center.getY() - otherCenter.getY();
 		
 		if (dx < 0) dx = -dx;
 		if (dy < 0) dy = -dy;
@@ -53,29 +58,24 @@ public class GridRectangle {
 		setyOffset(0);
 	}
 	
-	public GridRectangle getDifferenceFromCenter(GridRectangle other) {
-		GridPosition center = getCenter();
-		GridPosition otherCenter = other.getCenter();
-		return new GridRectangle((center.getX() + center.getxOffset()) - (otherCenter.getX() + otherCenter.getxOffset()),
-				(center.getY() + center.getyOffset()) - (otherCenter.getY() + otherCenter.getyOffset()), width, height);
+	public GridRectangle getPosDifference(GridRectangle other) {
+		return new GridRectangle((getX() + getxOffset()) - (other.getX() + other.getxOffset()),
+				(getY() + getyOffset()) - (other.getY() + other.getyOffset()), width, height);
 	}
 	
-	public GridRectangle getSumFromCenter(GridRectangle other) {
-		GridPosition center = getCenter();
-		GridPosition otherCenter = other.getCenter();
-		return new GridPosition((center.getX() + center.getxOffset()) + (otherCenter.getX() + otherCenter.getxOffset()),
-				(center.getY() + center.getyOffset()) + (otherCenter.getY() + otherCenter.getyOffset()));
+	public GridRectangle getPosSum(GridRectangle other) {
+		return new GridRectangle((getX() + getxOffset()) + (other.getX() + other.getxOffset()),
+				(getY() + getyOffset()) + (other.getY() + other.getyOffset()), width, height);
 	}
 	
-	public GridRectangle getProductFromCenter(float multiplier) {
-		GridPosition center = getCenter();
-		return new GridRectangle(center.getX() * multiplier, center.getY() * multiplier, width, height);
+	public GridRectangle getPosProduct(float multiplier) {
+		return new GridRectangle(getX() * multiplier, getY() * multiplier, width, height);
 	}
 	
-	public static GridRectangle getGlidePositionFromCenter(GridRectangle start, GridRectangle end, float progress) {
-		GridRectangle difference = end.getDifferenceFromCenter(start);
-		GridRectangle scaledDifference = difference.getProductFromCenter(progress);
-		return start.getSumFromCenter(scaledDifference);
+	public GridRectangle getGlidePositionFromCenter(GridRectangle end, float progress) {
+		GridRectangle difference = end.getPosDifference(this);
+		GridRectangle scaledDifference = difference.getPosProduct(progress);
+		return getPosSum(scaledDifference);
 	}
 	
 	public GridPosition getCenter() {

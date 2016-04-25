@@ -11,13 +11,4 @@ public class GridPosition extends GridRectangle{
 		setxOffset(x - getX());
 		setyOffset(y - getY());
 	}
-	
-	@Override
-	public int getWidth() {
-		return 1;
-	}
-	@Override
-	public int getHeight() {
-		return 1;
-	}
 }

@@ -40,10 +40,10 @@ public class TitleScreenPanel extends JPanel{
 		this.world = world;
 		plotOptions = new HashMap<String, Class<? extends Plot>>();
 		plotOptions.put("Beginnings", Plot_Beginnings.class);
-		plotOptions.put("Beginnings: Magic Case", Plot_Tutorial_Defend_Sorc_Item.class);
-		plotOptions.put("Beginnings: Arena", Plot_Tutorial_Arena.class);
-		plotOptions.put("Beginnings: Berserkers Request", Plot_Tutorial_Beserker_Deceit.class);
-		plotOptions.put("Test: Speed Test", Plot_SpeedTest.class);
+//		plotOptions.put("Beginnings: Magic Case", Plot_Tutorial_Defend_Sorc_Item.class);
+//		plotOptions.put("Beginnings: Arena", Plot_Tutorial_Arena.class);
+//		plotOptions.put("Beginnings: Berserkers Request", Plot_Tutorial_Beserker_Deceit.class);
+//		plotOptions.put("Test: Speed Test", Plot_SpeedTest.class);
 		
 		setLayout(new BorderLayout());
 		add(new JLabel("The Four: Forgotten Age ~ Version 0.03", SwingConstants.CENTER), BorderLayout.NORTH);

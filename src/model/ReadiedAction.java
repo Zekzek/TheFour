@@ -34,6 +34,7 @@ public class ReadiedAction {
 	private Runnable doAtMid;
 	private Runnable doAtEnd;
 	private long startTime;
+	private BattleQueue battleQueue;
 	
 	public ReadiedAction(Ability ability, Unit source, ITargetable target, long startTime) {
 		super();
@@ -49,16 +50,17 @@ public class ReadiedAction {
 	
 	public void activate(World world, BattleQueue battleQueue) {
 		System.out.println(source + " uses " + ability + " on " + target);
+		this.battleQueue = battleQueue;
 		if (!battleQueue.isInBattle()) {
 			source.heal(source.getMaxHp() / 10 * ability.getDelay() / 1000);		
 		}
-		activateAtStart(battleQueue);
+		activateAtStart();
 		source.animate(ability, world);
 		SCHEDULE_ACTIVATE_AT_MID.start();
 		SCHEDULE_ACTIVATE_AT_END.start();
 	}
 	
-	private void activateAtStart(BattleQueue battleQueue) {
+	private void activateAtStart() {
 		battleQueue.delay(source, ability.calcAdditionalDelay(source.getModifier()));
 		source.tickStatusEffects(ability.getDelay());
 		source.face(target);
@@ -66,7 +68,7 @@ public class ReadiedAction {
 		source.heal(source.getStatusEffectModifier(FLAT_BONUS.HP_HEALED_PER_SECOND, target) * ability.getDelay() / 1000);
 	}
 	
-	private void activateAtMid(BattleQueue battleQueue) {
+	private void activateAtMid() {
 		//TODO: use calcSuccessChance
 //		if (ability.getAreaOfEffectDistance() > 0) {
 //			int distance = ability.getAreaOfEffectDistance();
@@ -87,7 +89,7 @@ public class ReadiedAction {
 	
 	private void activateAtEnd() {
 		if (doAtEnd != null) doAtEnd.run();
-		BattleQueue.setActionComplete();
+		battleQueue.setActionComplete();
 	}
 	
 	private boolean affectsTarget(Unit unit) {

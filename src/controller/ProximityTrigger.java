@@ -26,12 +26,12 @@ public class ProximityTrigger extends Trigger {
 	
 	public void checkTrigger(GridPosition pos) {
 		if (triggerOnLeaving) {
-			if (pos.getDistanceTo(target.getPos()) > range) {
+			if (pos.getDistanceFromCenterTo(target.getPos()) > range) {
 				super.checkTrigger();
 			}
 		}
 		else {
-			if (pos.getDistanceTo(target.getPos()) <= range) {
+			if (pos.getDistanceFromCenterTo(target.getPos()) <= range) {
 				super.checkTrigger();
 			}
 		}

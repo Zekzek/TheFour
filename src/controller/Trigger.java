@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import model.Dialog;
-import view.DialogPanel;
 import view.GameFrame;
 
 public abstract class Trigger {
@@ -16,7 +15,6 @@ public abstract class Trigger {
 	}
 	
 	private static final Map<ID, Integer> TRIGGER_COUNT = new HashMap<ID, Integer>();
-
 	private static GameFrame gameFrame;
 	
 	private final ID id;
@@ -62,6 +60,7 @@ public abstract class Trigger {
 	}
 	
 	private void trigger() {
+		TRIGGER_COUNT.put(id, getCount(id) + 1);
 		if (dialog == null) {
 			if (effect != null) {
 				effect.run();
@@ -71,7 +70,6 @@ public abstract class Trigger {
 			gameFrame.showDialog(dialog, effect);
 		}
 		triggered = true;
-		TRIGGER_COUNT.put(id, getCount(id) + 1);
 	}
 
 	private int getCount(ID id) {

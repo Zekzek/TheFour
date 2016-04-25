@@ -53,7 +53,7 @@ public class GameFrame extends JFrame implements IMenuListener{
 		menuPanel = new AbilitySelectionPanel(abilityPanel, world, battleQueue);
 		layeredPane.add(menuPanel, JLayeredPane.PALETTE_LAYER);
 		
-		unitQueuePanel = new UnitQueuePanel();
+		unitQueuePanel = new UnitQueuePanel(battleQueue);
 		layeredPane.add(unitQueuePanel, JLayeredPane.PALETTE_LAYER);
 		
 		dialogPanel = new DialogPanel(battleQueue);

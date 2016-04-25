@@ -14,7 +14,7 @@ import controller.BattleQueue;
 import controller.IBattleListener;
 
 public abstract class Plot implements IBattleListener{
-	protected static final int SECOND = 1000;
+	protected static final int SECOND = 100;//TODO: revert to 1000;
 	private final Map<String, SceneTransition> sceneTransitions = new HashMap<String, SceneTransition>();
 	protected BattleQueue battleQueue;
 	protected World world;
@@ -87,6 +87,9 @@ public abstract class Plot implements IBattleListener{
 
 	@Override
 	public void onUnitRemoved(Unit unit) {}
+	
+	@Override
+	public void onUnitChangedTeam(Unit unit) {}
 	
 	public static void setGameFrame(GameFrame aGameFrame) {
 		gameFrame = aGameFrame;
