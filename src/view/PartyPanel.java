@@ -18,7 +18,7 @@ import model.ReadiedAction;
 import model.StatusEffect;
 import model.GameObject.TEAM;
 import model.Unit;
-import controller.BattleQueue;
+import controller.ActionQueue;
 import controller.IBattleListener;
 import controller.IPlayerListener;
 
@@ -31,9 +31,9 @@ public class PartyPanel extends JPanel implements IBattleListener, IPlayerListen
 	
 	private List<Unit> playerUnits = new ArrayList<Unit>();
 	private Unit activePlayer;
-	private BattleQueue battleQueue;
+	private ActionQueue battleQueue;
 	
-	public PartyPanel(BattleQueue battleQueue) {
+	public PartyPanel(ActionQueue battleQueue) {
 		this.battleQueue = battleQueue;
 		addMouseListener(this);
 		battleQueue.addBattleListener(this);

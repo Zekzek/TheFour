@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.Random;
 
 import model.Modifier.FLAT_BONUS;
-import controller.BattleQueue;
+import controller.ActionQueue;
 
 public class ReadiedAction {
 	private static final Random RAND = new Random();
@@ -34,7 +34,7 @@ public class ReadiedAction {
 	private Runnable doAtMid;
 	private Runnable doAtEnd;
 	private long startTime;
-	private BattleQueue battleQueue;
+	private ActionQueue battleQueue;
 	
 	public ReadiedAction(Ability ability, Unit source, ITargetable target, long startTime) {
 		super();
@@ -48,7 +48,7 @@ public class ReadiedAction {
 		startTime += delay;
 	}
 	
-	public void activate(World world, BattleQueue battleQueue) {
+	public void activate(World world, ActionQueue battleQueue) {
 		System.out.println(source + " uses " + ability + " on " + target);
 		this.battleQueue = battleQueue;
 		if (!battleQueue.isInBattle()) {
@@ -106,7 +106,7 @@ public class ReadiedAction {
 		}
 	}
 	
-	private void effectTargetWith(Unit source, ITargetable target, Ability ability, BattleQueue battleQueue) {
+	private void effectTargetWith(Unit source, ITargetable target, Ability ability, ActionQueue battleQueue) {
 		if (target instanceof GameObject) {
 			GameObject targetObject = (GameObject) target;
 			if (RAND.nextDouble() <= ability.calcChanceToHit(source.getModifier(), targetObject.getModifier())) {

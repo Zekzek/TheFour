@@ -9,7 +9,7 @@ import view.DialogPanel;
 import view.GraphicsPanel;
 import view.SceneTransition;
 import view.SpriteSheet;
-import controller.BattleQueue;
+import controller.ActionQueue;
 
 public class Plot_Tutorial_Arena extends Plot{
 	
@@ -83,14 +83,14 @@ public class Plot_Tutorial_Arena extends Plot{
 		};
 		DialogPanel.showDialog(announcerIntro, null);
 		
-		BattleQueue.addCombatants(World.getSortedContentsWithin(GraphicsPanel.getScreenRectangle(), Unit.class).iterator());
-	    BattleQueue.addRandomCombatDelays();
-	    BattleQueue.startPlayingActions();
+		ActionQueue.addCombatants(World.getSortedContentsWithin(GraphicsPanel.getScreenRectangle(), Unit.class).iterator());
+	    ActionQueue.addRandomCombatDelays();
+	    ActionQueue.startPlayingActions();
 	}
 	
 	@Override
 	public void onTeamDefeated(TEAM team) {
-		BattleQueue.endCombat();
+		ActionQueue.endCombat();
 		if (team == Unit.TEAM.ENEMY1) { 
 			Dialog[] announcerSummary = new Dialog[] {
 					new Dialog(announcer, "What's this! Ladies and gentlemen, I can scarcely believe my eyes!!! After dozens " 

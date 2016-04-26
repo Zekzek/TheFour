@@ -17,7 +17,7 @@ import javax.swing.SwingConstants;
 
 import model.World;
 import view.GraphicsPanel.AMBIENT_LIGHT;
-import controller.BattleQueue;
+import controller.ActionQueue;
 import controller.plot.Plot;
 import controller.plot.Plot_Beginnings;
 import controller.plot.Plot_SpeedTest;
@@ -31,11 +31,11 @@ public class TitleScreenPanel extends JPanel{
 	private static TitleScreenPanel me;
 	private static Map<String, Class<? extends Plot>> plotOptions;
 	private static String selectedPlotString;
-	private static Class[] plotParameters = new Class[]{BattleQueue.class, World.class};
-	private BattleQueue battleQueue;
+	private static Class[] plotParameters = new Class[]{ActionQueue.class, World.class};
+	private ActionQueue battleQueue;
 	private World world;
 	
-	public TitleScreenPanel(BattleQueue battleQueue, World world) {
+	public TitleScreenPanel(ActionQueue battleQueue, World world) {
 		this.battleQueue = battleQueue;
 		this.world = world;
 		plotOptions = new HashMap<String, Class<? extends Plot>>();

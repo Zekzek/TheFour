@@ -12,14 +12,14 @@ import model.Unit;
 import model.World;
 import view.SceneTransition;
 import view.SpriteSheet.FACING;
-import controller.BattleQueue;
+import controller.ActionQueue;
 import controller.BattleTrigger;
 import controller.ProximityTrigger;
 import controller.Trigger;
 
 public class Plot_Beginnings extends Plot {
 
-	public Plot_Beginnings(BattleQueue battleQueue, World world) {
+	public Plot_Beginnings(ActionQueue battleQueue, World world) {
 		super(battleQueue, world);
 		// TODO Auto-generated constructor stub
 	}

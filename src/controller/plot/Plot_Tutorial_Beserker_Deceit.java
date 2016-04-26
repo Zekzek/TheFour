@@ -10,7 +10,7 @@ import view.DialogPanel;
 import view.GraphicsPanel;
 import view.SceneTransition;
 import view.SpriteSheet.FACING;
-import controller.BattleQueue;
+import controller.ActionQueue;
 
 public class Plot_Tutorial_Beserker_Deceit extends Plot{
 
@@ -164,12 +164,12 @@ public class Plot_Tutorial_Beserker_Deceit extends Plot{
 		World.moveObject(berserker, 191, 16);
 		berserker.setFacing(FACING.E);
 		berserker.setTeam(TEAM.PLAYER);
-		BattleQueue.addCombatant(berserker);
+		ActionQueue.addCombatant(berserker);
 		World.moveObject(defender, 191, 18);
 		defender.setFacing(FACING.E);
-		BattleQueue.addCombatant(defender);
+		ActionQueue.addCombatant(defender);
 		World.addTallObject(goblinMooks[0], 205, 22);
-		BattleQueue.addCombatant(goblinMooks[0]);
+		ActionQueue.addCombatant(goblinMooks[0]);
 	}
 	private void startInfiltrate() {
 		Dialog[] easySpeech = new Dialog[] {
@@ -180,7 +180,7 @@ public class Plot_Tutorial_Beserker_Deceit extends Plot{
 
 	private void addSolo() {
 		GraphicsPanel.moveScreenTo(200, 10);
-		BattleQueue.removeCombatant(berserker, null, null);
+		ActionQueue.removeCombatant(berserker, null, null);
 		berserker.setTeam(TEAM.NONCOMBATANT);
 		World.moveObject(berserker, 208, 12);
 		berserker.setFacing(FACING.E);
@@ -188,7 +188,7 @@ public class Plot_Tutorial_Beserker_Deceit extends Plot{
 		World.moveObject(defender, 204, 20);
 		defender.setFacing(FACING.E);
 		World.addTallObject(goblinMooks[1], 215, 21);
-		BattleQueue.addCombatant(goblinMooks[1]);
+		ActionQueue.addCombatant(goblinMooks[1]);
 		soloFightCount = 1;
 	}
 	private void startSolo() {
@@ -205,9 +205,9 @@ public class Plot_Tutorial_Beserker_Deceit extends Plot{
 		World.moveObject(berserker, 218, 11);
 		berserker.setFacing(FACING.S);
 		berserker.setTeam(TEAM.PLAYER);
-		BattleQueue.addCombatant(berserker);
+		ActionQueue.addCombatant(berserker);
 		World.addTallObject(goblinChief, 224, 22);
-		BattleQueue.addCombatant(goblinChief);
+		ActionQueue.addCombatant(goblinChief);
 	}
 	private void startBoss() {
 		Dialog[] saviorSpeech = new Dialog[] {
@@ -262,7 +262,7 @@ public class Plot_Tutorial_Beserker_Deceit extends Plot{
 				if (soloFightCount < 3) {
 					soloFightCount++;
 					World.addTallObject(goblinMooks[soloFightCount], 215, 22 - soloFightCount);
-					BattleQueue.addCombatant(goblinMooks[soloFightCount]);
+					ActionQueue.addCombatant(goblinMooks[soloFightCount]);
 				} else {
 					changeScene("Boss");
 				}

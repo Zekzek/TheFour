@@ -10,13 +10,13 @@ import model.World;
 import view.DialogPanel;
 import view.GameFrame;
 import view.SceneTransition;
-import controller.BattleQueue;
+import controller.ActionQueue;
 import controller.IBattleListener;
 
 public abstract class Plot implements IBattleListener{
 	protected static final int SECOND = 100;//TODO: revert to 1000;
 	private final Map<String, SceneTransition> sceneTransitions = new HashMap<String, SceneTransition>();
-	protected BattleQueue battleQueue;
+	protected ActionQueue battleQueue;
 	protected World world;
 	private String sceneName;
 	protected Runnable theEnd = new Runnable() {
@@ -27,7 +27,7 @@ public abstract class Plot implements IBattleListener{
 	};
 	protected static GameFrame gameFrame;
 	
-	public Plot(BattleQueue battleQueue, World world) {
+	public Plot(ActionQueue battleQueue, World world) {
 		this.battleQueue = battleQueue;
 		this.world = world;
 		battleQueue.addBattleListener(this);

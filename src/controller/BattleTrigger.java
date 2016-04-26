@@ -17,28 +17,28 @@ public class BattleTrigger extends Trigger implements IBattleListener, IPlayerLi
 	private Ability.ID triggerAbilityId;
 	private ReadiedAction triggerAction;
 	
-	public BattleTrigger(ID id, Unit unit, Dialog[] dialog, Runnable effect, BattleQueue battleQueue) {
+	public BattleTrigger(ID id, Unit unit, Dialog[] dialog, Runnable effect, ActionQueue battleQueue) {
 		super(id, dialog, effect);
 		triggerUnit = unit;
 		battleQueue.addBattleListener(this);
 		battleQueue.addPlayerListener(this);
 	}
 	
-	public BattleTrigger(ID id, TEAM team, Dialog[] dialog, Runnable effect, BattleQueue battleQueue) {
+	public BattleTrigger(ID id, TEAM team, Dialog[] dialog, Runnable effect, ActionQueue battleQueue) {
 		super(id, dialog, effect);
 		triggerTeam = team;
 		battleQueue.addBattleListener(this);
 		battleQueue.addPlayerListener(this);
 	}
 	
-	public BattleTrigger(ID id, Ability.ID abilityId, Dialog[] dialog, Runnable effect, BattleQueue battleQueue) {
+	public BattleTrigger(ID id, Ability.ID abilityId, Dialog[] dialog, Runnable effect, ActionQueue battleQueue) {
 		super(id, dialog, effect);
 		triggerAbilityId = abilityId;
 		battleQueue.addBattleListener(this);
 		battleQueue.addPlayerListener(this);
 	}
 	
-	public BattleTrigger(ID id, ReadiedAction action, TEAM team, Dialog[] dialog, Runnable effect, BattleQueue battleQueue) {
+	public BattleTrigger(ID id, ReadiedAction action, TEAM team, Dialog[] dialog, Runnable effect, ActionQueue battleQueue) {
 		super(id, dialog, effect);
 		triggerAction = action;
 		battleQueue.addBattleListener(this);

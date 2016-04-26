@@ -19,7 +19,7 @@ import model.GameObject;
 import model.ITargetable;
 import model.ReadiedAction;
 import model.Unit;
-import controller.BattleQueue;
+import controller.ActionQueue;
 import controller.IPlayerListener;
 
 public class UnitQueuePanel extends JPanel implements MouseListener, IPlayerListener {
@@ -31,7 +31,7 @@ public class UnitQueuePanel extends JPanel implements MouseListener, IPlayerList
 
 	private static List<ReadiedAction> unitActions = new ArrayList<ReadiedAction>();
 	
-	public UnitQueuePanel(BattleQueue battleQueue) {
+	public UnitQueuePanel(ActionQueue battleQueue) {
 		addMouseListener(this);
 		battleQueue.addPlayerListener(this);
 	}
