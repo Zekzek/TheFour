@@ -42,6 +42,7 @@ public class Unit extends GameObject {
 	private Set<Ability> learnedActions = new HashSet<Ability>();
 	private Set<StatusEffect> statusEffects = new HashSet<StatusEffect>();
 	private String abilityString;
+	private boolean inCombat;
 	
 	private Unit(String name, int hp, URL sheetPath) {
 		super(name, hp);
@@ -475,5 +476,13 @@ public class Unit extends GameObject {
 
 	public Iterator<StatusEffect> getStatusEffects() {
 		return statusEffects.iterator();
+	}
+
+	public void setInCombat(boolean value) {
+		inCombat = value;
+	}
+	
+	public boolean isInCombat() {
+		return inCombat;
 	}
 }

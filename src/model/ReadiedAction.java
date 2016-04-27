@@ -11,30 +11,9 @@ public class ReadiedAction {
 	private final Ability ability;
 	private final Unit source;
 	private final ITargetable target;
-	private final Thread SCHEDULE_ACTIVATE_AT_MID = new Thread() {
-		public void run() {
-			try {
-				Thread.sleep(ability.calcDelay(source.getModifier()) / 2);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			activateAtMid();
-		}
-	};
-	private final Thread SCHEDULE_ACTIVATE_AT_END = new Thread() {
-		public void run() {
-			try {
-				Thread.sleep(ability.calcDelay(source.getModifier()));
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			activateAtEnd();
-		}
-	};
 	private Runnable doAtMid;
 	private Runnable doAtEnd;
 	private long startTime;
-	private ActionQueue battleQueue;
 	
 	public ReadiedAction(Ability ability, Unit source, ITargetable target, long startTime) {
 		super();
@@ -48,27 +27,14 @@ public class ReadiedAction {
 		startTime += delay;
 	}
 	
-	public void activate(World world, ActionQueue battleQueue) {
-		System.out.println(source + " uses " + ability + " on " + target);
-		this.battleQueue = battleQueue;
-		if (!battleQueue.isInBattle()) {
-			source.heal(source.getMaxHp() / 10 * ability.getDelay() / 1000);		
-		}
-		activateAtStart();
-		source.animate(ability, world);
-		SCHEDULE_ACTIVATE_AT_MID.start();
-		SCHEDULE_ACTIVATE_AT_END.start();
-	}
-	
-	private void activateAtStart() {
-		battleQueue.delay(source, ability.calcAdditionalDelay(source.getModifier()));
+	public void activateAtStart() {
 		source.tickStatusEffects(ability.getDelay());
 		source.face(target);
 		source.damage(source.getStatusEffectModifier(FLAT_BONUS.HP_DAMAGE_PER_SECOND, target) * ability.getDelay() / 1000);
 		source.heal(source.getStatusEffectModifier(FLAT_BONUS.HP_HEALED_PER_SECOND, target) * ability.getDelay() / 1000);
 	}
 	
-	private void activateAtMid() {
+	public void activateAtMid(ActionQueue actionQueue) {
 		//TODO: use calcSuccessChance
 //		if (ability.getAreaOfEffectDistance() > 0) {
 //			int distance = ability.getAreaOfEffectDistance();
@@ -82,14 +48,13 @@ public class ReadiedAction {
 //				}
 //			}
 //		} else {
-			effectTargetWith(source, target, ability, battleQueue);
+			effectTargetWith(source, target, ability, actionQueue);
 //		}
 		if (doAtMid != null) doAtMid.run();
 	}
 	
-	private void activateAtEnd() {
+	public void activateAtEnd() {
 		if (doAtEnd != null) doAtEnd.run();
-		battleQueue.setActionComplete();
 	}
 	
 	private boolean affectsTarget(Unit unit) {
@@ -106,7 +71,7 @@ public class ReadiedAction {
 		}
 	}
 	
-	private void effectTargetWith(Unit source, ITargetable target, Ability ability, ActionQueue battleQueue) {
+	private void effectTargetWith(Unit source, ITargetable target, Ability ability, ActionQueue actionQueue) {
 		if (target instanceof GameObject) {
 			GameObject targetObject = (GameObject) target;
 			if (RAND.nextDouble() <= ability.calcChanceToHit(source.getModifier(), targetObject.getModifier())) {
@@ -117,7 +82,7 @@ public class ReadiedAction {
 					while (appliedStatusEffects.hasNext()) {
 						targetUnit.addStatusEffect(new StatusEffect(appliedStatusEffects.next()));
 					}
-					battleQueue.delay(targetUnit, ability.getDelayOpponent());
+					actionQueue.delay(targetUnit, ability.getDelayOpponent());
 				}
 			}	
 		}

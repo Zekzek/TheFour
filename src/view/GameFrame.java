@@ -105,8 +105,6 @@ public class GameFrame extends JFrame implements IMenuListener{
 	}
 	
 	public void returnToTitleScreen() {
-		battleQueue.endCombat();
-		battleQueue.clearBattleListeners();
 		battleQueue.reset();
 		layeredPane.remove(menuPanel);
 		menuPanel = new AbilitySelectionPanel(abilityPanel, world, battleQueue);

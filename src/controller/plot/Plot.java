@@ -42,7 +42,6 @@ public abstract class Plot implements IBattleListener{
 	}
 	
 	protected void end() {
-		battleQueue.endCombat();
 		battleQueue.stopPlayingActions();
 		Dialog[] theEnd = new Dialog[] {
 			new Dialog(getNarrator(), "The End")

@@ -210,10 +210,9 @@ public class Plot_Beginnings extends Plot {
 					new Runnable(){
 						@Override
 						public void run() {
-							addObjectOffscreen(bandits[0], -1, 0);
-							addObjectOffscreen(bandits[1], 1, 0);
-							addObjectOffscreen(bandits[2], 0, 1);
-							battleQueue.startCombat();
+							battleQueue.addObjectOffscreen(bandits[0], -1, 0);
+							battleQueue.addObjectOffscreen(bandits[1], 1, 0);
+							battleQueue.addObjectOffscreen(bandits[2], 0, 1);
 						}
 				});
 				banditAttackTrigger.setMinAllowed(Trigger.ID.BEGINNINGS_SORCERESS_1, 1);
@@ -237,8 +236,8 @@ public class Plot_Beginnings extends Plot {
 						new Runnable(){
 							@Override
 							public void run() {
-								addObjectOffscreen(guardCaptain, -1, 0);
-								addObjectOffscreen(guards[1], 1, 0);
+								battleQueue.addObjectOffscreen(guardCaptain, -1, 0);
+								battleQueue.addObjectOffscreen(guards[1], 1, 0);
 							}
 						}, battleQueue
 					);
@@ -253,7 +252,6 @@ public class Plot_Beginnings extends Plot {
 						new Runnable(){
 							@Override
 							public void run() {
-								battleQueue.endCombat();
 								moveOffscreenAndRemove(bandits[0]);
 								moveOffscreenAndRemove(bandits[1]);
 								moveOffscreenAndRemove(bandits[2]);									
@@ -320,12 +318,6 @@ public class Plot_Beginnings extends Plot {
 	@Override
 	protected String getStartingScene() {
 		return "Morning Chat";
-	}
-	
-	private void addObjectOffscreen(Unit unit, int x, int y) {
-		GridRectangle pos = world.getFocusTarget().getPos().getPosSum(new GridPosition(x, y));
-		battleQueue.addGameObject(unit, pos.getX(), pos.getY());
-		//TODO add object just offscreen on a traversable square
 	}
 	
 	private void moveOffscreenAndRemove(Unit unit) {
