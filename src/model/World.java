@@ -191,7 +191,7 @@ public class World {
 		return openNeighbors;
 	}
 	
-	private boolean isTraversable(GridPosition pos) {
+	public boolean isTraversable(GridPosition pos) {
 		return getTallObject(pos) == null && MapBuilder.getTerrainType(pos) != TERRAIN.WATER;
 	}
 
@@ -230,5 +230,21 @@ public class World {
 	public GridRectangle getMainScreenRectangle() {
 		MAIN_SCREEN_RECTANGLE.setCenter(focusTarget.getPos());
 		return MAIN_SCREEN_RECTANGLE;
+	}
+	
+	public int getNorth() {
+		return -getMainScreenRectangle().getHeight()/2 - 2;
+	}
+	
+	public int getEast() {
+		return -getMainScreenRectangle().getWidth()/2 - 2;
+	}
+	
+	public int getSouth() {
+		return getMainScreenRectangle().getHeight()/2 + 2;
+	}
+	
+	public int getWest() {
+		return getMainScreenRectangle().getWidth()/2 + 2;
 	}
 }

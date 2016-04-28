@@ -3,8 +3,6 @@ package controller.plot;
 import model.Ability;
 import model.Dialog;
 import model.GameObject.TEAM;
-import model.GridPosition;
-import model.GridRectangle;
 import model.GroundTarget;
 import model.StatusEffect;
 import model.Structure;
@@ -210,9 +208,9 @@ public class Plot_Beginnings extends Plot {
 					new Runnable(){
 						@Override
 						public void run() {
-							battleQueue.addObjectOffscreen(bandits[0], -1, 0);
-							battleQueue.addObjectOffscreen(bandits[1], 1, 0);
-							battleQueue.addObjectOffscreen(bandits[2], 0, 1);
+							battleQueue.addObjectToWest(bandits[0], 0);
+							battleQueue.addObjectToEast(bandits[1], 0);
+							battleQueue.addObjectToNorth(bandits[2], 0);
 						}
 				});
 				banditAttackTrigger.setMinAllowed(Trigger.ID.BEGINNINGS_SORCERESS_1, 1);
@@ -236,8 +234,8 @@ public class Plot_Beginnings extends Plot {
 						new Runnable(){
 							@Override
 							public void run() {
-								battleQueue.addObjectOffscreen(guardCaptain, -1, 0);
-								battleQueue.addObjectOffscreen(guards[1], 1, 0);
+								battleQueue.addObjectToEast(guardCaptain, 2);
+								battleQueue.addObjectToWest(guards[1], 1);
 							}
 						}, battleQueue
 					);

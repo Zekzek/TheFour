@@ -702,9 +702,69 @@ public class ActionQueue implements IGameObjectListener{
 		}
 	}
 
-	public void addObjectOffscreen(Unit unit, int x, int y) {
-		GridRectangle pos = world.getFocusTarget().getPos().getPosSum(new GridPosition(x, y));
-		addGameObject(unit, pos.getX(), pos.getY());
-		//TODO add object just offscreen on a traversable square
+	public void addObjectToNorth(Unit unit, int x){
+		GridPosition focusPos = world.getFocusTarget().getPos();
+		x += focusPos.getX();
+		int y = focusPos.getY() + world.getNorth();
+		int count = 1;
+		while (count < 50) {
+			int relativePos = count/2 * count%2==0?1:-1;
+			GridPosition pos = new GridPosition(x + relativePos, y);
+			if (world.isTraversable(pos)) {
+				addGameObject(unit, pos.getX(), pos.getY());
+				break;
+			}
+			count++;
+		}
+	}
+	
+	public void addObjectToEast(Unit unit, int y){
+		GridPosition focusPos = world.getFocusTarget().getPos();
+		int x = focusPos.getX() + world.getEast();
+		y += focusPos.getY();
+		int count = 1;
+		while (count < 50) {
+			int relativePos = count/2 * count%2==0?1:-1;
+			GridPosition pos = new GridPosition(x, y+ relativePos);
+			if (world.isTraversable(pos)) {
+				addGameObject(unit, pos.getX(), pos.getY());
+				break;
+			}
+			count++;
+		}
+	}
+	
+	public void addObjectToSouth(Unit unit, int x){
+		GridPosition focusPos = world.getFocusTarget().getPos();
+		x += focusPos.getX();
+		int y = focusPos.getY() + world.getSouth();
+		int count = 1;
+		while (count < 50) {
+			int relativePos = count/2 * count%2==0?1:-1;
+			GridPosition pos = new GridPosition(x + relativePos, y);
+			if (world.isTraversable(pos)) {
+				addGameObject(unit, pos.getX(), pos.getY());
+				break;
+			}
+			count++;
+		}
+	}
+	
+	public void addObjectToWest(Unit unit, int y){
+		GridPosition focusPos = world.getFocusTarget().getPos();
+		int x = focusPos.getX() + world.getWest();
+		y += focusPos.getY();
+		int count = 1;
+		while (count < 50) {
+			int relativePos = count/2 * count%2==0?1:-1;
+			GridPosition pos = new GridPosition(x, y + relativePos);
+			System.out.println(relativePos);
+			if (world.isTraversable(pos)) {
+				addGameObject(unit, pos.getX(), pos.getY());
+				System.out.println(unit + "@" + pos);
+				break;
+			}
+			count++;
+		}
 	}
 }
