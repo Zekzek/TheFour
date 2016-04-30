@@ -72,8 +72,10 @@ public class GridRectangle {
 		return new GridRectangle(getX() * multiplier, getY() * multiplier, width, height);
 	}
 	
-	public GridRectangle getGlidePositionFromCenter(GridRectangle end, float progress) {
-		GridRectangle difference = end.getPosDifference(this);
+	public GridRectangle getGlidePositionFromCenter(GridPosition end, float progress) {
+		GridRectangle endRect = new GridRectangle(0, 0, getWidth(), getHeight());
+		endRect.setCenter(end);
+		GridRectangle difference = endRect.getPosDifference(this);
 		GridRectangle scaledDifference = difference.getPosProduct(progress);
 		return getPosSum(scaledDifference);
 	}

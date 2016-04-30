@@ -85,18 +85,18 @@ public class Plot_Beginnings extends Plot {
 				world.setQuestTarget(savior);
 				ProximityTrigger lovedOneTrigger = new ProximityTrigger(Trigger.ID.BEGINNINGS_TALK_LOVED_ONE_1, savior, 2, 
 						new Dialog[]{
-							new Dialog(savior, "Morning, little one. Something you want to tell me?"),
-							new Dialog(defender, "Yes. I joined the guard last night. I'm going in for my first shift now."),
-							new Dialog(savior, "I had hoped I was wrong. You know how I feel about you risking yourself like "
-									+ "that. Why would you join the guard?"),
-							new Dialog(defender, savior.getName() + ", I want to help people, just like you used to. I know "
-									+ "you worry about me, but I can help, and I can make it so other people don't have to go "
-									+ "through a loss like ours."),
-							new Dialog(savior, "..."),
-							new Dialog(savior, "I know, but that doesn't mean I have to like it."),
-							new Dialog(savior, "You know, in a lot of ways, you're just like Aunt Isabella. She wanted so much "
-									+ "to stop the suffering of our world. Go. Do what you feel is right. Just try to keep "
-									+ "yourself out of too much danger. I love you."),
+//							new Dialog(savior, "Morning, little one. Something you want to tell me?"),
+//							new Dialog(defender, "Yes. I joined the guard last night. I'm going in for my first shift now."),
+//							new Dialog(savior, "I had hoped I was wrong. You know how I feel about you risking yourself like "
+//									+ "that. Why would you join the guard?"),
+//							new Dialog(defender, savior.getName() + ", I want to help people, just like you used to. I know "
+//									+ "you worry about me, but I can help, and I can make it so other people don't have to go "
+//									+ "through a loss like ours."),
+//							new Dialog(savior, "..."),
+//							new Dialog(savior, "I know, but that doesn't mean I have to like it."),
+//							new Dialog(savior, "You know, in a lot of ways, you're just like Aunt Isabella. She wanted so much "
+//									+ "to stop the suffering of our world. Go. Do what you feel is right. Just try to keep "
+//									+ "yourself out of too much danger. I love you."),
 							new Dialog(defender, "I love you too, " + savior.getName())
 						}, new Runnable(){
 							@Override
@@ -109,11 +109,11 @@ public class Plot_Beginnings extends Plot {
 				
 				ProximityTrigger guardCaptainTrigger = new ProximityTrigger(Trigger.ID.BEGINNINGS_GUARDS_1, guardCaptain, 3,
 						new Dialog[]{
-							new Dialog(guardCaptain, "So, the savior's ward has finally arrived."),
-							new Dialog(defender, "My appologies. It won't happen again."),
-							new Dialog(guardCaptain, "See that it doesn't."),
-							new Dialog(guards[0], "Pssh, what's with that ridiculous shield?"),
-							new Dialog(guards[1], "Haha, ya, he must be a bit of a coward."),
+//							new Dialog(guardCaptain, "So, the savior's ward has finally arrived."),
+//							new Dialog(defender, "My appologies. It won't happen again."),
+//							new Dialog(guardCaptain, "See that it doesn't."),
+//							new Dialog(guards[0], "Pssh, what's with that ridiculous shield?"),
+//							new Dialog(guards[1], "Haha, ya, he must be a bit of a coward."),
 							new Dialog(guardCaptain, "Enough! For now, let's review the ability I showed you yesterday. "
 									+ "Show me what your Guard Attack can do to " + targetDummy.getName() + ", here.")
 						}, new Runnable() {
@@ -136,15 +136,15 @@ public class Plot_Beginnings extends Plot {
 				
 				BattleTrigger guardTrainingTrigger2 = new BattleTrigger(Trigger.ID.BEGINNINGS_GUARDS_3, Ability.ID.SHIELD_BASH,
 						new Dialog[]{ 
-							new Dialog(guardCaptain, "Well done. That looked quite dissorienting. You can probably pair it with "
-									+ "Guard Attack to good effect."),
-							new Dialog(defender, "Thank you. I'll have to try that out."),
-							new Dialog(guardCaptain, "Regardless, we have a new assignment today. It seems they've uncovered "
-									+ "something at the dig site and have requested an escort to bring it back to town. " 
-									+ defender.getName() + ", since you were late, I'm assigning you this task. " + guards[0].getName()
-									+ ", you go with him."),
-							new Dialog(guards[0], "Aw, Captain! Why do I get saddled with the new guy?"),
-							new Dialog(guardCaptain, "We've all gotta pitch in. Besides, I heard what you said about my wife's stew."),
+//							new Dialog(guardCaptain, "Well done. That looked quite dissorienting. You can probably pair it with "
+//									+ "Guard Attack to good effect."),
+//							new Dialog(defender, "Thank you. I'll have to try that out."),
+//							new Dialog(guardCaptain, "Regardless, we have a new assignment today. It seems they've uncovered "
+//									+ "something at the dig site and have requested an escort to bring it back to town. " 
+//									+ defender.getName() + ", since you were late, I'm assigning you this task. " + guards[0].getName()
+//									+ ", you go with him."),
+//							new Dialog(guards[0], "Aw, Captain! Why do I get saddled with the new guy?"),
+//							new Dialog(guardCaptain, "We've all gotta pitch in. Besides, I heard what you said about my wife's stew."),
 							new Dialog(guards[0], "Aw, man... C'mon " + defender.getName() + ", let's get going.")
 					}, new Runnable(){
 						@Override
@@ -159,12 +159,12 @@ public class Plot_Beginnings extends Plot {
 				
 				Trigger damselInDistressTrigger = new ProximityTrigger(Trigger.ID.BEGINNINGS_DAMSEL_1, damsel, 3,
 					new Dialog[]{ 
-						new Dialog(guards[0], "Well, hello miss. What are you doing way out here?"),
-						new Dialog(damsel, "Oh, thank goodness you found me. It was terrible. They came out of nowhere. My brother... "
-								+ "He tried to stop them, but..."),
-						new Dialog(guards[0], "Its okay, miss. I'm here now. They won't hurt you anymore."),
-						new Dialog(guards[0], defender.getName() + ", I'll take care of things here. You go on ahead and complete "
-								+ "the mission. It's just a bit further down the path here."),
+//						new Dialog(guards[0], "Well, hello miss. What are you doing way out here?"),
+//						new Dialog(damsel, "Oh, thank goodness you found me. It was terrible. They came out of nowhere. My brother... "
+//								+ "He tried to stop them, but..."),
+//						new Dialog(guards[0], "Its okay, miss. I'm here now. They won't hurt you anymore."),
+//						new Dialog(guards[0], defender.getName() + ", I'll take care of things here. You go on ahead and complete "
+//								+ "the mission. It's just a bit further down the path here."),
 						new Dialog(defender, "Understood.")
 					}, new Runnable(){
 						@Override
@@ -182,15 +182,15 @@ public class Plot_Beginnings extends Plot {
 				
 				Trigger sorceressRequestTrigger = new ProximityTrigger(Trigger.ID.BEGINNINGS_SORCERESS_1, sorceress, 3,
 					new Dialog[] {
-						new Dialog(sorceress, defender.getName() + "?! I can't believe you're all the way out here. But I suppose "
-								+ "I shouldn't be all that surprised. You've always been there when I really need someone, ever "
-								+ "since we were kids."),
-						new Dialog(defender, "Of course. You're like a sister to me."),
-						new Dialog(sorceress, "A sister?..."),
-						new Dialog(sorceress, "Listen, there are bandits about and I need to get this artifact back to town? I'd "
-								+ "do it myself, but my magic hasn't been responding well. Can you hold onto it until I see you "
-								+ "again. Say, tonight at the banquet?"),
-						new Dialog(defender, "It won't leave my side."),
+//						new Dialog(sorceress, defender.getName() + "?! I can't believe you're all the way out here. But I suppose "
+//								+ "I shouldn't be all that surprised. You've always been there when I really need someone, ever "
+//								+ "since we were kids."),
+//						new Dialog(defender, "Of course. You're like a sister to me."),
+//						new Dialog(sorceress, "A sister?..."),
+//						new Dialog(sorceress, "Listen, there are bandits about and I need to get this artifact back to town? I'd "
+//								+ "do it myself, but my magic hasn't been responding well. Can you hold onto it until I see you "
+//								+ "again. Say, tonight at the banquet?"),
+//						new Dialog(defender, "It won't leave my side."),
 						new Dialog(sorceress, "Aw, thanks! I gotta run now, but find me tonight, and I'll figure out some way to "
 								+ "repay you. Anything you want!")
 					}, new Runnable(){
@@ -209,8 +209,15 @@ public class Plot_Beginnings extends Plot {
 						@Override
 						public void run() {
 							battleQueue.addObjectToWest(bandits[0], 0);
+							battleQueue.queueAction(Ability.get(Ability.ID.AI_TURN), bandits[0], bandits[0]);
+							bandits[0].setInCombat(true);
 							battleQueue.addObjectToEast(bandits[1], 0);
+							battleQueue.queueAction(Ability.get(Ability.ID.AI_TURN), bandits[1], bandits[1]);
+							bandits[1].setInCombat(true);
 							battleQueue.addObjectToNorth(bandits[2], 0);
+							battleQueue.queueAction(Ability.get(Ability.ID.AI_TURN), bandits[2], bandits[2]);
+							bandits[2].setInCombat(true);
+							defender.setInCombat(true);
 						}
 				});
 				banditAttackTrigger.setMinAllowed(Trigger.ID.BEGINNINGS_SORCERESS_1, 1);
@@ -220,8 +227,8 @@ public class Plot_Beginnings extends Plot {
 					final int banditNum = i;
 					Trigger banditAttackTriggerSpeech = new ProximityTrigger(Trigger.ID.BEGINNINGS_BANDIT_ATTACK_2, bandits[i], 10,
 							new Dialog[] {
-							new Dialog(bandits[0], "Haha, we've got you surrounded now! Just give up that case and we might not gut you."),
-							new Dialog(defender, "I can't do that. There may be three of you, but a promise is a promise."),
+//							new Dialog(bandits[0], "Haha, we've got you surrounded now! Just give up that case and we might not gut you."),
+//							new Dialog(defender, "I can't do that. There may be three of you, but a promise is a promise."),
 							new Dialog(bandits[0], "Pretty cocky, huh? Let's see how you feel with a few holes in you!"),
 						}, null
 					);
@@ -235,7 +242,11 @@ public class Plot_Beginnings extends Plot {
 							@Override
 							public void run() {
 								battleQueue.addObjectToEast(guardCaptain, 2);
+								guardCaptain.setInCombat(true);
+								battleQueue.queueAction(Ability.get(Ability.ID.AI_TURN), guardCaptain, guardCaptain);
 								battleQueue.addObjectToWest(guards[1], 1);
+								guards[1].setInCombat(true);
+								battleQueue.queueAction(Ability.get(Ability.ID.AI_TURN), guards[1], guards[1]);
 							}
 						}, battleQueue
 					);
@@ -251,8 +262,16 @@ public class Plot_Beginnings extends Plot {
 							@Override
 							public void run() {
 								moveOffscreenAndRemove(bandits[0]);
+								bandits[0].setInCombat(false);
 								moveOffscreenAndRemove(bandits[1]);
-								moveOffscreenAndRemove(bandits[2]);									
+								bandits[1].setInCombat(false);
+								moveOffscreenAndRemove(bandits[2]);
+								bandits[2].setInCombat(false);
+								defender.setInCombat(false);
+								guardCaptain.setInCombat(false);
+								battleQueue.clearUnitActions(guardCaptain);
+								guards[1].setInCombat(false);
+								battleQueue.clearUnitActions(guards[1]);
 							}
 						}, battleQueue
 					);
@@ -319,8 +338,10 @@ public class Plot_Beginnings extends Plot {
 	}
 	
 	private void moveOffscreenAndRemove(Unit unit) {
-		unit.addStatusEffect(new StatusEffect(StatusEffect.ID.FLEE, 60000));
+		if (!unit.isAlive())
+			unit.raise();
 		battleQueue.clearUnitActions(unit);
+		unit.addStatusEffect(new StatusEffect(StatusEffect.ID.FLEE, 60000));
 		battleQueue.queueAction(Ability.get(Ability.ID.FLEE), unit, unit);
 	}
 }

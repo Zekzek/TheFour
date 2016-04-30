@@ -144,9 +144,11 @@ public class PartyPanel extends JPanel implements IBattleListener, IPlayerListen
 				playerUnits.add((Unit) playerObject);
 			}
 		}
-		for (Unit unit : playerUnits) {
-			if (!playerObjects.contains(unit)) {
-				playerUnits.remove(unit);
+		Iterator<Unit> playerUnitIterator = playerUnits.iterator();
+		while (playerUnitIterator.hasNext()) {
+			Unit playerUnit = playerUnitIterator.next();
+			if (!playerObjects.contains(playerUnit)) {
+				playerUnitIterator.remove();
 			}
 		}
 	}

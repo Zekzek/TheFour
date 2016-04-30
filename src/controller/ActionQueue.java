@@ -13,7 +13,6 @@ import model.Ability;
 import model.GameObject;
 import model.GameObject.TEAM;
 import model.GridPosition;
-import model.GridRectangle;
 import model.GroundTarget;
 import model.ITargetable;
 import model.ReadiedAction;
@@ -40,7 +39,7 @@ public class ActionQueue implements IGameObjectListener{
 	private World world;
 	private Thread playNextAction;
 	private boolean playingActions = false;
-	private long battleDuration = 0;
+	private long battleTime = 0;
 	private boolean pause = true;
 	private Set<Unit.TEAM> activeTeams;
 	private Unit activePlayer = null;
@@ -189,7 +188,7 @@ public class ActionQueue implements IGameObjectListener{
 	 */
 	public void insertFirstAction(Ability ability, Unit source, ITargetable target, Runnable doAtMid, Runnable doAtEnd) {
 		delay(source, ability.getDelay());
-		ReadiedAction action = new ReadiedAction(ability, source, target, battleDuration);
+		ReadiedAction action = new ReadiedAction(ability, source, target, battleTime);
 		action.addDoAtMid(doAtMid);
 		action.addDoAtEnd(doAtEnd);
 		synchronized(this) {
@@ -256,7 +255,7 @@ public class ActionQueue implements IGameObjectListener{
 		return soleActingUnit != null || actingUnits.contains(unit);
 	}
 	
-	public void checkNextAction() {
+	private void checkNextAction() {
 		if (pause)
 			return; //paused, do nothing
 		if (actionQueue.isEmpty())
@@ -284,8 +283,12 @@ public class ActionQueue implements IGameObjectListener{
 		perform(getFirstStepToUseAction(nextAction));
 		checkNextAction();
 	}
-	
-	public void perform(final ReadiedAction action) {
+
+	/**
+	 * Perform the action
+	 * @param action
+	 */
+	private void perform(final ReadiedAction action) {
 		Unit source = action.getSource();
 		Ability ability = action.getAbility();
 		ITargetable target = action.getTarget();
@@ -295,6 +298,7 @@ public class ActionQueue implements IGameObjectListener{
 		if (source.isInCombat())
 			soleActingUnit = source;
 		
+		battleTime = action.getStartTime();
 		
 		//Apply any speed modifier to all future actions
 		delay(source, ability.calcAdditionalDelay(source.getModifier()));
@@ -335,56 +339,7 @@ public class ActionQueue implements IGameObjectListener{
 		activateAtMid.start();
 		activateAtEnd.start();
 	}
-	
-	/**
-	 * perform the next queued action
-	 */
-//	public void performNextAction() {
-//		performingAction = true;
-//		synchronized(this) {
-//			ReadiedAction nextAction = actionQueue.peek();
-//			if (inBattle)
-//				battleDuration = nextAction.getStartTime();
-//			Unit source = nextAction.getSource();
-//			if (!isValidAction(nextAction)) {
-//				System.out.println(source + " abandoning " + nextAction.getAbility());
-//				dequeueAction(nextAction);
-//				performNextAction();
-//				return;
-//			}
-//			
-//			if (nextAction.getAbility().getId() == Ability.ID.AI_TURN) {
-//				nextAction = getFirstStepToUseAction(source.aiGetAction(nextAction.getStartTime(), world));				
-//				delay(source, nextAction.getAbility().getDelay());
-//				nextAction.activate(world, this);
-//			} else if (!targetReachable(nextAction)) {
-//				ReadiedAction firstAction = getFirstStepToUseAction(nextAction);
-//				if (firstAction != null) {
-//					insertFirstAction(Ability.get(Ability.ID.MOVE), source, firstAction.getTarget());
-//					performNextAction();
-//				} else {
-//					actionQueue.poll(); //remove from the queue
-//					if (source.equals(activePlayer))
-//						activePlayerAbilityQueuedChanged();
-//				}
-//			} else {
-//				if (source.getTeam() == TEAM.PLAYER) {
-//					final ReadiedAction playerAction = nextAction;
-//					nextAction.addDoAtEnd(new Runnable() {
-//						@Override
-//						public void run() {
-//							playerUsedAbility(playerAction);
-//						}
-//					});
-//				}
-//				nextAction.activate(world, this);
-//				actionQueue.poll(); //remove from the queue
-//				if (source.equals(activePlayer))
-//					activePlayerAbilityQueuedChanged();
-//			}
-//		}
-//	}
-	
+
 	private boolean isValidAction(ReadiedAction action) {
 		boolean validity = true;
 		ITargetable target = action.getTarget();
@@ -428,7 +383,6 @@ public class ActionQueue implements IGameObjectListener{
 		return action;
 	}
 	
-	//TODO: sometimes gets stuck in a queue-not valid-queue loop?
 	private PathingGridPosition getPathToUseAction(ReadiedAction action) {
 		Unit source = action.getSource();
 		GridPosition targetPos = action.getTarget().getPos();
@@ -558,6 +512,7 @@ public class ActionQueue implements IGameObjectListener{
 	}
 	
 	private void changedActivePlayer(Unit unit) {
+		world.setFocusTarget(unit);
 		for (IPlayerListener listener : playerListeners) {
 			listener.onChangedActivePlayer(unit);
 		}
@@ -616,7 +571,7 @@ public class ActionQueue implements IGameObjectListener{
 	}
 	
 	public long getLastScheduledTime(Unit unit) {
-		Long time = battleDuration;
+		Long time = battleTime;
 		synchronized(this) {
 			Iterator<ReadiedAction> iterator = actionQueue.iterator();
 			while (iterator.hasNext()) {
@@ -630,7 +585,7 @@ public class ActionQueue implements IGameObjectListener{
 	}
 	
 	public long getCompletionTime(Unit unit) {
-		Long time = battleDuration;
+		Long time = battleTime;
 		synchronized(this) {
 			Iterator<ReadiedAction> iterator = actionQueue.iterator();
 			while (iterator.hasNext()) {
@@ -679,7 +634,7 @@ public class ActionQueue implements IGameObjectListener{
 		clearPlayerListeners();
 		actionQueue.clear();
 		world.reset();
-		battleDuration = 0;
+		battleTime = 0;
 		pause = true;
 		activePlayer = null;
 		battleListeners.clear();

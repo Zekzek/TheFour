@@ -326,41 +326,7 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 		} 
 		return img;
 	}
-	
-//	public static void moveScreenTo(int x, int y) {
-//		focusUnit = null;
-//		moveScreenStartPosition = null;
-//		screenPos.setX(x);
-//		screenPos.setY(y);
-//	}
-//	
-//	public static void moveScreenTo(Unit unit, int duration) {
-//		if (focusUnit == null || !focusUnit.equals(unit)) {
-//			focusUnit = unit;
-//			moveScreenStartPosition = new GridPosition(screenPos.getX(), screenPos.getY());
-//			Thread moveCameraThread = new Thread() {
-//				@Override
-//				public void run() {
-//					moveCompletePercentage = 0.0;
-//					for (int i = REFRESH_RATE; i < duration; i += REFRESH_RATE) {
-//						try {
-//							Thread.sleep(REFRESH_RATE);
-//						} catch (InterruptedException e) {
-//							e.printStackTrace();
-//						}
-//						moveCompletePercentage = i / (double)duration;
-//					}
-//					moveScreenStartPosition = null;
-//				}
-//			};
-//			moveCameraThread.start();
-//		}
-//	}
-	
-//	public static GridRectangle getScreenRectangle() {
-//		return screenPos;
-//	}
-	
+		
 	public static AMBIENT_LIGHT getAmbientLight() {
 		return ambientLight;
 	}

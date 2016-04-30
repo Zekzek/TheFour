@@ -36,11 +36,6 @@ public class BattleQueueTest {
 		ability2 = Ability.get(Ability.ID.WATCH);
 	}
 	
-	@After
-	public void reset() {
-		battleQueue.endCombat();
-	}
-	
 	@Test
 	public void testAddCombatants() {
 		battleQueue.addGameObject(defender, 1, 1);
@@ -123,13 +118,6 @@ public class BattleQueueTest {
 		assertTrue(battleQueue.getLastScheduledTime(berserker) > 0);
 		assertTrue(battleQueue.getCompletionTime(berserker) > 0);
 		assertTrue(battleQueue.getActionQueueIterator().hasNext());
-
-		battleQueue.endCombat();
-		assertEquals(battleQueue.getLastScheduledTime(defender), -1);
-		assertEquals(battleQueue.getCompletionTime(defender), -1);
-		assertEquals(battleQueue.getLastScheduledTime(berserker), -1);
-		assertEquals(battleQueue.getCompletionTime(berserker), -1);
-		assertFalse(battleQueue.getActionQueueIterator().hasNext());
 	}
 
 	@Test

@@ -77,6 +77,11 @@ public abstract class GameObject implements ITargetable {
 	public boolean isAlive() {
 		return hp > 0;
 	}
+	
+	public void raise() {
+		if (!isAlive())
+			hp = 1;
+	}
 
 	public void paint(Graphics2D g2, GridRectangle screenRectangle) {
 		AffineTransform savedTransorm = g2.getTransform();
