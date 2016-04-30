@@ -171,6 +171,7 @@ public class Plot_Beginnings extends Plot {
 						public void run() {
 							damsel.setFacing(FACING.W);
 							guards[0].setTeam(TEAM.NONCOMBATANT);
+							battleQueue.onObjectTeamChange(guards[0]);
 							battleQueue.clearUnitActions(guards[0]);
 							battleQueue.queueAction(Ability.get(Ability.ID.MOVE), guards[0], 
 									new GroundTarget(damsel.getPos().getX() - 1, damsel.getPos().getY()));

@@ -261,7 +261,7 @@ public class ActionQueue implements IGameObjectListener{
 		if (actionQueue.isEmpty())
 			return; //no more actions queued, do nothing
 		ReadiedAction nextAction = actionQueue.peek();
-		if (nextAction.getStartTime() > getCompletionTime(getActivePlayer()))
+		if (nextAction.getStartTime() >= getCompletionTime(getActivePlayer()) - 1)
 			return; //waiting for player, do nothing
 		Unit source = nextAction.getSource();
 		if (blockingAction(source))
@@ -285,7 +285,7 @@ public class ActionQueue implements IGameObjectListener{
 	}
 
 	/**
-	 * Perform the action
+	 * Perform the action: animate, effect other game objects, and update internal scheduling
 	 * @param action
 	 */
 	private void perform(final ReadiedAction action) {
@@ -571,7 +571,7 @@ public class ActionQueue implements IGameObjectListener{
 	}
 	
 	public long getLastScheduledTime(Unit unit) {
-		Long time = battleTime;
+		Long time = battleTime - 1;
 		synchronized(this) {
 			Iterator<ReadiedAction> iterator = actionQueue.iterator();
 			while (iterator.hasNext()) {

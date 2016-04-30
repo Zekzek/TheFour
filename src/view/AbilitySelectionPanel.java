@@ -81,6 +81,7 @@ public class AbilitySelectionPanel extends JPanel implements IGridClickedListene
 		battleQueue.queueAction(activeAbility, activeUnit, target);
 		abilityDetailPanel.setVisible(false);
 		abilityList.clearSelection();
+		activeAbility = null;
 		battleQueue.finishPlanningAction(activeUnit);
 		clearTargets();
 	}
@@ -152,7 +153,20 @@ public class AbilitySelectionPanel extends JPanel implements IGridClickedListene
 
 	@Override
 	public void onChangedPlayerTeam(Set<GameObject> playerObjects) {
-		// TODO Auto-generated method stub
-		
+		if (playerObjects == null || playerObjects.size() == 0) 
+			setVisible(false);
+		else if (!playerObjects.contains(activeUnit)) {
+			Iterator<GameObject> iterator = playerObjects.iterator();
+			battleQueue.finishPlanningAction(activeUnit);
+			while (iterator.hasNext()) {
+				GameObject object = iterator.next();
+				if (object instanceof Unit) {
+					setVisible(true);
+					activeUnit = (Unit) playerObjects.iterator().next();
+					updateAbilityMenuList(abilityList, activeUnit.getKnownActions());
+					break;
+				}
+			}
+		}
 	}
 }
