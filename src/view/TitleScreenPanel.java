@@ -20,10 +20,6 @@ import view.GraphicsPanel.AMBIENT_LIGHT;
 import controller.ActionQueue;
 import controller.plot.Plot;
 import controller.plot.Plot_Beginnings;
-import controller.plot.Plot_SpeedTest;
-import controller.plot.Plot_Tutorial_Arena;
-import controller.plot.Plot_Tutorial_Beserker_Deceit;
-import controller.plot.Plot_Tutorial_Defend_Sorc_Item;
 
 public class TitleScreenPanel extends JPanel{
 	private static final long serialVersionUID = -8163142113386384945L;
@@ -51,8 +47,8 @@ public class TitleScreenPanel extends JPanel{
 		JPanel centerWrapperPanel = new JPanel();
 		centerWrapperPanel.add(new JLabel("Scene:"));
 		centerWrapperPanel.add(getPlotComboBox());
-		centerWrapperPanel.add(new JLabel("     Light Level:"));
-		centerWrapperPanel.add(getAmbientLightComboBox());
+//		centerWrapperPanel.add(new JLabel("     Light Level:"));
+//		centerWrapperPanel.add(getAmbientLightComboBox());
 		
 		add(centerWrapperPanel, BorderLayout.CENTER);
 		

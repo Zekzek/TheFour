@@ -512,11 +512,13 @@ public class ActionQueue implements IGameObjectListener{
 	}
 	
 	private void changedActivePlayer(Unit unit) {
-		world.setFocusTarget(unit);
-		for (IPlayerListener listener : playerListeners) {
-			listener.onChangedActivePlayer(unit);
+		synchronized(this) {
+			world.setFocusTarget(unit);
+			for (IPlayerListener listener : playerListeners) {
+				listener.onChangedActivePlayer(unit);
+			}
+			activePlayerAbilityQueuedChanged();
 		}
-		activePlayerAbilityQueuedChanged();
 	}
 	
 	private void playerUsedAbility(ReadiedAction action) {

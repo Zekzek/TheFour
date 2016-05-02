@@ -14,7 +14,7 @@ import controller.ActionQueue;
 import controller.IBattleListener;
 
 public abstract class Plot implements IBattleListener{
-	protected static final int SECOND = 100;//TODO: revert to 1000;
+	protected static final int SECOND = 1000;
 	private final Map<String, SceneTransition> sceneTransitions = new HashMap<String, SceneTransition>();
 	protected ActionQueue battleQueue;
 	protected World world;

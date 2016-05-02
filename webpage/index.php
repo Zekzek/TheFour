@@ -66,7 +66,7 @@
 	<div id="header">
 		<h2 style="margin:3px">The Four: Forgotten Age</h2>
 		<img src="sample.png"></img>
-		<h5 style="margin:3px"><a href="./four.jar" download>Download the latest version (0.02)</a></h5>
+		<h5 style="margin:3px"><a href="./four.jar" download>Download the latest version (0.03)</a></h5>
 	</div>
 	</div>
 	<p>
@@ -79,9 +79,9 @@
 	<p>
 		There are a number of planned improvements, including:
 		<ul>
+			<li>Easier Group Movement</li>
 			<li>Epic story quest</li>
 			<li>Various side quests</li>
-			<li>Free world exploration</li>
 			<li>Equipment</li>
 			<li>New Abilities (learn and master)</li>
 			<li>Keyboard/Controller Input</li>
@@ -95,6 +95,7 @@
 		<ul>
 			<li><a href="./four_0_01.jar" download>0.01</a></li>
 			<li><a href="./four_0_02.jar" download>0.02</a></li>
+			<li><a href="./four_0_03.jar" download>0.03</a></li>
 		</ul>
 	</p>
 	
