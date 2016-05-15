@@ -140,7 +140,6 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 		g2.translate(-screenPos.getxOffset() * GraphicsPanel.CELL_WIDTH,
 				-screenPos.getyOffset() * GraphicsPanel.TERRAIN_CELL_HEIGHT);
 	
-		
 		// Draw terrain
 		BufferedImage[][] terrainTiles = MapBuilder.getTiles(screenPos, 1);
 		for (int x = 0; x < terrainTiles.length; x++) {
@@ -162,12 +161,12 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	    		screenPos.getHeight() * TERRAIN_CELL_HEIGHT));
 	    for (GameObject tallObject : contents) {
 			tallObject.paint(g2, screenPos);
-//			if (tallObject instanceof Unit) {
-//				darkArea.subtract(new Area(new Ellipse2D.Double(
-//						(tallObject.getPos().getX() - screenPos.getX()) * CELL_WIDTH, 
-//						(tallObject.getPos().getY() - screenPos.getY()) * TERRAIN_CELL_HEIGHT, 
-//						CELL_WIDTH * 3, TERRAIN_CELL_HEIGHT * 3)));
-//			}
+			if (tallObject instanceof Unit) {
+				darkArea.subtract(new Area(new Ellipse2D.Double(
+						horizontalPadding + scale * CELL_WIDTH * (tallObject.getPos().getExactX() - screenPos.getExactX() - 1), 
+						verticalPadding + scale * TERRAIN_CELL_HEIGHT * (tallObject.getPos().getExactY() - screenPos.getExactY() - 1), 
+						scale * CELL_WIDTH * 3, scale * TERRAIN_CELL_HEIGHT * 3)));
+			}
 		}
 		
 	    //Draw the shadow gradient
@@ -299,7 +298,7 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 				
 				// resume
 				GameFrame.enableMenu();
-				battleQueue.setPause(false);
+//				battleQueue.setPause(false);
 				
 				if (startScene != null)
 					startScene.run();

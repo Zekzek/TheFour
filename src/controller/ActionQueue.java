@@ -468,11 +468,15 @@ public class ActionQueue implements IGameObjectListener{
 	}
 	
 	public void addPlayerListener(IPlayerListener listener) {
-		playerListeners.add(listener);
+		synchronized(this) {
+			playerListeners.add(listener);
+		}
 	}
 	
 	public void clearPlayerListeners() {
-		playerListeners.clear();
+		synchronized(this) {
+			playerListeners.clear();
+		}
 	}
 	
 	private void unitAdded(Unit unit) {
@@ -501,29 +505,33 @@ public class ActionQueue implements IGameObjectListener{
 	
 	private void activePlayerAbilityQueuedChanged() {
 		List<ReadiedAction> actions = new ArrayList<ReadiedAction>();
-		for (ReadiedAction action : actionQueue) {
-			if (action.getSource().equals(activePlayer)) {
-				actions.add(action);
+		synchronized(this) {
+			for (ReadiedAction action : actionQueue) {
+				if (action.getSource().equals(activePlayer)) {
+					actions.add(action);
+				}
 			}
-		}
-		for (IPlayerListener listener : playerListeners) {
-			listener.onActivePlayerAbilityQueueChanged(actions.iterator());
+			for (IPlayerListener listener : playerListeners) {
+				listener.onActivePlayerAbilityQueueChanged(actions.iterator());
+			}
 		}
 	}
 	
 	private void changedActivePlayer(Unit unit) {
+		world.setFocusTarget(unit);
 		synchronized(this) {
-			world.setFocusTarget(unit);
 			for (IPlayerListener listener : playerListeners) {
 				listener.onChangedActivePlayer(unit);
 			}
-			activePlayerAbilityQueuedChanged();
 		}
+		activePlayerAbilityQueuedChanged();
 	}
 	
 	private void playerUsedAbility(ReadiedAction action) {
-		for (IPlayerListener listener : playerListeners) {
-			listener.onPlayerUsedAbility(action);
+		synchronized(this) {
+			for (IPlayerListener listener : playerListeners) {
+				listener.onPlayerUsedAbility(action);
+			}
 		}
 	}
 		
@@ -622,6 +630,10 @@ public class ActionQueue implements IGameObjectListener{
 		}
 	}
 
+	public boolean isPaused() {
+		return pause;
+	}
+	
 	public void setPause(boolean pause) {
 		this.pause = pause;
 	}
@@ -654,8 +666,10 @@ public class ActionQueue implements IGameObjectListener{
 	@Override
 	public void onObjectTeamChange(GameObject object) {
 		Set<GameObject> playerObjects = world.getContentsOnTeam(TEAM.PLAYER);
-		for (IPlayerListener listener : playerListeners) {
-			listener.onChangedPlayerTeam(playerObjects);
+		synchronized(this) {
+			for (IPlayerListener listener : playerListeners) {
+				listener.onChangedPlayerTeam(playerObjects);
+			}
 		}
 	}
 

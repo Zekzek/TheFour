@@ -131,6 +131,12 @@ public class GridRectangle {
 				+ ", height=" + height + "]";
 	}
 
+	public float getExactX() {
+		return x + xOffset;
+	}
+	public float getExactY() {
+		return y + yOffset;
+	}
 	public int getX() {
 		return x;
 	}

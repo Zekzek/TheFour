@@ -37,7 +37,7 @@ public abstract class Plot implements IBattleListener{
 		initUnits();
 		initSceneTransitions();
 		changeScene(getStartingScene());
-		battleQueue.setPause(false);
+		//battleQueue.setPause(false);
 		battleQueue.startPlayingActions();
 	}
 	

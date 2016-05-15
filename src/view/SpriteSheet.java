@@ -32,6 +32,7 @@ public class SpriteSheet {
 	};
 	public static enum CLIMATE {PLAINS, JUNGLE, TUNDRA, FOREST, DESERT, ROCKY, VOLCANIC, CASTLE, UNDERGROUND}
 	public static enum TERRAIN {ROAD, PATH, LIGHT, DENSE, WATER}
+	public static enum ICON_ID {CLOSE, PLAY, PAUSE}
 	
 	public static final int SPRITE_HEIGHT = 64;
 	public static final int TERRAIN_SPRITE_HEIGHT = 32;
@@ -111,5 +112,10 @@ public class SpriteSheet {
 		return sheet.getSubimage(index % CLIMATE.values().length * SPRITE_WIDTH,
 				index / CLIMATE.values().length * SPRITE_HEIGHT,
 				SPRITE_WIDTH, SPRITE_HEIGHT);
+	}
+	
+	public BufferedImage getSprite(ICON_ID id) {
+		return sheet.getSubimage(id.ordinal() * ICON_WIDTH, 0,
+				ICON_WIDTH, ICON_HEIGHT);
 	}
 }
