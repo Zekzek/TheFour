@@ -146,6 +146,10 @@ public class AbilitySelectionPanel extends JPanel implements IGridClickedListene
 	}
 	
 	@Override
+	public void onChangedMostReadyPlayer(Unit unit) {}
+
+	
+	@Override
 	public void onActivePlayerAbilityQueueChanged(Iterator<ReadiedAction> actions) {}
 
 	@Override

@@ -19,13 +19,13 @@ import controller.Trigger;
 
 public class Plot_Beginnings extends Plot {
 
-	public Plot_Beginnings(ActionQueue battleQueue, World world) {
-		super(battleQueue, world);
-	}
-
 	private Unit defender, savior, guardCaptain, damsel, damselsBrother, sorceress;
 	private Unit[] guards, bandits;
 	private Structure targetDummy;
+	
+	public Plot_Beginnings(ActionQueue battleQueue, World world) {
+		super(battleQueue, world);
+	}
 	
 	@Override
 	protected void initUnits() {

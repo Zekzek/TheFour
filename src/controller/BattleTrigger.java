@@ -72,6 +72,9 @@ public class BattleTrigger extends Trigger implements IBattleListener, IPlayerLi
 	public void onChangedActivePlayer(Unit unit) {}
 
 	@Override
+	public void onChangedMostReadyPlayer(Unit unit) {}
+
+	@Override
 	public void onActivePlayerAbilityQueueChanged(Iterator<ReadiedAction> actions) {}
 
 	@Override

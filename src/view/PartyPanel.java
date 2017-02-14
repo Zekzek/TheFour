@@ -28,9 +28,13 @@ public class PartyPanel extends JPanel implements IBattleListener, IPlayerListen
 	private static final double ICON_SCALE = 0.85;
 	private static final Color SELECTED_UNIT_COLOR = new Color(100, 100, 0);
 	private static final Color SELECTION_ARROW_COLOR = new Color(255, 255, 0);
+	private static final Color MOST_READY_ARROW_COLOR = new Color(100, 100, 100);
+	private static final int[] SELECTION_ARROW_X_POSITION = new int[]{217, 232, 232};
+	private static final int[] MOST_READY_ARROW_X_POSITION = new int[]{212, 227, 227};
 	
 	private List<Unit> playerUnits = new ArrayList<Unit>();
 	private Unit activePlayer;
+	private Unit mostReadyPlayer;
 	private ActionQueue battleQueue;
 	
 	public PartyPanel(ActionQueue battleQueue) {
@@ -47,13 +51,19 @@ public class PartyPanel extends JPanel implements IBattleListener, IPlayerListen
 		int count = 0;
 		for (Unit unit : playerUnits) {
 			int baseHeight = count * HEIGHT;
+			if (unit.equals(mostReadyPlayer)) {
+				g2.setColor(MOST_READY_ARROW_COLOR);
+				int[] arrowYPosition = new int[] {baseHeight + 15, baseHeight + 5, baseHeight + 25};
+				g2.fillPolygon(MOST_READY_ARROW_X_POSITION, arrowYPosition, 3);
+				g2.setColor(Color.BLACK);
+				g2.drawPolygon(MOST_READY_ARROW_X_POSITION, arrowYPosition, 3);
+			}
 			if (unit.equals(activePlayer)) {
 				g2.setColor(SELECTION_ARROW_COLOR);
-				g2.fillPolygon(new int[]{212, 232, 232}, 
-						new int[] {baseHeight + 15, baseHeight + 5, baseHeight + 25}, 3);
+				int[] arrowYPosition = new int[] {baseHeight + 15, baseHeight + 5, baseHeight + 25};
+				g2.fillPolygon(SELECTION_ARROW_X_POSITION, arrowYPosition, 3);
 				g2.setColor(Color.BLACK);
-				g2.drawPolygon(new int[]{212, 232, 232}, 
-						new int[] {baseHeight + 15, baseHeight + 5, baseHeight + 25}, 3);
+				g2.drawPolygon(SELECTION_ARROW_X_POSITION, arrowYPosition, 3);
 				g2.setColor(SELECTED_UNIT_COLOR);
 			} else {
 				g2.setColor(Color.DARK_GRAY);
@@ -129,6 +139,11 @@ public class PartyPanel extends JPanel implements IBattleListener, IPlayerListen
 	@Override
 	public void onChangedActivePlayer(Unit unit) {
 		activePlayer = unit;
+	}
+	
+	@Override
+	public void onChangedMostReadyPlayer(Unit unit) {
+		mostReadyPlayer = unit;
 	}
 	
 	@Override

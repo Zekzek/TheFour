@@ -67,8 +67,10 @@ public abstract class Plot implements IBattleListener{
 		if (transition == null) {
 			System.err.println("Scene '" + sceneName + "' not found!");
 		}
-		gameFrame.changeScene(transition);
-		this.sceneName = transition.getName();
+		else {
+			gameFrame.changeScene(transition);
+			this.sceneName = transition.getName();
+		}
 	}
 	
 	public String getSceneName() {

@@ -15,7 +15,11 @@ public class Plot_Tutorial_Arena extends Plot{
 	
 	private Unit announcer, defender, berserker;
 	private Unit[] guards;
-		
+	
+	public Plot_Tutorial_Arena(ActionQueue battleQueue, World world) {
+		super(battleQueue, world);
+	}
+	
 	@Override
 	protected String getStartingScene() {
 		return "Arena Fight";

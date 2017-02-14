@@ -136,6 +136,9 @@ public class UnitQueuePanel extends JPanel implements MouseListener, IPlayerList
 	public void onChangedActivePlayer(Unit unit) {}
 	
 	@Override
+	public void onChangedMostReadyPlayer(Unit unit) {}
+
+	@Override
 	public void onActivePlayerAbilityQueueChanged(Iterator<ReadiedAction> actions) {
 		unitActions.clear();
 		while(actions.hasNext()) {

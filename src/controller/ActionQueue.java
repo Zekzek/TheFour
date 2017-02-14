@@ -43,6 +43,7 @@ public class ActionQueue implements IGameObjectListener{
 	private boolean pause = true;
 	private Set<Unit.TEAM> activeTeams;
 	private Unit activePlayer = null;
+	private Unit mostReadyPlayer = null;
 	private Set<IBattleListener> battleListeners;
 	private Set<IPlayerListener> playerListeners;
 	private Unit soleActingUnit;
@@ -226,8 +227,8 @@ public class ActionQueue implements IGameObjectListener{
 	 * @return the player needing to schedule another action soonest
 	 */
 	public Unit getMostReadyPlayer() {
-		Unit mostReadyPlayer = null;
-		long unitBusyness = Long.MAX_VALUE;
+		long unitBusyness = mostReadyPlayer==null ? Long.MAX_VALUE : getCompletionTime(mostReadyPlayer);
+		boolean change = false;
 		synchronized(this) {
 			Set<GameObject> playerObjects = world.getContentsOnTeam(TEAM.PLAYER);
 			for (GameObject playerObject : playerObjects) {
@@ -235,12 +236,15 @@ public class ActionQueue implements IGameObjectListener{
 					Unit combatant = (Unit) playerObject;
 					long busyness = getCompletionTime(combatant);
 					if (combatant.getTeam() == TEAM.PLAYER && busyness < unitBusyness) {
+						change = true;
 						mostReadyPlayer = combatant;
 						unitBusyness = busyness;
 					}
 				}
 			}
 		}
+		if (change)
+			changedMostReadyPlayer(mostReadyPlayer);
 		return mostReadyPlayer;
 	}
 	
@@ -455,6 +459,7 @@ public class ActionQueue implements IGameObjectListener{
 				}
 			}
 			Collections.sort(actionQueue, SOONEST_READIED_ACTION);
+			getMostReadyPlayer();
 		}
 	}
 
@@ -522,6 +527,15 @@ public class ActionQueue implements IGameObjectListener{
 		synchronized(this) {
 			for (IPlayerListener listener : playerListeners) {
 				listener.onChangedActivePlayer(unit);
+			}
+		}
+		activePlayerAbilityQueuedChanged();
+	}
+	
+	private void changedMostReadyPlayer(Unit unit) {
+		synchronized(this) {
+			for (IPlayerListener listener : playerListeners) {
+				listener.onChangedMostReadyPlayer(unit);
 			}
 		}
 		activePlayerAbilityQueuedChanged();
