@@ -17,7 +17,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
 import model.Dialog;
-import controller.ActionQueue;
+import controller.ActionPlayer;
 
 public class DialogPanel extends JPanel{
 	private static final long serialVersionUID = 1582923222552495250L;
@@ -44,10 +44,10 @@ public class DialogPanel extends JPanel{
 	private static List<Dialog> conversation = new ArrayList<Dialog>();
 	private static boolean goToTitleOnConclusion = false;
 	private static Runnable actionOnConclusion;
-	private ActionQueue battleQueue;
+	private ActionPlayer battleQueue;
 	private Set<IMenuListener> menuListeners;
 	
-	public DialogPanel(ActionQueue battleQueue) {
+	public DialogPanel(ActionPlayer battleQueue) {
 		this.battleQueue = battleQueue;
 		menuListeners = new HashSet<IMenuListener>();
 		

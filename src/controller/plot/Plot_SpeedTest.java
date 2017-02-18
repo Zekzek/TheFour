@@ -14,7 +14,7 @@ import view.DialogPanel;
 import view.GraphicsPanel;
 import view.SceneTransition;
 import view.SpriteSheet.CLIMATE;
-import controller.ActionQueue;
+import controller.ActionPlayer;
 
 public class Plot_SpeedTest extends Plot{
 	
@@ -40,8 +40,8 @@ public class Plot_SpeedTest extends Plot{
 				GraphicsPanel.moveScreenTo(24, 23);
 				addUnitsToWorld();
 				
-				ActionQueue.addCombatants(World.getSortedContentsWithin(GraphicsPanel.getScreenRectangle(), Unit.class).iterator());
-			    ActionQueue.addRandomCombatDelays();
+				ActionPlayer.addCombatants(World.getSortedContentsWithin(GraphicsPanel.getScreenRectangle(), Unit.class).iterator());
+			    ActionPlayer.addRandomCombatDelays();
 				addUnitsToWorld();
 			}
 		});

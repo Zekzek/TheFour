@@ -21,7 +21,7 @@ import model.GameObject;
 import model.ITargetable;
 import model.ReadiedAction;
 import model.Unit;
-import controller.ActionQueue;
+import controller.ActionPlayer;
 import controller.IPlayerListener;
 import controller.plot.Plot;
 
@@ -35,9 +35,9 @@ public class UnitQueuePanel extends JPanel implements MouseListener, IPlayerList
 		= SpriteSheet.getSpriteSheet(Plot.class.getResource("/resource/img/spriteSheet/icons.png"));
 
 	private static List<ReadiedAction> unitActions = new ArrayList<ReadiedAction>();
-	private ActionQueue battleQueue;
+	private ActionPlayer battleQueue;
 	
-	public UnitQueuePanel(ActionQueue battleQueue) {
+	public UnitQueuePanel(ActionPlayer battleQueue) {
 		this.battleQueue = battleQueue;
 		addMouseListener(this);
 		battleQueue.addPlayerListener(this);

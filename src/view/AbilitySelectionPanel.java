@@ -24,7 +24,7 @@ import model.ITargetable;
 import model.ReadiedAction;
 import model.Unit;
 import model.World;
-import controller.ActionQueue;
+import controller.ActionPlayer;
 import controller.IPlayerListener;
 
 public class AbilitySelectionPanel extends JPanel implements IGridClickedListener, IPlayerListener {
@@ -37,9 +37,9 @@ public class AbilitySelectionPanel extends JPanel implements IGridClickedListene
 	private Unit activeUnit;
 	private Ability activeAbility;
 	private World world;
-	private ActionQueue battleQueue;
+	private ActionPlayer battleQueue;
 	
-	public AbilitySelectionPanel(AbilityDetailPanel abilityDetailPanel, World world, ActionQueue battleQueue) {
+	public AbilitySelectionPanel(AbilityDetailPanel abilityDetailPanel, World world, ActionPlayer battleQueue) {
 		this.abilityDetailPanel = abilityDetailPanel;
 		this.world = world;
 		this.battleQueue = battleQueue;

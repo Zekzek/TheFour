@@ -36,7 +36,7 @@ import model.ITargetable;
 import model.GameObject;
 import model.Unit;
 import model.World;
-import controller.ActionQueue;
+import controller.ActionPlayer;
 import controller.MapBuilder;
 
 public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseListener {
@@ -72,7 +72,7 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	};
 
 	private World world;
-	private ActionQueue battleQueue;
+	private ActionPlayer battleQueue;
 	private ITargetable focusTarget = null;
 	private GridRectangle glideStartRect = null;
 	private float glideToCompletion = 1.0f;
@@ -84,7 +84,7 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	private static AMBIENT_LIGHT ambientLight = AMBIENT_LIGHT.DAY;
 	private static GridPosition hoverPosition;
 	
-	public GraphicsPanel(World world, ActionQueue battleQueue) {
+	public GraphicsPanel(World world, ActionPlayer battleQueue) {
 		this.world = world;
 		this.battleQueue = battleQueue;
 		

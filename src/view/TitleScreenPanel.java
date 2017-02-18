@@ -15,7 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import model.World;
-import controller.ActionQueue;
+import controller.ActionPlayer;
 import controller.plot.Plot;
 import controller.plot.Plot_Beginnings;
 
@@ -25,11 +25,11 @@ public class TitleScreenPanel extends JPanel{
 	private static TitleScreenPanel me;
 	private static Map<String, Class<? extends Plot>> plotOptions;
 	private static String selectedPlotString;
-	private static Class<?>[] plotParameters = new Class[]{ActionQueue.class, World.class};
-	private ActionQueue battleQueue;
+	private static Class<?>[] plotParameters = new Class[]{ActionPlayer.class, World.class};
+	private ActionPlayer battleQueue;
 	private World world;
 	
-	public TitleScreenPanel(ActionQueue battleQueue, World world) {
+	public TitleScreenPanel(ActionPlayer battleQueue, World world) {
 		this.battleQueue = battleQueue;
 		this.world = world;
 		plotOptions = new HashMap<String, Class<? extends Plot>>();

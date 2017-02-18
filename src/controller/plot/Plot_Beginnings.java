@@ -12,7 +12,7 @@ import view.GraphicsPanel;
 import view.GraphicsPanel.AMBIENT_LIGHT;
 import view.SceneTransition;
 import view.SpriteSheet.FACING;
-import controller.ActionQueue;
+import controller.ActionPlayer;
 import controller.BattleTrigger;
 import controller.ProximityTrigger;
 import controller.Trigger;
@@ -23,7 +23,7 @@ public class Plot_Beginnings extends Plot {
 	private Unit[] guards, bandits;
 	private Structure targetDummy;
 	
-	public Plot_Beginnings(ActionQueue battleQueue, World world) {
+	public Plot_Beginnings(ActionPlayer battleQueue, World world) {
 		super(battleQueue, world);
 	}
 	
@@ -122,6 +122,7 @@ public class Plot_Beginnings extends Plot {
 						}, new Runnable() {
 							@Override
 							public void run() {
+								/*test*/guards[1].setTeam(TEAM.PLAYER);
 								world.setQuestTarget(targetDummy);
 							}
 						});

@@ -5,11 +5,11 @@ import view.GameFrame;
 
 public class Game {
 	private World world;
-	private ActionQueue battleQueue;
+	private ActionPlayer battleQueue;
 	
 	public Game() {
 		world = new World();
-		battleQueue = new ActionQueue(world);
+		battleQueue = new ActionPlayer(world);
 		new GameFrame(world, battleQueue);
 	}
 }
