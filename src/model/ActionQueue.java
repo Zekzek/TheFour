@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
+import controller.Watcher;
 import model.GameObject.TEAM;
 
 public class ActionQueue {
@@ -34,7 +35,7 @@ public class ActionQueue {
 	 * @param target target for the ability
 	 */
 	public void appendAction(Ability ability, Unit source, ITargetable target) {
-		System.out.print("\t" + source + " has prepared " + ability + " for " + target);
+		System.out.println("\t" + source + " has prepared " + ability + " for " + target);
 		synchronized(this) {
 			ReadiedAction action = new ReadiedAction(ability, source, target, getCompletionTime(source));
 			actionQueue.add(action);
@@ -144,7 +145,7 @@ public class ActionQueue {
 
 	private void calcMostReadyPlayer() {
 		long lowestBusyness = mostReadyPlayer==null ? Long.MAX_VALUE : getCompletionTime(mostReadyPlayer);
-//		boolean change = false;
+		boolean changed = false;
 		synchronized(this) {
 			Set<GameObject> playerObjects = world.getContentsOnTeam(TEAM.PLAYER);
 			for (GameObject playerObject : playerObjects) {
@@ -152,15 +153,15 @@ public class ActionQueue {
 					Unit combatant = (Unit) playerObject;
 					long busyness = getCompletionTime(combatant);
 					if (busyness < lowestBusyness) {
-//						change = true;
+						changed = true;
 						mostReadyPlayer = combatant;
 						lowestBusyness = busyness;
 					}
 				}
 			}
 		}
-//		if (change)
-//			changedMostReadyPlayer(mostReadyPlayer);
+		if (changed)
+			Watcher.changedMostReadyPlayer(mostReadyPlayer);
 	}
 
 	/**
@@ -258,6 +259,16 @@ public class ActionQueue {
 		return readyActions.toArray(new ReadiedAction[0]);
 	}
 	
+	public List<ReadiedAction> getQueueFor(Unit unit) {
+		List<ReadiedAction> actions = new LinkedList<ReadiedAction>();
+		for (ReadiedAction action : actionQueue) {
+			if (action.getSource().equals(unit)) {
+				actions.add(action);
+			}
+		}
+		return actions;
+	}
+	
 	public void clear() {
 		time = 0;
 		actionQueue.clear();
@@ -270,15 +281,5 @@ public class ActionQueue {
 		public int compare(ReadiedAction action1, ReadiedAction action2) {
 			return (int)(action1.getStartTime() - action2.getStartTime());
 		}
-	}
-
-	public List<ReadiedAction> getQueueFor(Unit unit) {
-		List<ReadiedAction> actions = new LinkedList<ReadiedAction>();
-		for (ReadiedAction action : actionQueue) {
-			if (action.getSource().equals(unit)) {
-				actions.add(action);
-			}
-		}
-		return actions;
 	}
 }

@@ -38,6 +38,7 @@ import model.Unit;
 import model.World;
 import controller.ActionPlayer;
 import controller.MapBuilder;
+import controller.Watcher;
 
 public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseListener {
 	public enum AMBIENT_LIGHT {DAY, NIGHT, DUSK}
@@ -55,7 +56,6 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	private static final Color FAR_COLOR = new Color(0,0,10,110);
 	private static final Map<AMBIENT_LIGHT, Color> LIGHT_COLORS = new HashMap<AMBIENT_LIGHT, Color>();
 	private static final Set<GroundTarget> groundTargets = new HashSet<GroundTarget>();
-	private static final Set<IGridClickedListener> gridClickedListeners = new HashSet<IGridClickedListener>();
 	private static final Font fadeScreenFont = new Font ("MV Boli", Font.BOLD , 20);
 	private static final Thread repaint = new Thread() {
 		@Override
@@ -352,10 +352,6 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 		return widthScale < heightScale ? widthScale : heightScale;
 	}
 	
-	public static void addGridClickedListener(IGridClickedListener listener) {
-		gridClickedListeners.add(listener);
-	}
-	
 	public static boolean isHoverGrid(GridPosition pos) {
 		return pos.equals(hoverPosition);
 	}
@@ -385,9 +381,7 @@ public class GraphicsPanel extends JPanel implements MouseMotionListener, MouseL
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		setHoverPosition(e);
-		for (IGridClickedListener listener : gridClickedListeners) {
-			listener.reportGridClicked(hoverPosition);
-		}
+		Watcher.gridClick(hoverPosition);
 	}
 
 	@Override

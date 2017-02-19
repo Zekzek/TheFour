@@ -1,5 +1,10 @@
 package controller.plot;
 
+import controller.ActionPlayer;
+import controller.BattleTrigger;
+import controller.ProximityTrigger;
+import controller.Trigger;
+import controller.Watcher;
 import model.Ability;
 import model.Dialog;
 import model.GameObject.TEAM;
@@ -12,10 +17,6 @@ import view.GraphicsPanel;
 import view.GraphicsPanel.AMBIENT_LIGHT;
 import view.SceneTransition;
 import view.SpriteSheet.FACING;
-import controller.ActionPlayer;
-import controller.BattleTrigger;
-import controller.ProximityTrigger;
-import controller.Trigger;
 
 public class Plot_Beginnings extends Plot {
 
@@ -175,8 +176,8 @@ public class Plot_Beginnings extends Plot {
 						public void run() {
 							damsel.setFacing(FACING.W);
 							guards[0].setTeam(TEAM.NONCOMBATANT);
-							battleQueue.onObjectTeamChange(guards[0]);
-							battleQueue.clearUnitActions(guards[0]);
+//							Watcher.objectTeamChange(guards[0]); //Should happen via trigger
+//							battleQueue.clearUnitActions(guards[0]); //Should happen via trigger
 							battleQueue.queueAction(Ability.get(Ability.ID.MOVE), guards[0], 
 									new GroundTarget(damsel.getPos().getX() - 1, damsel.getPos().getY()));
 							world.setQuestTarget(sorceress);

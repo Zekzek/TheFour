@@ -5,11 +5,12 @@ import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 
-import model.Dialog;
-import model.World;
 import controller.ActionPlayer;
 import controller.Trigger;
+import controller.Watcher;
 import controller.plot.Plot;
+import model.Dialog;
+import model.World;
 
 public class GameFrame extends JFrame implements IMenuListener{
 	
@@ -57,7 +58,6 @@ public class GameFrame extends JFrame implements IMenuListener{
 		layeredPane.add(unitQueuePanel, JLayeredPane.PALETTE_LAYER);
 		
 		dialogPanel = new DialogPanel(battleQueue);
-		dialogPanel.addMenuListener(this);
 		layeredPane.add(dialogPanel, JLayeredPane.MODAL_LAYER);
 		
 		titleScreenPanel = new TitleScreenPanel(battleQueue, world);
@@ -70,6 +70,7 @@ public class GameFrame extends JFrame implements IMenuListener{
 		
 		graphicsPanel.startPainting();
 		SpriteSheet.preloadSpriteSheets();
+		Watcher.registerMenuListener(this);
 	}
 	
 	public static void updateAll() {

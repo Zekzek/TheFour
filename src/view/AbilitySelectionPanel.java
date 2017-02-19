@@ -26,8 +26,9 @@ import model.Unit;
 import model.World;
 import controller.ActionPlayer;
 import controller.IPlayerListener;
+import controller.Watcher;
 
-public class AbilitySelectionPanel extends JPanel implements IGridClickedListener, IPlayerListener {
+public class AbilitySelectionPanel extends JPanel implements IGridClickListener, IPlayerListener {
 	private static final long serialVersionUID = -5640915321281094627L;
 	
 	private JList<Ability> abilityList;
@@ -43,7 +44,7 @@ public class AbilitySelectionPanel extends JPanel implements IGridClickedListene
 		this.abilityDetailPanel = abilityDetailPanel;
 		this.world = world;
 		this.battleQueue = battleQueue;
-		battleQueue.addPlayerListener(this);
+		Watcher.registerPlayerListener(this);
 		setLayout(new GridLayout(1,1));
 		abilityList = makeMenuList();
 		abilityList.addListSelectionListener(new ListSelectionListener() {
@@ -63,7 +64,7 @@ public class AbilitySelectionPanel extends JPanel implements IGridClickedListene
 		
 		validTargets = new ArrayList<ITargetable>();
 		setVisible(false);
-		GraphicsPanel.addGridClickedListener(this);
+		Watcher.registerGridClickListener(this);
 	}
 	
 	private <T> JList<T> makeMenuList() {
@@ -120,7 +121,7 @@ public class AbilitySelectionPanel extends JPanel implements IGridClickedListene
 	}
 
 	@Override
-	public void reportGridClicked(GridPosition pos) {
+	public void onGridClick(GridPosition pos) {
 		if (activeAbility != null && activeUnit != null) {
 			ArrayList<ITargetable> targets = world.getTargets(activeUnit, activeAbility);
 			for (ITargetable target : targets) {

@@ -21,6 +21,7 @@ import model.Unit;
 import controller.ActionPlayer;
 import controller.IBattleListener;
 import controller.IPlayerListener;
+import controller.Watcher;
 
 public class PartyPanel extends JPanel implements IBattleListener, IPlayerListener, MouseListener{
 	private static final long serialVersionUID = -8724521387521550507L;
@@ -40,8 +41,8 @@ public class PartyPanel extends JPanel implements IBattleListener, IPlayerListen
 	public PartyPanel(ActionPlayer battleQueue) {
 		this.battleQueue = battleQueue;
 		addMouseListener(this);
-		battleQueue.addBattleListener(this);
-		battleQueue.addPlayerListener(this);
+		Watcher.registerBattleListener(this);
+		Watcher.registerPlayerListener(this);
 	}
 	
 	@Override

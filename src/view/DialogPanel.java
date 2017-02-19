@@ -18,6 +18,7 @@ import javax.swing.SwingConstants;
 
 import model.Dialog;
 import controller.ActionPlayer;
+import controller.Watcher;
 
 public class DialogPanel extends JPanel{
 	private static final long serialVersionUID = 1582923222552495250L;
@@ -45,12 +46,9 @@ public class DialogPanel extends JPanel{
 	private static boolean goToTitleOnConclusion = false;
 	private static Runnable actionOnConclusion;
 	private ActionPlayer battleQueue;
-	private Set<IMenuListener> menuListeners;
 	
 	public DialogPanel(ActionPlayer battleQueue) {
 		this.battleQueue = battleQueue;
-		menuListeners = new HashSet<IMenuListener>();
-		
 		this.setLayout(new BorderLayout());
 		nameLabel = new JLabel("", SwingConstants.CENTER);
 		nameLabel.setOpaque(true);
@@ -114,9 +112,7 @@ public class DialogPanel extends JPanel{
 		setVisible(false);
 		if (goToTitleOnConclusion) {
 			goToTitleOnConclusion = false;
-			for (IMenuListener listener : menuListeners) {
-				listener.onSceneComplete();
-			}
+			Watcher.sceneComplete();
 		} else {
 			GameFrame.enableMenu();
 			battleQueue.setPause(false);
@@ -132,9 +128,5 @@ public class DialogPanel extends JPanel{
 	
 	public static void setActionOnConclusion(Runnable action) {
 		actionOnConclusion = action;
-	}
-
-	public void addMenuListener(IMenuListener listener) {
-		menuListeners.add(listener);
 	}
 }

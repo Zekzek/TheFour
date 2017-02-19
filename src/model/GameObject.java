@@ -6,12 +6,10 @@ import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.util.HashSet;
-import java.util.Set;
 
+import controller.Watcher;
 import view.GraphicsPanel;
 import view.SpriteSheet;
-import controller.IGameObjectListener;
 
 
 public abstract class GameObject implements ITargetable {
@@ -26,7 +24,6 @@ public abstract class GameObject implements ITargetable {
 	protected int hp;
 	protected Modifier baseModifier;
 	private boolean inTargetList;
-	private Set<IGameObjectListener> gameObjectListeners;
 	
 	//Original
 	public GameObject(String name, int hp) {
@@ -35,7 +32,6 @@ public abstract class GameObject implements ITargetable {
 		this.name = name;
 		this.maxHp = this.hp = hp;
 		this.baseModifier = new Modifier();
-		this.gameObjectListeners = new HashSet<IGameObjectListener>();
 	}
 	
 	//Clone
@@ -47,10 +43,6 @@ public abstract class GameObject implements ITargetable {
 		this.maxHp = otherObject.maxHp;
 		this.hp = otherObject.hp;
 		this.baseModifier = new Modifier(otherObject.baseModifier);
-		this.gameObjectListeners = new HashSet<IGameObjectListener>();
-		for (IGameObjectListener listener : otherObject.gameObjectListeners) {
-			this.gameObjectListeners.add(listener);
-		}
 		//Since pos should always be unique, don't set it in the copy constructor
 	}
 
@@ -63,9 +55,7 @@ public abstract class GameObject implements ITargetable {
 				hp = maxHp;
 			}
 			else if (!isAlive()){
-				for (IGameObjectListener listener : gameObjectListeners) {
-					listener.onObjectDeath(this);
-				}
+				Watcher.objectDeath(this);
 			}
 		}
 	}
@@ -216,9 +206,7 @@ public abstract class GameObject implements ITargetable {
 
 	public void setTeam(TEAM team) {
 		this.team = team;
-		for (IGameObjectListener listener : gameObjectListeners) {
-			listener.onObjectTeamChange(this);
-		}
+		Watcher.objectTeamChange(this);
 	}
 	
 	@Override
@@ -245,9 +233,5 @@ public abstract class GameObject implements ITargetable {
 
 	public Modifier getModifier() {
 		return baseModifier;
-	}
-	
-	public void addGameObjectListener(IGameObjectListener listener) {
-		gameObjectListeners.add(listener);
 	}
 }

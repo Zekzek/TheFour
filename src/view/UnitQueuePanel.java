@@ -23,6 +23,7 @@ import model.ReadiedAction;
 import model.Unit;
 import controller.ActionPlayer;
 import controller.IPlayerListener;
+import controller.Watcher;
 import controller.plot.Plot;
 
 public class UnitQueuePanel extends JPanel implements MouseListener, IPlayerListener {
@@ -40,7 +41,7 @@ public class UnitQueuePanel extends JPanel implements MouseListener, IPlayerList
 	public UnitQueuePanel(ActionPlayer battleQueue) {
 		this.battleQueue = battleQueue;
 		addMouseListener(this);
-		battleQueue.addPlayerListener(this);
+		Watcher.registerPlayerListener(this);
 	}
 	
 	@Override

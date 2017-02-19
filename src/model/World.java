@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import model.GameObject.TEAM;
 import view.SpriteSheet.TERRAIN;
 import controller.MapBuilder;
+import controller.Pathing;
 import controller.ProximityTrigger;
 import controller.TemplateReader;
 import controller.Trigger;
@@ -25,6 +26,7 @@ public class World {
 	
 	public World() {
 		initializeStructures();
+		Pathing.setWorld(this);
 	}
 	
 	private void initializeStructures() {

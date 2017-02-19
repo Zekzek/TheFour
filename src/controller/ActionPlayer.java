@@ -1,12 +1,6 @@
 package controller;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 import model.Ability;
@@ -14,14 +8,12 @@ import model.ActionQueue;
 import model.GameObject;
 import model.GameObject.TEAM;
 import model.GridPosition;
-import model.GroundTarget;
 import model.ITargetable;
 import model.ReadiedAction;
 import model.Unit;
 import model.World;
 
 public class ActionPlayer implements IGameObjectListener{
-	private static final LowestCostPathComparator LOWEST_COST_PATH = new LowestCostPathComparator();
 	private static final int PERFORM_ACTION_CHECK_DELAY = 50;
 	
 	private World world;
@@ -29,16 +21,12 @@ public class ActionPlayer implements IGameObjectListener{
 	private ActionQueue actionQueue;
 	private Set<Unit.TEAM> activeTeams;
 	private Unit activePlayer = null;
-	private Set<IBattleListener> battleListeners;
-	private Set<IPlayerListener> playerListeners;
 	private Set<Unit> actingUnits;
 	
 	public ActionPlayer(World world) {
 		this.world = world;
 		actionQueue = new ActionQueue( world );
 		activeTeams = new HashSet<Unit.TEAM>();
-		battleListeners = new HashSet<IBattleListener>();
-		playerListeners = new HashSet<IPlayerListener>();
 		actingUnits = new HashSet<Unit>();
 		actionLoop = new ActionLoop();
 		ReadiedAction.setActionPlayer( this );
@@ -67,11 +55,11 @@ public class ActionPlayer implements IGameObjectListener{
 	public void addGameObject(GameObject gameObject, int x, int y) {
 		System.out.println("addGameObject(" + gameObject + ")");
 		world.addTallObject(gameObject, x, y);
-		gameObject.addGameObjectListener(this);
+		Watcher.registerGameObjectListener(this);
 		if (gameObject instanceof Unit) {
 			Unit unit = (Unit) gameObject;
 			activeTeams.add(unit.getTeam());
-			unitAdded(unit);
+			Watcher.unitAdded(unit);
 		}
 	}
 	
@@ -87,7 +75,7 @@ public class ActionPlayer implements IGameObjectListener{
 		if (gameObject instanceof Unit) {
 			Unit unit = (Unit) gameObject;	
 			actionQueue.clearUnitActions(unit);
-			unitRemoved(unit);
+			Watcher.unitRemoved(unit);
 		}
 	}
 	
@@ -96,8 +84,8 @@ public class ActionPlayer implements IGameObjectListener{
 	}
 	
 	private void reportDefeat(Unit unit) {
-		unitDefeated(unit);
-		unitRemoved(unit);
+		Watcher.unitDefeated(unit);
+		Watcher.unitRemoved(unit);
 		// Determine if the team was defeated
 		Unit.TEAM team = unit.getTeam();
 		boolean teamDefeat = true;
@@ -110,7 +98,7 @@ public class ActionPlayer implements IGameObjectListener{
 		}
 		if (teamDefeat) {
 			activeTeams.remove(team);
-			teamDefeated(team);
+			Watcher.teamDefeated(team);
 		}
 	}
 	
@@ -156,7 +144,7 @@ public class ActionPlayer implements IGameObjectListener{
 		if (foundInvalid)
 			actions = actionQueue.getReadyActions();
 		for (ReadiedAction action : actions) {
-			ReadiedAction firstStep = getFirstStepToUseAction(action);
+			ReadiedAction firstStep = Pathing.getFirstStepToUseAction(action);
 			if (firstStep != action) {
 				actionQueue.delay(action.getSource(), firstStep.calcDelay()); //inserting first step, delay future actions
 			}
@@ -178,7 +166,7 @@ public class ActionPlayer implements IGameObjectListener{
 		action.activate();
 		source.animate(ability, world);
 		if (source.equals(activePlayer))
-			activePlayerAbilityQueuedChanged();
+			Watcher.activePlayerAbilityQueueChanged(actionQueue.getQueueFor(activePlayer).iterator());
 		if (isQueued && action.isComplete() )
 			actionQueue.completeAction(action); //Complete, so remove from queue
 	}
@@ -187,7 +175,7 @@ public class ActionPlayer implements IGameObjectListener{
 		Unit source = action.getSource();
 		actingUnits.remove(source);
 		if (source.getTeam() == TEAM.PLAYER)
-			playerUsedAbility(action);
+			Watcher.playerUsedAbility(action);
 	}
 
 	private boolean isValidAction(ReadiedAction action) {
@@ -197,227 +185,6 @@ public class ActionPlayer implements IGameObjectListener{
 			validity = ((GameObject)target).isAlive();
 		}
 		return validity;
-	}
-	
-	private boolean targetReachable(ReadiedAction action) {
-		return targetReachable(action, action.getSource().getPos());
-	}
-	
-	private boolean targetReachable(ReadiedAction action, GridPosition sourcePos) {
-		GridPosition targetPos = action.getTarget().getPos();
-		int range = action.getAbility().getRange();
-		return sourcePos.getDistanceFromCenterTo(targetPos) <= range;
-	}
-	
-	public ReadiedAction getFirstStepToUseAction(ReadiedAction action) {
-		Ability.ID abilityId = action.getAbility().getId();
-		Unit source = action.getSource();
-		
-		if (abilityId == Ability.ID.AI_TURN) {
-			return getFirstStepToUseAction(source.aiGetAction(action.getStartTime(), world));				
-		}
-		else if (abilityId == Ability.ID.FLEE) {
-			PathingGridPosition path = getPathToScreenEdge(source);
-			if (path != null && path.getFirstMove() != null) {
-				GridPosition pos = path.getFirstMove();
-				return new ReadiedAction(Ability.get(Ability.ID.MOVE), source, new GroundTarget(pos), action.getStartTime());
-			}
-		}
-		else if (!targetReachable(action)) {
-			PathingGridPosition path = getPathToUseAction(action);
-			if (path != null && path.getFirstMove() != null) {
-				GridPosition pos = path.getFirstMove();
-				return new ReadiedAction(Ability.get(Ability.ID.MOVE), source, new GroundTarget(pos), action.getStartTime());
-			}
-		}
-		return action;
-	}
-	
-	private PathingGridPosition getPathToUseAction(ReadiedAction action) {
-		Unit source = action.getSource();
-		GridPosition targetPos = action.getTarget().getPos();
-		PathingGridPosition node = new PathingGridPosition(source.getPos(), null, targetPos);
-		LinkedList<PathingGridPosition> frontier = new LinkedList<PathingGridPosition>();
-		frontier.add(node);
-		LinkedList<PathingGridPosition> explored = new LinkedList<PathingGridPosition>();
-		while(node.getCostEstimate() < 100) {
-			if (frontier.isEmpty()) {
-				return null;
-			}
-			Collections.sort(frontier, LOWEST_COST_PATH);
-			node = frontier.poll();
-			if (targetReachable(action, node)) {
-				return node;
-			}
-			explored.add(node);
-			for(GridPosition n : world.getTraversableNeighbors(node)) {
-				PathingGridPosition neighbor = new PathingGridPosition(n, node, targetPos);
-				if (!explored.contains(neighbor)) {
-					if (!frontier.contains(neighbor)) {
-						frontier.add(neighbor);
-					}
-					else if (frontier.get(frontier.indexOf(neighbor)).getCostEstimate() > neighbor.getCostEstimate()) {
-						frontier.remove(neighbor);
-						frontier.add(neighbor);
-					}
-				}
-			}
-		}
-		return null;
-	}
-	
-	private PathingGridPosition getPathToScreenEdge(Unit source) {
-		PathingGridPosition node = new PathingGridPosition(source.getPos(), null, null);
-		LinkedList<PathingGridPosition> frontier = new LinkedList<PathingGridPosition>();
-		frontier.add(node);
-		LinkedList<PathingGridPosition> explored = new LinkedList<PathingGridPosition>();
-		while(node.getCostEstimate() < 100) {
-			if (frontier.isEmpty()) {
-				return null;
-			}
-			Collections.sort(frontier, LOWEST_COST_PATH);
-			node = frontier.poll();
-			if (!world.getMainScreenRectangle().intersects(node)) {
-				return node;
-			}
-			explored.add(node);
-			for(GridPosition n : world.getTraversableNeighbors(node)) {
-				PathingGridPosition neighbor = new PathingGridPosition(n, node, null);
-				if (!explored.contains(neighbor)) {
-					if (!frontier.contains(neighbor)) {
-						frontier.add(neighbor);
-					}
-					else if (frontier.get(frontier.indexOf(neighbor)).getCostEstimate() > neighbor.getCostEstimate()) {
-						frontier.remove(neighbor);
-						frontier.add(neighbor);
-					}
-				}
-			}
-		}
-		return null;
-	}
-	
-	//INFORM LISTENERS
-	public void addBattleListener(IBattleListener listener) {
-		battleListeners.add(listener);
-	}
-	
-	public void clearBattleListeners() {
-		battleListeners.clear();
-	}
-	
-	public void addPlayerListener(IPlayerListener listener) {
-		synchronized(this) {
-			playerListeners.add(listener);
-		}
-	}
-	
-	public void clearPlayerListeners() {
-		synchronized(this) {
-			playerListeners.clear();
-		}
-	}
-	
-	private void unitAdded(Unit unit) {
-		for (IBattleListener listener : battleListeners) {
-			listener.onUnitAdded(unit);
-		}
-	}
-	
-	private void unitRemoved(Unit unit) {
-		for (IBattleListener listener : battleListeners) {
-			listener.onUnitRemoved(unit);
-		}
-	}
-	
-	private void unitDefeated(Unit unit) {
-		for (IBattleListener listener : battleListeners) {
-			listener.onUnitDefeated(unit);
-		}
-	}
-	
-	private void teamDefeated(Unit.TEAM team) {
-		for (IBattleListener listener : battleListeners) {
-			listener.onTeamDefeated(team);
-		}
-	}
-	
-	private void activePlayerAbilityQueuedChanged() {
-		List<ReadiedAction> actions = new ArrayList<ReadiedAction>();
-		synchronized(this) {
-			actions = actionQueue.getQueueFor(activePlayer);
-			for (IPlayerListener listener : playerListeners) {
-				listener.onActivePlayerAbilityQueueChanged(actions.iterator());
-			}
-		}
-	}
-	
-	private void changedActivePlayer(Unit unit) {
-		world.setFocusTarget(unit);
-		synchronized(this) {
-			for (IPlayerListener listener : playerListeners) {
-				listener.onChangedActivePlayer(unit);
-			}
-		}
-		activePlayerAbilityQueuedChanged();
-	}
-	
-	private void changedMostReadyPlayer(Unit unit) {
-		synchronized(this) {
-			for (IPlayerListener listener : playerListeners) {
-				listener.onChangedMostReadyPlayer(unit);
-			}
-		}
-		activePlayerAbilityQueuedChanged();
-	}
-	
-	private void playerUsedAbility(ReadiedAction action) {
-		synchronized(this) {
-			for (IPlayerListener listener : playerListeners) {
-				listener.onPlayerUsedAbility(action);
-			}
-		}
-	}
-		
-	private class PathingGridPosition extends GridPosition {
-		private int cost;
-		private int expectedCost;
-		private GridPosition firstMove;
-		
-		public PathingGridPosition(GridPosition pos, PathingGridPosition history, GridPosition target) {
-			super(pos.getX(), pos.getY());
-			if (history == null) {
-				cost = 1;
-			} else {
-				cost = history.cost + 1;
-				firstMove = history.getFirstMove();
-				if (firstMove == null) {
-					firstMove = this;
-				}
-			}
-			calcExpectedCost(target);
-		}
-		
-		private void calcExpectedCost(GridPosition target) {
-			if (target == null) {
-				expectedCost = 0;
-			} 
-			else {
-				int dx = getX() - target.getX();
-				if (dx < 0) dx = -dx;
-				int dy = getY() - target.getY();
-				if (dy < 0) dy = -dy;
-				expectedCost = dx + dy;
-			}
-		}
-		
-		public int getCostEstimate() {
-			return cost + expectedCost;
-		}
-		
-		public GridPosition getFirstMove() {
-			return firstMove;
-		}
 	}
 
 	public void finishPlanningAction(Unit unit) {
@@ -433,17 +200,17 @@ public class ActionPlayer implements IGameObjectListener{
 
 	public void setActivePlayer(Unit unit) {
 		activePlayer = unit;
-		changedActivePlayer(unit);
+		world.setFocusTarget(unit);
+		Watcher.changedActivePlayer(unit);
+		Watcher.activePlayerAbilityQueueChanged(actionQueue.getQueueFor(activePlayer).iterator());
 	}
 
 	public void reset() {
-		clearBattleListeners();
-		clearPlayerListeners();
+		Watcher.reset(); //here ???
 		actionQueue.clear();
 		world.reset();
 		actionLoop.pause();
 		activePlayer = null;
-		battleListeners.clear();
 		activeTeams.clear();
 	}
 
@@ -458,11 +225,7 @@ public class ActionPlayer implements IGameObjectListener{
 	@Override
 	public void onObjectTeamChange(GameObject object) {
 		Set<GameObject> playerObjects = world.getContentsOnTeam(TEAM.PLAYER);
-		synchronized(this) {
-			for (IPlayerListener listener : playerListeners) {
-				listener.onChangedPlayerTeam(playerObjects);
-			}
-		}
+		Watcher.changedPlayerTeam(playerObjects);
 	}
 
 	public void addObjectToNorth(Unit unit, int x){
@@ -528,13 +291,6 @@ public class ActionPlayer implements IGameObjectListener{
 				break;
 			}
 			count++;
-		}
-	}
-	
-	private static class LowestCostPathComparator implements Comparator<PathingGridPosition> {
-		@Override
-		public int compare(PathingGridPosition pos1, PathingGridPosition pos2) {
-			return pos1.getCostEstimate() - pos2.getCostEstimate();
 		}
 	}
 	

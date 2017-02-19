@@ -3,6 +3,9 @@ package controller.plot;
 import java.util.HashMap;
 import java.util.Map;
 
+import controller.ActionPlayer;
+import controller.IBattleListener;
+import controller.Watcher;
 import model.Dialog;
 import model.GameObject.TEAM;
 import model.Unit;
@@ -10,8 +13,6 @@ import model.World;
 import view.DialogPanel;
 import view.GameFrame;
 import view.SceneTransition;
-import controller.ActionPlayer;
-import controller.IBattleListener;
 
 public abstract class Plot implements IBattleListener{
 	protected static final int SECOND = 10;//1000;
@@ -30,7 +31,7 @@ public abstract class Plot implements IBattleListener{
 	public Plot(ActionPlayer battleQueue, World world) {
 		this.battleQueue = battleQueue;
 		this.world = world;
-		battleQueue.addBattleListener(this);
+		Watcher.registerBattleListener(this);
 	}
 	
 	public void start() {
