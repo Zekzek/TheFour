@@ -3,7 +3,7 @@ package controller.plot;
 import java.util.HashMap;
 import java.util.Map;
 
-import controller.ActionPlayer;
+import controller.ActionRunner;
 import controller.IBattleListener;
 import controller.Watcher;
 import model.Dialog;
@@ -17,7 +17,7 @@ import view.SceneTransition;
 public abstract class Plot implements IBattleListener{
 	protected static final int SECOND = 10;//1000;
 	private final Map<String, SceneTransition> sceneTransitions = new HashMap<String, SceneTransition>();
-	protected ActionPlayer battleQueue;
+	protected ActionRunner battleQueue;
 	protected World world;
 	private String sceneName;
 	protected Runnable theEnd = new Runnable() {
@@ -28,7 +28,7 @@ public abstract class Plot implements IBattleListener{
 	};
 	protected static GameFrame gameFrame;
 	
-	public Plot(ActionPlayer battleQueue, World world) {
+	public Plot(ActionRunner battleQueue, World world) {
 		this.battleQueue = battleQueue;
 		this.world = world;
 		Watcher.registerBattleListener(this);

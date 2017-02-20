@@ -4,9 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -16,9 +14,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
-import model.Dialog;
-import controller.ActionPlayer;
+import controller.ActionRunner;
 import controller.Watcher;
+import model.Dialog;
 
 public class DialogPanel extends JPanel{
 	private static final long serialVersionUID = 1582923222552495250L;
@@ -45,9 +43,9 @@ public class DialogPanel extends JPanel{
 	private static List<Dialog> conversation = new ArrayList<Dialog>();
 	private static boolean goToTitleOnConclusion = false;
 	private static Runnable actionOnConclusion;
-	private ActionPlayer battleQueue;
+	private ActionRunner battleQueue;
 	
-	public DialogPanel(ActionPlayer battleQueue) {
+	public DialogPanel(ActionRunner battleQueue) {
 		this.battleQueue = battleQueue;
 		this.setLayout(new BorderLayout());
 		nameLabel = new JLabel("", SwingConstants.CENTER);

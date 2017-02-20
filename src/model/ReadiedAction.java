@@ -3,13 +3,13 @@ package model;
 import java.util.Iterator;
 import java.util.Random;
 
-import controller.ActionPlayer;
+import controller.ActionRunner;
 import model.Modifier.FLAT_BONUS;
 
 public class ReadiedAction {
 	public static enum Stage {START, MID, END, DELETE};
 	private static final Random RAND = new Random();
-	private static ActionPlayer actionPlayer;
+	private static ActionRunner actionPlayer;
 	private static ActionQueue actionQueue;
 	
 	private final Ability ability;
@@ -60,6 +60,8 @@ public class ReadiedAction {
 	
 	private void activateAtStart() {
 		source.face(target);
+		source.animate(ability);
+
 		source.damage(source.getStatusEffectModifier(FLAT_BONUS.HP_DAMAGE_PER_SECOND, target) * ability.getDelay() / 1000);
 		source.tickStatusEffects(ability.getDelay());
 		source.heal(source.getStatusEffectModifier(FLAT_BONUS.HP_HEALED_PER_SECOND, target) * ability.getDelay() / 1000);
@@ -73,17 +75,6 @@ public class ReadiedAction {
 		if(!source.isInCombat()) {
 			source.heal(source.getMaxHp() * ability.getDelay() / 10000);
 		}
-		
-		ReadiedAction me = this;
-		Thread thread = new Thread(){
-			public void run() {
-				try {
-					Thread.sleep(ability.calcDelay(source.getModifier()) / 2);
-				} catch (InterruptedException e) {}
-				actionQueue.completeAction(me);
-			}
-		};
-		thread.start();
 	}
 	
 	private void activateAtMid() {
@@ -197,7 +188,7 @@ public class ReadiedAction {
 		}
 	}
 
-	public static void setActionPlayer(ActionPlayer actionPlayer) {
+	public static void setActionPlayer(ActionRunner actionPlayer) {
 		ReadiedAction.actionPlayer = actionPlayer;
 	}
 	

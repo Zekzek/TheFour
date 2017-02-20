@@ -116,7 +116,7 @@ public class ActionQueue {
 					actions.remove();
 				}
 			}
-			sort(); //Won't change order, may change most ready, etc
+			sort();
 		}
 	}
 
@@ -133,7 +133,6 @@ public class ActionQueue {
 				}
 			}
 			sort();
-//			getMostReadyPlayer();
 		}
 	}
 	
@@ -246,6 +245,10 @@ public class ActionQueue {
 		time = Math.max(time, Math.min(time + timeIncrement, lastScheduledTime));
 	}
 	
+	/**
+	 * Collect a list of all actions ready to be performed
+	 * @return
+	 */
 	public ReadiedAction[] getReadyActions() {
 		Vector<ReadiedAction> readyActions = new Vector<ReadiedAction>();
 		Iterator<ReadiedAction> actions = getActionQueueIterator();
@@ -259,6 +262,11 @@ public class ActionQueue {
 		return readyActions.toArray(new ReadiedAction[0]);
 	}
 	
+	/**
+	 * Collect all actions with unit as the source
+	 * @param unit
+	 * @return
+	 */
 	public List<ReadiedAction> getQueueFor(Unit unit) {
 		List<ReadiedAction> actions = new LinkedList<ReadiedAction>();
 		for (ReadiedAction action : actionQueue) {
@@ -269,12 +277,14 @@ public class ActionQueue {
 		return actions;
 	}
 	
+	/**
+	 * Reset all parameters to begin anew
+	 */
 	public void clear() {
 		time = 0;
 		actionQueue.clear();
 		mostReadyPlayer = null;
 	}
-	
 	
 	private static class SoonestActionComparator implements Comparator<ReadiedAction> {
 		@Override

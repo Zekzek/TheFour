@@ -13,15 +13,15 @@ import java.util.Set;
 
 import javax.swing.JPanel;
 
-import model.GameObject;
-import model.ReadiedAction;
-import model.StatusEffect;
-import model.GameObject.TEAM;
-import model.Unit;
-import controller.ActionPlayer;
+import controller.ActionRunner;
 import controller.IBattleListener;
 import controller.IPlayerListener;
 import controller.Watcher;
+import model.GameObject;
+import model.GameObject.TEAM;
+import model.ReadiedAction;
+import model.StatusEffect;
+import model.Unit;
 
 public class PartyPanel extends JPanel implements IBattleListener, IPlayerListener, MouseListener{
 	private static final long serialVersionUID = -8724521387521550507L;
@@ -36,9 +36,9 @@ public class PartyPanel extends JPanel implements IBattleListener, IPlayerListen
 	private List<Unit> playerUnits = new ArrayList<Unit>();
 	private Unit activePlayer;
 	private Unit mostReadyPlayer;
-	private ActionPlayer battleQueue;
+	private ActionRunner battleQueue;
 	
-	public PartyPanel(ActionPlayer battleQueue) {
+	public PartyPanel(ActionRunner battleQueue) {
 		this.battleQueue = battleQueue;
 		addMouseListener(this);
 		Watcher.registerBattleListener(this);
@@ -148,7 +148,7 @@ public class PartyPanel extends JPanel implements IBattleListener, IPlayerListen
 	}
 	
 	@Override
-	public void onActivePlayerAbilityQueueChanged(Iterator<ReadiedAction> actions) {}
+	public void onActivePlayerAbilityQueueChanged(List<ReadiedAction> actions) {}
 
 	@Override
 	public void onPlayerUsedAbility(ReadiedAction action) {}

@@ -1,6 +1,6 @@
 package controller;
 
-import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import model.Ability;
@@ -17,28 +17,28 @@ public class BattleTrigger extends Trigger implements IBattleListener, IPlayerLi
 	private Ability.ID triggerAbilityId;
 	private ReadiedAction triggerAction;
 	
-	public BattleTrigger(ID id, Unit unit, Dialog[] dialog, Runnable effect, ActionPlayer battleQueue) {
+	public BattleTrigger(ID id, Unit unit, Dialog[] dialog, Runnable effect, ActionRunner battleQueue) {
 		super(id, dialog, effect);
 		triggerUnit = unit;
 		Watcher.registerBattleListener(this);
 		Watcher.registerPlayerListener(this);
 	}
 	
-	public BattleTrigger(ID id, TEAM team, Dialog[] dialog, Runnable effect, ActionPlayer battleQueue) {
+	public BattleTrigger(ID id, TEAM team, Dialog[] dialog, Runnable effect, ActionRunner battleQueue) {
 		super(id, dialog, effect);
 		triggerTeam = team;
 		Watcher.registerBattleListener(this);
 		Watcher.registerPlayerListener(this);
 	}
 	
-	public BattleTrigger(ID id, Ability.ID abilityId, Dialog[] dialog, Runnable effect, ActionPlayer battleQueue) {
+	public BattleTrigger(ID id, Ability.ID abilityId, Dialog[] dialog, Runnable effect, ActionRunner battleQueue) {
 		super(id, dialog, effect);
 		triggerAbilityId = abilityId;
 		Watcher.registerBattleListener(this);
 		Watcher.registerPlayerListener(this);
 	}
 	
-	public BattleTrigger(ID id, ReadiedAction action, TEAM team, Dialog[] dialog, Runnable effect, ActionPlayer battleQueue) {
+	public BattleTrigger(ID id, ReadiedAction action, TEAM team, Dialog[] dialog, Runnable effect, ActionRunner battleQueue) {
 		super(id, dialog, effect);
 		triggerAction = action;
 		Watcher.registerBattleListener(this);
@@ -75,7 +75,7 @@ public class BattleTrigger extends Trigger implements IBattleListener, IPlayerLi
 	public void onChangedMostReadyPlayer(Unit unit) {}
 
 	@Override
-	public void onActivePlayerAbilityQueueChanged(Iterator<ReadiedAction> actions) {}
+	public void onActivePlayerAbilityQueueChanged(List<ReadiedAction> actions) {}
 
 	@Override
 	public void onPlayerUsedAbility(ReadiedAction action) {

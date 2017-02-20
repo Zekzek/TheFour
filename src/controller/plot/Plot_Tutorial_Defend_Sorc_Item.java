@@ -10,7 +10,7 @@ import view.DialogPanel;
 import view.GraphicsPanel;
 import view.SceneTransition;
 import view.SpriteSheet.FACING;
-import controller.ActionPlayer;
+import controller.ActionRunner;
 
 public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 	
@@ -143,13 +143,13 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 			@Override
 			public void run() {
 				defender.setFacing(FACING.N);
-				ActionPlayer.addCombatant(defender);
-				ActionPlayer.addCombatant(bandit1);
-				ActionPlayer.addCombatant(bandit2);
-				ActionPlayer.addCombatant(bandit3);
-				ActionPlayer.addRandomCombatDelays();
-				ActionPlayer.setPause(false);
-				ActionPlayer.startPlayingActions();
+				ActionRunner.addCombatant(defender);
+				ActionRunner.addCombatant(bandit1);
+				ActionRunner.addCombatant(bandit2);
+				ActionRunner.addCombatant(bandit3);
+				ActionRunner.addRandomCombatDelays();
+				ActionRunner.setPause(false);
+				ActionRunner.startPlayingActions();
 			}};
 		
 		Dialog[] joinDialog = new Dialog[] {
@@ -168,8 +168,8 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 	}
 	
 	private void startGuardsJoinFight() {
-		ActionPlayer.addCombatant(guard1);
-		ActionPlayer.addCombatant(guard2);
+		ActionRunner.addCombatant(guard1);
+		ActionRunner.addCombatant(guard2);
 		Dialog[] joinDialog = new Dialog[] {
 			new Dialog(guard1, "Three on one! That's not very fair. Let's see how you fair when the numbers are even.")
 		};
@@ -191,9 +191,9 @@ public class Plot_Tutorial_Defend_Sorc_Item extends Plot{
 	}
 	
 	private void addRetreatBandits() {
-		ActionPlayer.removeCombatant(bandit1, Ability.get(Ability.ID.MOVE), bandit1);
-		ActionPlayer.removeCombatant(bandit2, Ability.get(Ability.ID.MOVE), bandit2);
-		ActionPlayer.removeCombatant(bandit3, Ability.get(Ability.ID.MOVE), bandit3);
+		ActionRunner.removeCombatant(bandit1, Ability.get(Ability.ID.MOVE), bandit1);
+		ActionRunner.removeCombatant(bandit2, Ability.get(Ability.ID.MOVE), bandit2);
+		ActionRunner.removeCombatant(bandit3, Ability.get(Ability.ID.MOVE), bandit3);
 		World.remove(bandit1);
 		World.remove(bandit2);
 		World.remove(bandit3);

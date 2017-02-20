@@ -31,6 +31,8 @@ public class Unit extends GameObject {
 	private static final int ANIMATION_LENGTH = 6;
 	private static final Font ABILITY_FONT = new Font("Impact", 1, 24);
     
+	private static World world;
+	
 	private SpriteSheet sheet;
 	private BufferedImage mini;
 	private ImageIcon icon;
@@ -143,7 +145,7 @@ public class Unit extends GameObject {
 		label.setText(name);
 	}
 
-	public ReadiedAction aiGetAction(long time, World world) {
+	public ReadiedAction aiGetAction(long time) {
 		//TODO: more sophisticated AI with variety (prefer closest, prefer weakest, etc)
 		double bestScore = Double.NEGATIVE_INFINITY;
 		Ability bestAbility = null;
@@ -223,7 +225,7 @@ public class Unit extends GameObject {
 		}
 	}
 
-	public void animate(Ability ability, World world) {
+	public void animate(Ability ability) {
 		ANIMATION stance = ability.getStance();//TODO: get stance from weapon and ability, then pick one 
 		int duration = ability.calcDelay(getModifier());
 		int moveDistance = ability.getMoveDistance();
@@ -484,5 +486,9 @@ public class Unit extends GameObject {
 	
 	public boolean isInCombat() {
 		return inCombat;
+	}
+	
+	public static void setWorld(World world) {
+		Unit.world = world;
 	}
 }

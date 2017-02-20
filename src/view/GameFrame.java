@@ -5,7 +5,7 @@ import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 
-import controller.ActionPlayer;
+import controller.ActionRunner;
 import controller.Trigger;
 import controller.Watcher;
 import controller.plot.Plot;
@@ -27,9 +27,9 @@ public class GameFrame extends JFrame implements IMenuListener{
 	private DialogPanel dialogPanel;
 	private TitleScreenPanel titleScreenPanel;
 	private World world;
-	private ActionPlayer battleQueue;
+	private ActionRunner battleQueue;
 	
-	public GameFrame(World world, ActionPlayer battleQueue) {
+	public GameFrame(World world, ActionRunner battleQueue) {
 		me = this;
 		this.world = world;
 		this.battleQueue = battleQueue;

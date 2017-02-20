@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.DefaultListModel;
@@ -16,6 +17,9 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import controller.ActionRunner;
+import controller.IPlayerListener;
+import controller.Watcher;
 import model.Ability;
 import model.GameObject;
 import model.GridPosition;
@@ -24,9 +28,6 @@ import model.ITargetable;
 import model.ReadiedAction;
 import model.Unit;
 import model.World;
-import controller.ActionPlayer;
-import controller.IPlayerListener;
-import controller.Watcher;
 
 public class AbilitySelectionPanel extends JPanel implements IGridClickListener, IPlayerListener {
 	private static final long serialVersionUID = -5640915321281094627L;
@@ -38,9 +39,9 @@ public class AbilitySelectionPanel extends JPanel implements IGridClickListener,
 	private Unit activeUnit;
 	private Ability activeAbility;
 	private World world;
-	private ActionPlayer battleQueue;
+	private ActionRunner battleQueue;
 	
-	public AbilitySelectionPanel(AbilityDetailPanel abilityDetailPanel, World world, ActionPlayer battleQueue) {
+	public AbilitySelectionPanel(AbilityDetailPanel abilityDetailPanel, World world, ActionRunner battleQueue) {
 		this.abilityDetailPanel = abilityDetailPanel;
 		this.world = world;
 		this.battleQueue = battleQueue;
@@ -151,7 +152,7 @@ public class AbilitySelectionPanel extends JPanel implements IGridClickListener,
 
 	
 	@Override
-	public void onActivePlayerAbilityQueueChanged(Iterator<ReadiedAction> actions) {}
+	public void onActivePlayerAbilityQueueChanged(List<ReadiedAction> actions) {}
 
 	@Override
 	public void onPlayerUsedAbility(ReadiedAction action) {}

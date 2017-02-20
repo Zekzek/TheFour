@@ -13,7 +13,7 @@ import model.ReadiedAction;
 import model.Unit;
 import model.World;
 
-public class ActionPlayer implements IGameObjectListener{
+public class ActionRunner implements IGameObjectListener{
 	private static final int PERFORM_ACTION_CHECK_DELAY = 50;
 	
 	private World world;
@@ -21,13 +21,11 @@ public class ActionPlayer implements IGameObjectListener{
 	private ActionQueue actionQueue;
 	private Set<Unit.TEAM> activeTeams;
 	private Unit activePlayer = null;
-	private Set<Unit> actingUnits;
 	
-	public ActionPlayer(World world) {
+	public ActionRunner(World world) {
 		this.world = world;
 		actionQueue = new ActionQueue( world );
 		activeTeams = new HashSet<Unit.TEAM>();
-		actingUnits = new HashSet<Unit>();
 		actionLoop = new ActionLoop();
 		ReadiedAction.setActionPlayer( this );
 	}
@@ -66,6 +64,8 @@ public class ActionPlayer implements IGameObjectListener{
 	public void defeatGameObject(Unit unit) {
 		actionQueue.clearUnitActions(unit);
 		actionQueue.appendAction(Ability.get(Ability.ID.DEATH), unit, unit);
+//		if (unit.equals(activePlayer))
+//			Watcher.activePlayerAbilityQueuedChanged(actionQueue.getQueueFor(activePlayer));
 		reportDefeat(unit);
 	}
 	
@@ -102,19 +102,6 @@ public class ActionPlayer implements IGameObjectListener{
 		}
 	}
 	
-	/**
-	 * Delay all active combatants a random amount between 0 and 1000 ms
-	 */
-	public void addRandomCombatDelays() {
-		synchronized(this) {
-			//TODO: add combat delays
-//			Iterator<Unit> combatants = lastScheduledTimes.keySet().iterator();
-//			while (combatants.hasNext()) {
-//				delay(combatants.next(), RAND.nextInt(1000));
-//			}
-		}
-	}
-	
 	public void queueAction(Ability ability, Unit source, ITargetable target) {
 		actionQueue.appendAction(ability, source, target);
 	}
@@ -131,8 +118,6 @@ public class ActionPlayer implements IGameObjectListener{
 	}
 	
 	private void checkNextAction() {
-		Unit activePlayer = calcActivePlayer();
-		actionQueue.incrementTimeWaitForUnit(PERFORM_ACTION_CHECK_DELAY, activePlayer);
 		ReadiedAction[] actions = actionQueue.getReadyActions();
 		boolean foundInvalid = false;
 		for (ReadiedAction action : actions) {
@@ -162,18 +147,18 @@ public class ActionPlayer implements IGameObjectListener{
 		ITargetable target = action.getTarget();
 		
 		System.out.println(source + " uses " + ability + " on " + target);
-		actingUnits.add(source);
 		action.activate();
-		source.animate(ability, world);
+//		source.animate(ability, world);
 		if (source.equals(activePlayer))
-			Watcher.activePlayerAbilityQueueChanged(actionQueue.getQueueFor(activePlayer).iterator());
-		if (isQueued && action.isComplete() )
+			Watcher.activePlayerAbilityQueueChanged(actionQueue.getQueueFor(activePlayer));
+		System.out.println(" Complete? " + isQueued + " " + action.isComplete());
+		if (isQueued && action.isComplete() ) {
 			actionQueue.completeAction(action); //Complete, so remove from queue
+		}
 	}
 	
 	public void completeAction( ReadiedAction action ) {
 		Unit source = action.getSource();
-		actingUnits.remove(source);
 		if (source.getTeam() == TEAM.PLAYER)
 			Watcher.playerUsedAbility(action);
 	}
@@ -202,7 +187,7 @@ public class ActionPlayer implements IGameObjectListener{
 		activePlayer = unit;
 		world.setFocusTarget(unit);
 		Watcher.changedActivePlayer(unit);
-		Watcher.activePlayerAbilityQueueChanged(actionQueue.getQueueFor(activePlayer).iterator());
+		Watcher.activePlayerAbilityQueueChanged(actionQueue.getQueueFor(activePlayer));
 	}
 
 	public void reset() {
@@ -311,7 +296,8 @@ public class ActionPlayer implements IGameObjectListener{
 								break;
 							}
 							if (running) {
-								ActionPlayer.this.checkNextAction();
+								actionQueue.incrementTimeWaitForUnit(PERFORM_ACTION_CHECK_DELAY, calcActivePlayer());
+								ActionRunner.this.checkNextAction();
 							}
 						}
 					}

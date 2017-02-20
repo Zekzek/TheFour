@@ -9,14 +9,14 @@ import view.DialogPanel;
 import view.GraphicsPanel;
 import view.SceneTransition;
 import view.SpriteSheet;
-import controller.ActionPlayer;
+import controller.ActionRunner;
 
 public class Plot_Tutorial_Arena extends Plot{
 	
 	private Unit announcer, defender, berserker;
 	private Unit[] guards;
 	
-	public Plot_Tutorial_Arena(ActionPlayer battleQueue, World world) {
+	public Plot_Tutorial_Arena(ActionRunner battleQueue, World world) {
 		super(battleQueue, world);
 	}
 	
@@ -87,14 +87,14 @@ public class Plot_Tutorial_Arena extends Plot{
 		};
 		DialogPanel.showDialog(announcerIntro, null);
 		
-		ActionPlayer.addCombatants(World.getSortedContentsWithin(GraphicsPanel.getScreenRectangle(), Unit.class).iterator());
-	    ActionPlayer.addRandomCombatDelays();
-	    ActionPlayer.startPlayingActions();
+		ActionRunner.addCombatants(World.getSortedContentsWithin(GraphicsPanel.getScreenRectangle(), Unit.class).iterator());
+	    ActionRunner.addRandomCombatDelays();
+	    ActionRunner.startPlayingActions();
 	}
 	
 	@Override
 	public void onTeamDefeated(TEAM team) {
-		ActionPlayer.endCombat();
+		ActionRunner.endCombat();
 		if (team == Unit.TEAM.ENEMY1) { 
 			Dialog[] announcerSummary = new Dialog[] {
 					new Dialog(announcer, "What's this! Ladies and gentlemen, I can scarcely believe my eyes!!! After dozens " 

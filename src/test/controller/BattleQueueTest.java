@@ -17,19 +17,19 @@ import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import controller.ActionPlayer;
+import controller.ActionRunner;
 
 public class BattleQueueTest {
 	private static Unit defender;
 	private static Unit berserker;
 	private static Ability ability1;
 	private static Ability ability2;
-	private static ActionPlayer battleQueue;
+	private static ActionRunner battleQueue;
 	
 	@BeforeClass
 	public static void setupUnits() {
 		World world = new World();
-		battleQueue = new ActionPlayer(world);
+		battleQueue = new ActionRunner(world);
 		defender = Unit.get(ID.DEFENDER, TEAM.PLAYER, "Defender");
 		berserker = Unit.get(ID.BERSERKER, TEAM.ENEMY1, "Berserker");
 		ability1 = Ability.get(Ability.ID.DELAY);

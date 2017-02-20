@@ -1,10 +1,9 @@
 package controller.plot;
 
-import controller.ActionPlayer;
+import controller.ActionRunner;
 import controller.BattleTrigger;
 import controller.ProximityTrigger;
 import controller.Trigger;
-import controller.Watcher;
 import model.Ability;
 import model.Dialog;
 import model.GameObject.TEAM;
@@ -24,7 +23,7 @@ public class Plot_Beginnings extends Plot {
 	private Unit[] guards, bandits;
 	private Structure targetDummy;
 	
-	public Plot_Beginnings(ActionPlayer battleQueue, World world) {
+	public Plot_Beginnings(ActionRunner battleQueue, World world) {
 		super(battleQueue, world);
 	}
 	

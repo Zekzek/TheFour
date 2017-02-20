@@ -1,7 +1,7 @@
 package controller;
 
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import model.GameObject;
@@ -153,7 +153,7 @@ public class Watcher {
 		}
 	}
 
-	public static void activePlayerAbilityQueueChanged(Iterator<ReadiedAction> actions) {
+	public static void activePlayerAbilityQueueChanged(List<ReadiedAction> actions) {
 		synchronized(playerListeners) {
 			for (IPlayerListener listener : playerListeners)
 				listener.onActivePlayerAbilityQueueChanged(actions);

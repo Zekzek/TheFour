@@ -27,6 +27,7 @@ public class World {
 	public World() {
 		initializeStructures();
 		Pathing.setWorld(this);
+		Unit.setWorld(this);
 	}
 	
 	private void initializeStructures() {

@@ -25,7 +25,7 @@ public class Pathing {
 		Unit source = action.getSource();
 		
 		if (abilityId == Ability.ID.AI_TURN) {
-			return getFirstStepToUseAction(source.aiGetAction(action.getStartTime(), world));				
+			return getFirstStepToUseAction(source.aiGetAction(action.getStartTime()));
 		}
 		else if (abilityId == Ability.ID.FLEE) {
 			PathingGridPosition path = getPathToScreenEdge(source);

@@ -11,20 +11,19 @@ import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import javax.swing.JPanel;
 
+import controller.ActionRunner;
+import controller.IPlayerListener;
+import controller.Watcher;
+import controller.plot.Plot;
 import model.GameObject;
 import model.ITargetable;
 import model.ReadiedAction;
 import model.Unit;
-import controller.ActionPlayer;
-import controller.IPlayerListener;
-import controller.Watcher;
-import controller.plot.Plot;
 
 public class UnitQueuePanel extends JPanel implements MouseListener, IPlayerListener {
 
@@ -36,9 +35,9 @@ public class UnitQueuePanel extends JPanel implements MouseListener, IPlayerList
 		= SpriteSheet.getSpriteSheet(Plot.class.getResource("/resource/img/spriteSheet/icons.png"));
 
 	private static List<ReadiedAction> unitActions = new ArrayList<ReadiedAction>();
-	private ActionPlayer battleQueue;
+	private ActionRunner battleQueue;
 	
-	public UnitQueuePanel(ActionPlayer battleQueue) {
+	public UnitQueuePanel(ActionRunner battleQueue) {
 		this.battleQueue = battleQueue;
 		addMouseListener(this);
 		Watcher.registerPlayerListener(this);
@@ -140,11 +139,10 @@ public class UnitQueuePanel extends JPanel implements MouseListener, IPlayerList
 	public void onChangedMostReadyPlayer(Unit unit) {}
 
 	@Override
-	public void onActivePlayerAbilityQueueChanged(Iterator<ReadiedAction> actions) {
+	public void onActivePlayerAbilityQueueChanged(List<ReadiedAction> actions) {
 		unitActions.clear();
-		while(actions.hasNext()) {
-			unitActions.add(actions.next());
-		}
+		for (ReadiedAction action : actions)
+			unitActions.add(action);
 	}
 
 	@Override
