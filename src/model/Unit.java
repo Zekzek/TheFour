@@ -28,7 +28,7 @@ public class Unit extends GameObject {
 	public static enum ID { DEFENDER, BERSERKER, SORCERESS, ARCHER, GUARD, FEMALE_BANDIT, MALE_BANDIT, ANNOUNCER, 
 		FEMALE_GOBLIN, MALE_GOBLIN, GOBLIN_CHIEF, GIRL, BOY }
 	private static final int MINI_SIZE = 32;
-	private static final int ANIMATION_LENGTH = 6;
+	public static final int ANIMATION_LENGTH = 6;
 	private static final Font ABILITY_FONT = new Font("Impact", 1, 24);
     
 	private static World world;
@@ -45,6 +45,8 @@ public class Unit extends GameObject {
 	private Set<StatusEffect> statusEffects = new HashSet<StatusEffect>();
 	private String abilityString;
 	private boolean inCombat;
+	private int xOffset;
+	private int yOffset;
 	
 	private Unit(String name, int hp, URL sheetPath) {
 		super(name, hp);
@@ -225,47 +227,75 @@ public class Unit extends GameObject {
 		}
 	}
 
-	public void animate(Ability ability) {
-		ANIMATION stance = ability.getStance();//TODO: get stance from weapon and ability, then pick one 
-		int duration = ability.calcDelay(getModifier());
-		int moveDistance = ability.getMoveDistance();
-		
-		int refreshRate = duration / ANIMATION_LENGTH;
-		Unit unit = this;
-		
-		final int yOffset;
-		final int xOffset;
-		//TODO: draw damage to screen?
-		abilityString = ability.getName();
-		if (moveDistance != 0) {
-			xOffset = (facing == FACING.W ? moveDistance : facing == FACING.E ? -moveDistance : 0); 
-			yOffset = (facing == FACING.N ? moveDistance : facing == FACING.S ? -moveDistance : 0); 
-			pos.setxOffset(xOffset);
-			pos.setyOffset(yOffset);
-			this.updateWorldPos(world, pos.getX() - xOffset, pos.getY() - yOffset);
-		} else {
+//	public void animate(Ability ability) {
+//		ANIMATION stance = ability.getStance();//TODO: get stance from weapon and ability, then pick one 
+//		int duration = ability.calcDelay(getModifier());
+//		int moveDistance = ability.getMoveDistance();
+//		
+//		int refreshRate = duration / ANIMATION_LENGTH;
+//		Unit unit = this;
+//		
+//		final int yOffset;
+//		final int xOffset;
+//		//TODO: draw damage to screen?
+//		abilityString = ability.getName();
+//		if (moveDistance != 0) {
+//			xOffset = (facing == FACING.W ? moveDistance : facing == FACING.E ? -moveDistance : 0); 
+//			yOffset = (facing == FACING.N ? moveDistance : facing == FACING.S ? -moveDistance : 0); 
+//			pos.setxOffset(xOffset);
+//			pos.setyOffset(yOffset);
+//			this.updateWorldPos(world, pos.getX() - xOffset, pos.getY() - yOffset);
+//		} else {
+//			xOffset = yOffset = 0;
+//		}
+//		Thread animationThread = new Thread() {
+//			@Override
+//			public void run() {
+//				for (int i = 0; i < ANIMATION_LENGTH; i++) {
+//					pos.setxOffset((ANIMATION_LENGTH - 1f - i) * xOffset / ANIMATION_LENGTH);
+//					pos.setyOffset((ANIMATION_LENGTH - 1f - i) * yOffset / ANIMATION_LENGTH);
+//					animationSequence = i;
+//					if (stance != null) {
+//						unit.stance = stance;
+//					}
+//					try {
+//						Thread.sleep(refreshRate);
+//					} catch (InterruptedException e) {
+//						e.printStackTrace();
+//					}
+//				}
+//				abilityString = "";
+//			}
+//		};
+//		animationThread.start();
+//	}
+	
+	public void setAnimationFrame(int frame, Ability ability) {
+		if (frame == 0) {
+			if (ability.getStance() != null) {
+				stance = ability.getStance();
+			}
+			int moveDistance = ability.getMoveDistance();
+			abilityString = ability.getName();
+			if (moveDistance != 0) {
+				xOffset = (facing == FACING.W ? moveDistance : facing == FACING.E ? -moveDistance : 0); 
+				yOffset = (facing == FACING.N ? moveDistance : facing == FACING.S ? -moveDistance : 0); 
+				pos.setxOffset(xOffset);
+				pos.setyOffset(yOffset);
+				this.updateWorldPos(world, pos.getX() - xOffset, pos.getY() - yOffset);
+			} else {
+				xOffset = yOffset = 0;
+			}
+		}
+		else if ( frame == ANIMATION_LENGTH) {
+			abilityString = "";
 			xOffset = yOffset = 0;
 		}
-		Thread animationThread = new Thread() {
-			@Override
-			public void run() {
-				for (int i = 0; i < ANIMATION_LENGTH; i++) {
-					pos.setxOffset((ANIMATION_LENGTH - 1f - i) * xOffset / ANIMATION_LENGTH);
-					pos.setyOffset((ANIMATION_LENGTH - 1f - i) * yOffset / ANIMATION_LENGTH);
-					animationSequence = i;
-					if (stance != null) {
-						unit.stance = stance;
-					}
-					try {
-						Thread.sleep(refreshRate);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-				abilityString = "";
-			}
-		};
-		animationThread.start();
+
+		pos.setxOffset((ANIMATION_LENGTH - 1f - frame) * xOffset / ANIMATION_LENGTH);
+		pos.setyOffset((ANIMATION_LENGTH - 1f - frame) * yOffset / ANIMATION_LENGTH);
+		animationSequence = frame % ANIMATION_LENGTH;//TODO: remove?
+		
 	}
 	
 	protected void paintDecorations(Graphics2D g2) {

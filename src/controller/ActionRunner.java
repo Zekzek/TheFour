@@ -118,22 +118,29 @@ public class ActionRunner implements IGameObjectListener{
 	}
 	
 	private void checkNextAction() {
-		ReadiedAction[] actions = actionQueue.getReadyActions();
+		ReadiedAction[] actions = null;
+		boolean firstPass = true;
 		boolean foundInvalid = false;
-		for (ReadiedAction action : actions) {
-			if (!isValidAction(action)) {
-				actionQueue.removeAction(action);
-				foundInvalid = true;
+		while (firstPass || foundInvalid) {
+			firstPass = false;
+			foundInvalid = false;
+			actions = actionQueue.getReadyActions();
+			for (ReadiedAction action : actions) {
+				if (!isValidAction(action) || !isValidAction(Pathing.getFirstStepToUseAction(action))) {
+					actionQueue.removeAction(action);
+					foundInvalid = true;
+				}
 			}
 		}
-		if (foundInvalid)
-			actions = actionQueue.getReadyActions();
 		for (ReadiedAction action : actions) {
 			ReadiedAction firstStep = Pathing.getFirstStepToUseAction(action);
-			if (firstStep != action) {
-				actionQueue.delay(action.getSource(), firstStep.calcDelay()); //inserting first step, delay future actions
+			if (!isValidAction(firstStep)) {
+				actionQueue.removeAction(action);
 			}
-			perform(firstStep, firstStep == action);
+			if (firstStep != action) {
+				actionQueue.prependAction(firstStep);
+			}
+			perform(firstStep);
 		}
 	}
 
@@ -141,18 +148,12 @@ public class ActionRunner implements IGameObjectListener{
 	 * Perform the action: animate, effect other game objects, and update internal scheduling
 	 * @param action
 	 */
-	private void perform(final ReadiedAction action, boolean isQueued) {
+	private void perform(final ReadiedAction action) {
 		Unit source = action.getSource();
-		Ability ability = action.getAbility();
-		ITargetable target = action.getTarget();
-		
-		System.out.println(source + " uses " + ability + " on " + target);
 		action.activate();
-//		source.animate(ability, world);
 		if (source.equals(activePlayer))
 			Watcher.activePlayerAbilityQueueChanged(actionQueue.getQueueFor(activePlayer));
-		System.out.println(" Complete? " + isQueued + " " + action.isComplete());
-		if (isQueued && action.isComplete() ) {
+		if (action.isComplete() ) {
 			actionQueue.completeAction(action); //Complete, so remove from queue
 		}
 	}
@@ -289,15 +290,23 @@ public class ActionRunner implements IGameObjectListener{
 				thread = new Thread() {
 					@Override
 					public void run() {
+						long lastLoopDuration = 0;
 						while(running) {
-							try {
-								Thread.sleep(PERFORM_ACTION_CHECK_DELAY);
-							} catch (InterruptedException e) {
-								break;
+							if (lastLoopDuration < PERFORM_ACTION_CHECK_DELAY) {
+								try {
+									Thread.sleep(PERFORM_ACTION_CHECK_DELAY - lastLoopDuration);
+								} catch (InterruptedException e) {
+									break;
+								}
+							}
+							else {
+								System.out.println("Warning: Last loop took too long: " + lastLoopDuration + "ms");	
 							}
 							if (running) {
+								long startTime = System.currentTimeMillis();
 								actionQueue.incrementTimeWaitForUnit(PERFORM_ACTION_CHECK_DELAY, calcActivePlayer());
 								ActionRunner.this.checkNextAction();
+								lastLoopDuration = System.currentTimeMillis() - startTime;
 							}
 						}
 					}

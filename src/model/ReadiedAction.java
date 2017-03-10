@@ -7,7 +7,6 @@ import controller.ActionRunner;
 import model.Modifier.FLAT_BONUS;
 
 public class ReadiedAction {
-	public static enum Stage {START, MID, END, DELETE};
 	private static final Random RAND = new Random();
 	private static ActionRunner actionPlayer;
 	private static ActionQueue actionQueue;
@@ -15,7 +14,7 @@ public class ReadiedAction {
 	private final Ability ability;
 	private final Unit source;
 	private final ITargetable target;
-	private Stage stage = Stage.START;
+	private int stage = 0;
 	private Runnable doAtMid;
 	private Runnable doAtEnd;
 	private long startTime;
@@ -32,36 +31,36 @@ public class ReadiedAction {
 	}
 	
 	public void activate() {
-		System.out.println(source + " uses " + ability + " on " + target + " ~ " + stage);
+//		System.out.print(source + " uses " + ability + " on " + target + " ~ " + stage);
 
-		if (stage == Stage.START) {
-			System.out.println("\tstartTime begins: " + startTime);
+		if (stage == 0) {
 			activateAtStart();
-			stage = Stage.MID;
-			startTime += ability.calcDelay(source.getModifier()) / 2;
-			System.out.println("\tstartTime becomes: " + startTime);
+			source.face(target);			
 		}
-		else if (stage == Stage.MID) {
-			System.out.println("\tstartTime begins: " + startTime);
+		else if (stage == Unit.ANIMATION_LENGTH / 2) {
 			activateAtMid();
-			stage = Stage.END;
-			startTime += ability.calcDelay(source.getModifier()) / 2;
-			System.out.println("\tstartTime becomes: " + startTime);
 		}
-		else if (stage == Stage.END) {
+		else if (stage == Unit.ANIMATION_LENGTH - 1) {
+//			System.out.println(": " + startTime );
 			activateAtEnd();
-			stage = Stage.DELETE;
+			source.setAnimationFrame( Unit.ANIMATION_LENGTH, ability );
+			stage = -1;
+			return;
 		}
+		
+//		System.out.print( ": " + startTime + " - " );
+		startTime += ability.calcDelay( source.getModifier() ) / Unit.ANIMATION_LENGTH;
+//		System.out.println( startTime );
+		source.setAnimationFrame( stage, ability );
+		stage++;
+		
 	}
 	
 	public boolean isComplete() {
-		return stage == Stage.DELETE;
+		return stage < 0;
 	}
 	
 	private void activateAtStart() {
-		source.face(target);
-		source.animate(ability);
-
 		source.damage(source.getStatusEffectModifier(FLAT_BONUS.HP_DAMAGE_PER_SECOND, target) * ability.getDelay() / 1000);
 		source.tickStatusEffects(ability.getDelay());
 		source.heal(source.getStatusEffectModifier(FLAT_BONUS.HP_HEALED_PER_SECOND, target) * ability.getDelay() / 1000);

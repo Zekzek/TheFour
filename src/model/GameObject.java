@@ -195,6 +195,10 @@ public abstract class GameObject implements ITargetable {
 	public GridPosition getPos() {
 		return pos;
 	}
+	
+	public void setPos(GridPosition pos) {
+		this.pos = pos;
+	}
 
 	public int getMaxHp() {
 		return maxHp;

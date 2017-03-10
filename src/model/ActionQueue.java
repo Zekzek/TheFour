@@ -46,6 +46,20 @@ public class ActionQueue {
 	}
 	
 	/**
+	 * Insert an action at the front of the queue. 
+	 *   Warning: This call bypasses setting the action start time
+	 * @param action action to insert
+	 */
+	public void prependAction(ReadiedAction action) {
+		System.out.println("\t" + action.getSource() + " has immediately prepared " + action.getAbility() + " for " + action.getTarget());
+		synchronized(this) {
+			delay(action.getSource(), action.calcDelay());
+			actionQueue.add(action);
+			sort();
+		}
+	};
+	
+	/**
 	 * Insert an action at the front of the queue.
 	 * @param ability ability to perform
 	 * @param source unit to perform the ability
@@ -75,6 +89,8 @@ public class ActionQueue {
 			actionQueue.remove(action);
 			sort();
 		}
+		if (source.isPlayerTeam())
+			Watcher.playerUsedAbility(action);
 	};
 	
 	/**
